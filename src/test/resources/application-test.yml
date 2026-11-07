@@ -1,0 +1,7 @@
+cane:
+  environment: test
+spring:
+  main:
+    keep-alive: false
+server:
+  port: 0

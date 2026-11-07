@@ -1,0 +1,9 @@
+cane:
+  runtime:
+    mode: api
+spring:
+  main:
+    web-application-type: servlet
+  datasource:
+    hikari:
+      maximum-pool-size: 5

@@ -1,0 +1,17 @@
+cane:
+  runtime:
+    mode: worker
+spring:
+  main:
+    web-application-type: none
+    keep-alive: true
+  datasource:
+    hikari:
+      maximum-pool-size: 3
+  task:
+    scheduling:
+      pool:
+        size: 1
+      shutdown:
+        await-termination: true
+        await-termination-period: 20s

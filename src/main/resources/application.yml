@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: cane-ecommerce-api
+  main:
+    banner-mode: "off"
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  datasource:
+    url: ${CANE_DB_URL}
+    username: ${CANE_DB_USER}
+    password: ${CANE_DB_PASSWORD}
+    hikari:
+      minimum-idle: 1
+      connection-timeout: 3000
+      validation-timeout: 1000
+      initialization-fail-timeout: 1
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      data-source-properties:
+        options: "-c search_path=cane,pg_catalog -c statement_timeout=5000 -c lock_timeout=2000"
+  jdbc:
+    template:
+      query-timeout: 5s
+  data:
+    redis:
+      host: ${CANE_REDIS_HOST}
+      port: ${CANE_REDIS_PORT}
+      username: ${CANE_REDIS_USER}
+      password: ${CANE_REDIS_PASSWORD}
+      connect-timeout: 1s
+      timeout: 1s
+      repositories:
+        enabled: false
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: never
+server:
+  address: 127.0.0.1
+  port: ${CANE_API_PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: none
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+logging:
+  structured:
+    format:
+      console: logstash
+  level:
+    org.springframework.jdbc.core: OFF
+    org.springframework.web: WARN
+    io.lettuce.core: WARN
+    com.zaxxer.hikari: WARN

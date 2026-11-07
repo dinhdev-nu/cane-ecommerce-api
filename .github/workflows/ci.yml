@@ -1,0 +1,66 @@
+name: Backend foundation
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install locked Temurin JDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/cane-jdk.tar.gz"
+          jdk="$RUNNER_TEMP/cane-jdk"
+          curl --fail --location --retry 3 'https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz' --output "$archive"
+          printf '%s  %s\n' '68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb' "$archive" | sha256sum --check
+          mkdir -p "$jdk"
+          tar -xzf "$archive" --strip-components=1 -C "$jdk"
+          printf 'JAVA_HOME=%s\n' "$jdk" >> "$GITHUB_ENV"
+          printf '%s/bin\n' "$jdk" >> "$GITHUB_PATH"
+      - name: Install locked Docker Engine
+        uses: docker/setup-docker-action@e43656e248c0bd0647d3f5c195d116aacf6fcaf4 # v4
+        with:
+          version: v29.9.2
+          set-host: true
+      - name: Install locked Compose
+        uses: docker/setup-compose-action@2fe291b7677a45ee1269ec56a42604c143505e7e # v1
+        with:
+          version: v5.6.1
+          cache-binary: false
+      - name: Check script syntax
+        shell: bash
+        run: |
+          chmod +x mvnw
+          sh -n scripts/dev/redis-start.sh
+      - name: Verify toolchain, Compose and backend
+        shell: pwsh
+        run: ./scripts/Test-Backend.ps1
+      - name: Record resolved dependencies
+        shell: bash
+        run: |
+          ./mvnw -B -ntp help:effective-pom -Doutput=target/effective-pom.xml
+          ./mvnw -B -ntp dependency:tree -DoutputFile=target/dependency-tree.txt
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend-foundation-evidence
+          if-no-files-found: warn
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/effective-pom.xml
+            target/dependency-tree.txt
