@@ -167,7 +167,9 @@ hướng gọi và transaction tuân theo thiết kế trong repo tài liệu.
 ## CI và dọn tài nguyên
 
 Workflow kiểm toolchain/Compose/format/unit/integration/build, xuất effective POM và dependency tree,
-lưu test evidence. GitHub Actions phải chạy thực tế mới được ghi đạt; có file workflow chưa phải bằng chứng CI.
+lưu test evidence. [CI trên commit khung `b3428f9`](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42373305195)
+đã đạt trên Linux với đúng bộ khóa: 20 unit + 10 integration, không lỗi hoặc bỏ qua.
+Kết quả chỉ áp dụng khung backend PREP-02; chưa phải nghiệm thu FE, nghiệp vụ hoặc production.
 
 Sau khi dừng API/worker, dọn môi trường local do bạn chủ động dựng:
 

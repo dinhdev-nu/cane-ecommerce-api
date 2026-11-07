@@ -1,6 +1,6 @@
 # Kiểm khung backend PREP-02 — 07/11/2026
 
-Trạng thái: **Khung đạt kiểm local với ngoại lệ Docker được chủ dự án chấp thuận; CI GitHub chưa chạy, chưa xét Gate 3**.
+Trạng thái: **Khung đạt kiểm local và CI GitHub; local dùng ngoại lệ Docker được chủ dự án chấp thuận, CI dùng đúng bộ khóa; chưa xét Gate 3**.
 Phạm vi: repo server và cập nhật tài liệu; frontend giữ nguyên.
 
 ## Nguồn thiết kế và quyết định
@@ -12,7 +12,7 @@ Các trị số pool/timeout local/test tại README được chủ dự án xá
 
 Commit đầu tiên `580fff9` (`first commit`) chỉ thêm README và đã push lên
 `dinhdev-nu/cane-ecommerce-api`, nhánh `main`, trước khi tạo khung.
-Khung được rà diff và kiểm lại trước khi commit/push; kết quả CI chỉ được xác nhận sau khi workflow chạy.
+Khung đã được rà diff, kiểm lại và push trong commit `b3428f9`; bằng chứng CI bên dưới gắn với commit này.
 
 ## Rà soát trước push
 
@@ -45,11 +45,29 @@ Dependency/plugin sử dụng release đã khóa hoặc parent/BOM; không dùng
 
 Lệnh kiểm cuối: `pwsh -File scripts/Test-Backend.ps1 -AllowCurrentLocalDocker`;
 Maven hoàn tất lúc **12:33:08 UTC ngày 07/11/2026**, `BUILD SUCCESS`.
-Bản build được kiểm từ working tree trên commit gốc `580fff9`:
+Bản build local tương ứng mã nguồn khung trong commit `b3428f9`:
 
 - JAR: `target/cane-ecommerce-api-0.1.0-SNAPSHOT.jar`, SHA-256 `d4c195ea5f76f8261cd9dec54cf443f447e98e977e0396c4f7513a6d0801e30f`.
 - Manifest POM/wrapper/src: `.tools/prepush-build-inputs.sha256`, SHA-256 `48214141ae834cc51566cf5fa44cd1ba5600314028dc9b2ddd74ef1395f9eda8`.
 - Log đầy đủ: `.tools/prepush-verify.log`; inventory `.local/last-docker-check.json` và biên nhận `.local/prepush-cleanup.json`.
+
+## Kết quả CI GitHub
+
+[Workflow Backend foundation — run 42373305195](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42373305195)
+đã **success** trên `ubuntu-24.04`, commit `b3428f9e071aa714cdd5693f6518b0d22c0e2ffe`.
+Lượt này được kích hoạt bằng `workflow_dispatch`; workflow cũng khai báo trigger push `main` và pull request.
+Hoàn tất ngày 07/11/2026 lúc **12:38:51 UTC**; không có bước lỗi cần sửa sau khi chạy CI.
+
+| Kiểm trên runner Linux | Kết quả |
+|---|---|
+| Bộ khóa | Temurin 25.0.5+8, Maven 3.10.0, Docker Client/Engine 29.9.2/29.9.2, Compose 5.6.1; không dùng switch ngoại lệ |
+| Format / build / test | `clean verify` đạt; 20 unit + 10 integration, 0 lỗi/thất bại/bỏ qua; PostgreSQL/Redis thật theo digest khóa |
+| Dependency | Xuất effective POM và dependency tree thành công |
+| Bằng chứng | Artifact `backend-foundation-evidence`, ID `13574866368`; đã tải và đọc báo cáo XML, kiểm đủ 30 test và hai file dependency |
+| Dọn | Compose project kiểm đã down cùng volume/network; các bước post-action Docker/Compose và job hoàn tất thành công trên runner dùng riêng |
+
+CI này chứng minh khung backend trên bộ công cụ mục tiêu. Chưa kiểm FE, nghiệp vụ WP01,
+NFR/tải, staging/production hoặc các điều kiện còn lại của PREP-02/Gate 3.
 
 ## Ngoại lệ Docker và dọn tài nguyên
 
@@ -57,7 +75,7 @@ Docker thực tế: **Client/Engine 27.3.1; Compose 2.30.3-desktop.1**.
 Sau khi xem sai khác, chủ dự án cho phép dùng bộ hiện có để hoàn thiện kiểm local;
 chủ dự án sẽ cập nhật bộ mục tiêu **29.9.2 / 5.6.1** sau.
 Switch ngoại lệ chỉ chấp nhận bộ local này, không được áp trong GitHub Actions.
-Kết quả local không chứng minh Docker mục tiêu đã được kiểm.
+Kết quả local không thay kiểm Docker mục tiêu; bằng chứng bộ mục tiêu đã có trên CI Linux ở trên.
 
 Đã dọn Compose project của lượt rà trước push `cane-prep02-check-a9a057b75d2b`:
 container/network/volume được xóa sau lượt kiểm.
@@ -71,7 +89,6 @@ Cấu hình và bằng chứng dựng lại được giữ; `.local/dev.env` kh�
 ## Phần tiếp nối
 
 - Sau khi chủ dự án cập nhật Docker, chạy lại lệnh chuẩn không có switch ngoại lệ để kiểm đúng bộ khóa.
-- Workflow đã được chuẩn bị; chưa chạy trên GitHub Actions.
-- Phần khung và tài liệu đang ở working tree, chưa commit/push tiếp sau commit README đầu tiên.
+- Khung server đã push; CI đã chạy đạt trên bộ khóa. Các lượt CI tiếp theo được theo dõi tại [Actions](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/workflows/ci.yml).
 - Frontend không thay đổi, chưa áp hoặc kiểm bộ công cụ FE trong lượt này.
 - Chưa triển khai WP01 hoặc nghiệm thu nghiệp vụ; PREP-02 tổng thể và Gate 3 còn các điều kiện riêng.
