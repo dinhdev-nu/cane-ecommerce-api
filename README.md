@@ -1,15 +1,18 @@
 # cane-ecommerce-api
 
 Backend CANE: một dự án Maven, một bản build chạy hai chế độ `api` và `worker`.
-Đang triển khai WP01 trên khung PREP-02. V001 và lệnh migration lõi thuộc WP01-01;
-quyền runtime/kiểm sâu trigger tiếp tục ở WP01-02. API nghiệp vụ, seed, đăng nhập/session,
+Đang triển khai WP01 trên khung PREP-02. Có V001, lệnh migration lõi và script cấp
+quyền API/worker theo thao tác/cột; trigger giữ nguyên V001 và được kiểm riêng với quyền runtime.
+API nghiệp vụ, seed, đăng nhập/session,
 chống lặp và job được triển khai/kiểm tuần tự theo WP01–WP07.
 
-Đặc tả và quyết định nằm trong [repo tài liệu](https://github.com/nuservice13579-dot/cane-docs).
-Đọc [thiết kế kỹ thuật](https://github.com/nuservice13579-dot/cane-docs/blob/main/docs/03-technical-design.md),
-[bộ khóa công cụ](https://github.com/nuservice13579-dot/cane-docs/blob/main/docs/pm/toolchain-lock.md)
-và [backlog](https://github.com/nuservice13579-dot/cane-docs/blob/main/docs/pm/backlog.md).
-Trong workspace ba thư mục cùng cấp, các tài liệu này nằm tại `../cane-mvp/docs/`.
+Đặc tả và quyết định nằm trong repo local `../cane-mvp/`: đọc
+[thiết kế kỹ thuật](../cane-mvp/docs/03-technical-design.md),
+[bộ khóa công cụ](../cane-mvp/docs/pm/toolchain-lock.md)
+và [backlog](../cane-mvp/docs/pm/backlog.md).
+Theo chỉ dẫn chủ dự án, tài liệu Cane-MVP chỉ commit local, không push;
+backend vẫn tạo PR/merge GitHub. Các liên kết sang tài liệu giả định workspace
+có ba thư mục cùng cấp như thiết kế.
 
 ## Công cụ
 
@@ -52,7 +55,8 @@ Script init PostgreSQL chỉ tạo các role local và quyền kết nối:
 | `cane_api`, `cane_worker` | Runtime, không sở hữu DB/schema hoặc có quyền DDL |
 
 Init không tạo schema nghiệp vụ hoặc dữ liệu mở bán. V001 chạy riêng bằng role DDL;
-quyền từng bảng/thao tác được cấp/kiểm tại WP01-02, không cấp blanket CRUD cho ledger/event.
+quyền từng bảng/thao tác được cấp bằng [script runtime](docs/data-protection.md),
+không cấp blanket CRUD cho ledger/event.
 Init chỉ chạy trên volume mới; đổi mật khẩu trong env không tự đổi mật khẩu của DB đã khởi tạo.
 
 ## Chạy API và worker
@@ -112,7 +116,9 @@ Sau khi cập nhật Docker, chạy lại lệnh chuẩn để xác minh cấu h
 Test hiện kiểm vai trò chạy, HTTP/scheduler, cấu hình thiếu/sai, quyền DDL, timeout,
 fixture khung không có migration, Redis ACL/TTL, Redis lỗi và PostgreSQL lỗi.
 WP01-01 bổ sung kiểm V001/schema/constraint, checksum, rollback và lệnh migrate;
-xem [hồ sơ WP01-01](docs/wp01-01-verification.md). Chưa nghiệm thu nghiệp vụ tiền/tồn,
+xem [hồ sơ WP01-01](docs/wp01-01-verification.md). WP01-02 bổ sung kiểm trigger,
+grant chạy lại và các nhánh hợp lệ bằng role runtime; xem [hồ sơ WP01-02](docs/wp01-02-verification.md).
+Chưa nghiệm thu nghiệp vụ tiền/tồn,
 auth/session hoặc toàn bộ T01–T118 từ các kiểm nền này.
 Báo cáo ở `target/surefire-reports/` và `target/failsafe-reports/`.
 
@@ -142,9 +148,9 @@ pwsh -NoProfile -File scripts/database/Migrate-Core.ps1
 
 Lệnh từ chối migration repeatable trong core; kiểm trước migrate chỉ bỏ qua
 `*:pending`, sau migrate validate đầy đủ. Core chỉ dùng migration versioned.
-Không truyền password bằng tham số `-D`, không tự baseline/repair/clean. Quyền runtime
-và kiểm sâu trigger hoàn thiện ở WP01-02 trước khi áp vào môi trường dùng lâu dài.
-Xem [hướng dẫn migration và phục hồi](docs/core-migration.md).
+Không truyền password bằng tham số `-D`, không tự baseline/repair/clean.
+Sau migration, cấp/kiểm [quyền runtime](docs/data-protection.md) bằng chủ schema,
+không dùng role migration chạy dịch vụ. Xem [hướng dẫn migration và phục hồi](docs/core-migration.md).
 
 ## Cấu trúc
 

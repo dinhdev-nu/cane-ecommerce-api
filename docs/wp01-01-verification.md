@@ -1,7 +1,14 @@
 # WP01-01 — Hồ sơ kiểm migration lõi
 
 Ngày thực hiện: **10/11/2026**. Branch: `feat/wp01-01-core-migration`.
-Trạng thái: **kiểm local đạt; chờ PR/CI/review/merge và đối chiếu main trước WP01-02**.
+Trạng thái: **hoàn thành — local, CI PR và CI main đạt; đã merge ngày 10/11/2026**.
+
+[PR #2](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/2) đã squash merge tại
+`6a0e5b6c53c36800b0b5c15c2df8b42e4c700717`.
+[CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42770452980)
+và [CI main](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42770755235)
+đều đạt; cây local được đối chiếu khớp commit merge. Truy vết Cane-MVP đã commit local
+theo chỉ dẫn chủ dự án, không push.
 
 ## Nguồn và phạm vi
 
@@ -74,7 +81,7 @@ Maven như ghi ở trên. Không tạo schema thủ công, baseline hoặc sửa
 
 ## Giới hạn và tiếp nối
 
-Chưa tạo PR/merge cho WP01-01. Kiểm sâu trigger và quyền bảng runtime thuộc WP01-02;
+Kiểm sâu trigger và quyền bảng runtime thuộc WP01-02;
 không áp schema này vào môi trường dùng lâu dài trước khi cả hai task đạt.
 Chưa nghiệm thu seed, staff/auth, tiền/tồn qua service, staging HTTPS hoặc mở bán.
 Không chạy `repair`, `baseline`, `clean` hoặc sửa history để làm kiểm đạt.
