@@ -109,7 +109,7 @@ class BackendSkeletonIT {
                 .defaultSchema("cane")
                 .schemas("cane")
                 .createSchemas(true)
-                .locations("classpath:db/migration/core")
+                .locations("classpath:db/migration/empty")
                 .failOnMissingLocations(true)
                 .baselineOnMigrate(false)
                 .outOfOrder(false)

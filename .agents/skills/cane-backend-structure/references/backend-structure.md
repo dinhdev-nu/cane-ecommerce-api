@@ -115,8 +115,9 @@ trạng thái hiện tại. Dispatcher/lease/provider ở Worker là phần khá
 Tài liệu quy định script staff, encoder dùng chung và hai vai trò dịch vụ API/worker;
 chưa quyết định cơ chế Java CLI/bootstrap cụ thể. Đề xuất lệnh staff/seed là tiến
 trình một lần gọi application service, không mở HTTP/scheduler nghiệp vụ. Cơ chế
-bootstrap, package CLI và quyền DB cho lệnh vận hành cần chủ dự án chốt trước phần
-triển khai phụ thuộc. Không tự thêm endpoint quản trị nhân viên.
+bootstrap và package CLI được chủ động chọn theo chỉ dẫn mới nhất ngày 10/11/2026.
+Chỉ hỏi khi quyền DB/yêu cầu hệ thống còn thiếu hoặc chưa rõ; không xin duyệt lựa
+chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân viên.
 
 ## Nguồn thực tế cần kiểm khi thay đổi
 

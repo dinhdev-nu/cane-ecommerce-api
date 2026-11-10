@@ -10,9 +10,10 @@ Quyền sở hữu và ràng buộc theo thiết kế; cây/tên lớp là ví d
 phải scaffold bắt buộc.
 
 Skill là tài liệu hỗ trợ và có thể còn thiếu sót; không ép code theo hướng dẫn chưa
-phù hợp. Khi có ý tưởng cải tiến mà skill chưa đề cập, trình bày vấn đề, lợi ích và
-tác động, rồi hỏi chủ dự án trước khi áp dụng. Sau khi thống nhất và có kết quả thực
-tế, cải thiện skill tương ứng; yêu cầu và đặc tả hiện hành vẫn được giữ đúng.
+phù hợp. Theo chỉ dẫn mới nhất ngày 10/11/2026, chủ động chọn giải pháp kỹ thuật tốt
+và cải thiện skill theo kết quả thực tế; báo chủ dự án khi có điểm đáng lưu ý. Chỉ
+hỏi trước khi yêu cầu nghiệp vụ, hệ thống hoặc kiến trúc còn thiếu, chưa rõ hay mâu
+thuẫn. Việc skill chưa đề cập một cách giải quyết không tự tạo bước xin duyệt.
 
 ## Nguồn và phạm vi
 
@@ -24,6 +25,10 @@ Repo tài liệu `cane-mvp/` nằm cùng cấp với backend trong workspace th�
 Trong worktree, tìm lại repo tài liệu tại workspace gốc. Đọc phần tương ứng của:
 
 - `01-HOP-DONG-NGHIEP-VU.md`: thẩm quyền nghiệp vụ cao nhất.
+- Tài liệu gốc liên quan: `04-DU-LIEU-VA-HA-TANG.md`,
+  `05-NGHIEM-THU-VA-TRIEN-KHAI.md`, SQL lõi và bộ kiểm schema; đối chiếu với thiết
+  kế chi tiết bên dưới. SQL ngân hàng tùy chọn chỉ đọc để giữ đúng phạm vi, không
+  đưa inbox vào core khi chưa triển khai nhánh tự động.
 - `docs/03-technical-design.md`: mô-đun, hướng gọi, stack và cấu trúc.
 - `docs/03-database-design.md`, `03-processing-design.md`, `03-api-design.md`,
   `03-security-design.md`, `03-operations-design.md`: hợp đồng của phần đang sửa.
@@ -135,6 +140,10 @@ formatter hiện có; các ví dụ dưới đây hướng dẫn đặt tên, kh
 - Migration ở `src/main/resources/db/migration/core/`, Flyway chạy riêng bằng role DDL.
   Runtime không migrate; không chạy schema.sql/data.sql. Không sửa version/checksum đã
   phát hành; thay đổi tiếp dùng version mới. Cách tách WP01-01/02 xem kế hoạch WP01.
+- Theo quyết định ngày 10/11/2026, core chỉ dùng migration versioned. Dùng script
+  migration của repo: chặn repeatable trước khi gọi Maven, kiểm trước với `*:pending`
+  để Flyway 12.4.0 xử lý schema chưa tồn tại; sau migrate validate đầy đủ. Không nới
+  kiểm checksum, migration đã áp bị thiếu/future hoặc tự repair/baseline/clean.
 - Session/role/settings/idempotency/outbox và dữ liệu nghiệp vụ nằm ở PostgreSQL.
   Redis chỉ public prices và rate; WP01 chưa làm cache prices.
 - Auth/CSRF/quyền hiện tại trước replay; actor không lấy từ body. Bộ chống lặp admin
@@ -142,8 +151,8 @@ formatter hiện có; các ví dụ dưới đây hướng dẫn đặt tên, kh
 - Cookie phiên và HMAC giữ đúng đặc tả; không tự thay bằng JWT/HttpSession hoặc dùng
   mã đơn cấp quyền. Script nhân viên dùng chung encoder, prompt kín và bảo vệ Owner
   active cuối cùng; không tạo endpoint quản trị nhân viên mới. Việc dùng Java CLI
-  gọi cùng application service là đề xuất cần chốt, không phải cách triển khai script
-  đã được tài liệu quyết định.
+  gọi cùng application service là giải pháp kỹ thuật được chủ động lựa chọn trong
+  thiết kế hiện hành; không tự thêm quyền hoặc API ngoài đặc tả.
 - Không log body, mật khẩu, cookie, CSRF, token/link, bind SQL hoặc PII thừa. DTO,
   error, audit và biên nhận dùng allowlist; HTTP API no-store kể cả lỗi. Secret thật
   ngoài Git; test fixture tách dữ liệu mở bán.
