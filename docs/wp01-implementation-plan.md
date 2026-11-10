@@ -393,12 +393,17 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
 - 10/11/2026: chủ dự án yêu cầu bắt đầu WP01. PR hướng dẫn/skill
   [#1](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/1) đã squash merge vào
   `1a97233`; CI PR và CI main đều đạt. Hai diff có sẵn ở checkout ban đầu giữ riêng.
-- WP01-01 đang thực hiện trên branch `feat/wp01-01-core-migration`, worktree riêng.
-  Chưa chuyển WP01-02 trước khi các kiểm/PR/main của task 01 đạt.
+- WP01-01 hoàn thành: [PR #2](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/2)
+  merge tại `6a0e5b6`, CI PR/main đạt; [bằng chứng](wp01-01-verification.md).
+  Truy vết Cane-MVP đã commit local. Theo chỉ dẫn mới của chủ dự án, repo tài liệu
+  chỉ commit, không push; backend giữ quy trình PR/merge qua browser.
+- WP01-02 thực hiện trên branch `feat/wp01-02-data-protection`, giữ nguyên V001,
+  kiểm sâu trigger và cấp quyền runtime riêng theo môi trường. Worker bản thủ công
+  chưa có quyền ghi tiền/tồn hoặc nhánh auto; rà/bổ sung khi triển khai nhánh đó.
 - Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
   checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
   hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.
 - Test thực trên Flyway 12.4.0 phát hiện ngoại lệ này vẫn báo schema chưa tồn tại
   khi dựng DB mới. Chủ dự án đã đồng ý chặn repeatable trong core và dùng
-  `*:pending` ở bước trước; sau migrate vẫn kiểm đầy đủ. Đang kiểm lại, chưa ghi
-  task 01 hoàn thành.
+  `*:pending` ở bước trước; sau migrate vẫn kiểm đầy đủ. Runner cuối đạt 20 unit
+  và 23 integration, không lỗi/bỏ qua; bằng chứng/PR của task 01 liên kết ở trên.
