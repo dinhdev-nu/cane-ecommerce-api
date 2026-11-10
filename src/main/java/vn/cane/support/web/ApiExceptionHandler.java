@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import vn.cane.support.transaction.RequestInProgressException;
 import vn.cane.support.validation.InputValidationException;
 
 @RestControllerAdvice
@@ -40,6 +41,13 @@ public final class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         }
         warnUnavailable();
         return response(request, 503, ApiErrorCode.SERVICE_UNAVAILABLE, Map.of());
+    }
+
+    @ExceptionHandler(RequestInProgressException.class)
+    ResponseEntity<Object> inProgress(RequestInProgressException failure, HttpServletRequest request) {
+        var headers = new HttpHeaders();
+        headers.set(HttpHeaders.RETRY_AFTER, "1");
+        return response(request, 409, ApiErrorCode.REQUEST_IN_PROGRESS, Map.of(), headers);
     }
 
     @Override

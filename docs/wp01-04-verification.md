@@ -1,8 +1,10 @@
 # WP01-04 — Hồ sơ kiểm runtime/readiness
 
 Ngày **10/11/2026**, branch `feat/wp01-04-runtime-readiness`.
-Trạng thái: **local đạt 36 unit + 59 integration, 0 failures/errors/skipped**;
-chờ PR/CI/merge.
+Trạng thái: **hoàn thành**, [PR #5](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/5)
+merge main `49b7102`; CI PR `42785321588`, main `42785814206` đạt. Truy vết
+Cane-MVP commit local `f0fd1b9`, không push. Local **36 unit + 59 integration,
+0 failures/errors/skipped**.
 
 Runner `pwsh -NoProfile -File scripts/Test-Backend.ps1` kiểm đúng toolchain, build
 executable JAR; Maven **4 phút 18 giây**, kết thúc **15:45:32 GMT+7**. Đã đối chiếu
