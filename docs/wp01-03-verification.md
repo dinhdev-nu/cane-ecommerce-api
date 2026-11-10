@@ -1,7 +1,10 @@
 # WP01-03 — Hồ sơ kiểm validation, lỗi và log
 
 Ngày: **10/11/2026**. Branch: `feat/wp01-03-validation-errors`.
-Trạng thái: **local đạt: 32 unit + 40 integration, 0 lỗi/bỏ qua; chờ PR/CI/merge**.
+Trạng thái: **hoàn thành**, [PR #4](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/4)
+merge vào main `2d9e340`; CI PR `42780618953` và main `42781075337` đạt.
+Local: **32 unit + 40 integration, 0 lỗi/bỏ qua**. Truy vết Cane-MVP commit local
+`da32da5`, không push theo chỉ dẫn chủ dự án.
 
 ## Nguồn và thay đổi
 

@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.web.server.context.WebServerApplicationContext;
@@ -41,6 +42,11 @@ class BackendSkeletonIT {
 
     @Container
     static final GenericContainer<?> REDIS = TestInfrastructure.redis();
+
+    @BeforeAll
+    static void prepareDatabase() throws Exception {
+        TestInfrastructure.prepareCore(POSTGRES);
+    }
 
     @Test
     void apiStartsHttpWithoutSchedulersAuthenticationOrBusinessEndpoints() throws Exception {
@@ -103,24 +109,21 @@ class BackendSkeletonIT {
     }
 
     @Test
-    void flywayValidatesEmptyCoreWithoutCreatingBusinessSchema() throws Exception {
-        var flyway = Flyway.configure()
-                .dataSource(POSTGRES.getJdbcUrl(), "cane_migrator", TestInfrastructure.MIGRATION_PASSWORD)
-                .defaultSchema("cane")
-                .schemas("cane")
-                .createSchemas(true)
-                .locations("classpath:db/migration/empty")
-                .failOnMissingLocations(true)
-                .baselineOnMigrate(false)
-                .outOfOrder(false)
-                .cleanDisabled(true)
-                .load();
-        assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
+    void missingCoreSchemaStopsRuntimeWithoutCreatingOrMigratingIt() throws Exception {
         try (var connection = POSTGRES.createConnection("");
-                var statement = connection.createStatement();
-                var result = statement.executeQuery("SELECT count(*) FROM pg_namespace WHERE nspname = 'cane'")) {
-            assertThat(result.next()).isTrue();
-            assertThat(result.getInt(1)).isZero();
+                var statement = connection.createStatement()) {
+            statement.execute("ALTER SCHEMA cane RENAME TO cane_missing_probe");
+            try {
+                assertThatThrownBy(() -> start("worker", Map.of()))
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining("SCHEMA_UNAVAILABLE");
+                try (var result = statement.executeQuery("SELECT to_regnamespace('cane') IS NULL")) {
+                    assertThat(result.next()).isTrue();
+                    assertThat(result.getBoolean(1)).isTrue();
+                }
+            } finally {
+                statement.execute("ALTER SCHEMA cane_missing_probe RENAME TO cane");
+            }
         }
     }
 
@@ -157,6 +160,8 @@ class BackendSkeletonIT {
         try (var context = start("worker", Map.of("CANE_REDIS_PORT", "1"))) {
             assertThat(context.isActive()).isTrue();
             assertThat(context).isNotInstanceOf(WebServerApplicationContext.class);
+            assertThat(context.getBean(InfrastructureReadiness.class).inspect().degraded())
+                    .isTrue();
         }
     }
 
@@ -173,7 +178,7 @@ class BackendSkeletonIT {
                         "worker",
                         Map.of("CANE_DB_USER", POSTGRES.getUsername(), "CANE_DB_PASSWORD", POSTGRES.getPassword())))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("must not have ownership or DDL privileges");
+                .hasMessageContaining("ROLE_UNSAFE");
     }
 
     @Test
@@ -184,7 +189,7 @@ class BackendSkeletonIT {
             try {
                 assertThatThrownBy(() -> start("worker", Map.of()))
                         .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("must not have ownership or DDL privileges");
+                        .hasMessageContaining("ROLE_UNSAFE");
             } finally {
                 statement.execute("REVOKE CREATE ON SCHEMA public FROM cane_worker");
             }
@@ -199,7 +204,7 @@ class BackendSkeletonIT {
             try {
                 assertThatThrownBy(() -> start("worker", Map.of()))
                         .isInstanceOf(IllegalStateException.class)
-                        .hasMessageContaining("must not have ownership or DDL privileges");
+                        .hasMessageContaining("ROLE_UNSAFE");
             } finally {
                 statement.execute("DROP SCHEMA pgbusiness_probe");
             }

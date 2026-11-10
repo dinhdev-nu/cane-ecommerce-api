@@ -17,6 +17,9 @@ spring:
       transaction-isolation: TRANSACTION_READ_COMMITTED
       data-source-properties:
         options: "-c search_path=cane,pg_catalog -c statement_timeout=5000 -c lock_timeout=2000"
+        connectTimeout: 3
+        socketTimeout: 6
+        cancelSignalTimeout: 1
   jdbc:
     template:
       query-timeout: 5s
@@ -54,3 +57,4 @@ logging:
     org.springframework.web: WARN
     io.lettuce.core: WARN
     com.zaxxer.hikari: WARN
+    org.flywaydb: OFF

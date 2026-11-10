@@ -122,13 +122,15 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
 ## Nguồn thực tế cần kiểm khi thay đổi
 
 - `pom.xml`: Spring Boot/BOM, JDBC/Security/Redis/Flyway, formatter, Surefire/Failsafe.
-- `RuntimeModeInitializer`: hiện chỉ nhận local/test + api/worker; staging phải bổ sung
-  cấu hình/kiểm thật trong WP01, không giả định đã được hỗ trợ.
+- `RuntimeModeInitializer`: nhận local/test/staging/production + api/worker; profile
+  staging/production kiểm bằng fixture local, chưa phải bằng chứng triển khai thật.
 - `SecurityConfiguration`: hiện deny-all PREP-02; WP01 phải mở đúng ba auth route,
   giữ deny mặc định cho phần chưa triển khai và bảo vệ login/logout bằng CSRF.
-- `InfrastructureStartupCheck`: hiện kiểm kết nối/quyền DDL, chưa kiểm schema nghiệp vụ.
-- `TestInfrastructure`, `BackendSkeletonIT`: hiện dựa DB chưa có schema; khi thêm
-  migration phải tách ca khung không-schema và fixture migrated theo nhiệm vụ.
+- `InfrastructureStartupCheck`: kiểm trước HTTP/job qua `InfrastructureReadiness` và
+  `DatabaseReadiness` (DB/role/schema/history/checksum/quyền tối thiểu, Redis degraded).
+  Flyway runtime chỉ validate read-only, không migrate/repair hoặc callback SQL.
+- `TestInfrastructure`, `BackendSkeletonIT`, `RuntimeReadinessIT`: fixture migrate +
+  grant trước runtime; kiểm schema thiếu không tự migrate và readiness drift riêng.
 - `scripts/dev/init-roles.sql`: hiện tạo role, chưa cấp quyền bảng nghiệp vụ.
 - `scripts/Test-Backend.ps1`: runner chuẩn, dọn Compose riêng; kiểm image tải thêm sau
   đối chiếu inventory, không dùng prune toàn máy.
