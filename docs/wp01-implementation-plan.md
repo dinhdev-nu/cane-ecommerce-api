@@ -402,9 +402,14 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
   Giữ nguyên V001,
   kiểm sâu trigger và cấp quyền runtime riêng theo môi trường. Worker bản thủ công
   chưa có quyền ghi tiền/tồn hoặc nhánh auto; rà/bổ sung khi triển khai nhánh đó.
-- WP01-03 trên branch `feat/wp01-03-validation-errors`: validator/settings, JSON
+- WP01-03 hoàn thành tại [PR #4](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/4),
+  main `2d9e340`, CI PR/main đạt: validator/settings, JSON
   nghiêm ngặt, lỗi chung Security/MVC và log/requestId. Trạng thái/bằng chứng tại
   [hồ sơ WP01-03](wp01-03-verification.md); không mở endpoint nghiệp vụ sớm.
+- WP01-04 trên branch `feat/wp01-04-runtime-readiness`: kiểm DB/schema trước HTTP/job,
+  profile staging/production, Redis degraded; [hướng dẫn](runtime-readiness.md).
+  Ngày 10/11/2026 chủ dự án xác nhận chưa có staging/domain; proxy/HTTPS và smoke
+  thật còn phụ thuộc lựa chọn hạ tầng, không suy từ profile/fixture local.
 - Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
   checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
   hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.

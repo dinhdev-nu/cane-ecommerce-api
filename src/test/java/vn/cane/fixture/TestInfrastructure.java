@@ -1,8 +1,11 @@
 package vn.cane.fixture;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.HexFormat;
+import org.flywaydb.core.Flyway;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -21,6 +24,44 @@ public final class TestInfrastructure {
             "redis@sha256:298641b35ac51aa999f9bb85707d6681fe635ce59cda51886a0b6adc1da37b8e";
 
     private TestInfrastructure() {}
+
+    public static void prepareCore(PostgreSQLContainer postgres) throws Exception {
+        prepareCore(postgres, postgres.getDatabaseName());
+    }
+
+    public static void prepareCore(PostgreSQLContainer postgres, String database) throws Exception {
+        String jdbcUrl = postgres.getJdbcUrl().replace("/" + postgres.getDatabaseName(), "/" + database);
+        Flyway.configure()
+                .dataSource(jdbcUrl, "cane_migrator", MIGRATION_PASSWORD)
+                .defaultSchema("cane")
+                .schemas("cane")
+                .locations("classpath:db/migration/core")
+                .ignoreMigrationPatterns(new String[0])
+                .cleanDisabled(true)
+                .load()
+                .migrate();
+        postgres.copyFileToContainer(
+                MountableFile.forHostPath(
+                        Path.of("scripts/database/Grant-Runtime.sql").toAbsolutePath()),
+                "/tmp/cane-runtime-grants.sql");
+        var grant = postgres.execInContainer(
+                "psql",
+                "-X",
+                "--no-password",
+                "-U",
+                "cane_migrator",
+                "-d",
+                database,
+                "-v",
+                "cane_api_role=cane_api",
+                "-v",
+                "cane_worker_role=cane_worker",
+                "-f",
+                "/tmp/cane-runtime-grants.sql");
+        assertThat(grant.getExitCode())
+                .withFailMessage(grant.getStdout() + grant.getStderr())
+                .isZero();
+    }
 
     public static PostgreSQLContainer postgres() {
         return new PostgreSQLContainer(DockerImageName.parse(POSTGRES_IMAGE))

@@ -73,7 +73,8 @@ class ApiInputIT {
     private static String origin;
 
     @BeforeAll
-    static void start() {
+    static void start() throws Exception {
+        TestInfrastructure.prepareCore(POSTGRES);
         var app = new SpringApplication(CaneApplication.class, ProbeConfiguration.class);
         app.setLogStartupInfo(false);
         app.setDefaultProperties(Map.of(

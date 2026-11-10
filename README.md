@@ -5,6 +5,8 @@ Backend CANE: một dự án Maven, một bản build chạy hai chế độ `ap
 quyền API/worker theo thao tác/cột; trigger giữ nguyên V001 và được kiểm riêng với quyền runtime.
 WP01-03 bổ sung [validation, lỗi HTTP và log/requestId](docs/input-errors.md),
 JSON nghiêm ngặt và giới hạn body 64 KiB; các route hiện vẫn deny-all.
+WP01-04 kiểm [runtime/readiness](docs/runtime-readiness.md) trước HTTP/scheduler,
+thêm profile staging/production và diagnostics nội bộ; chưa có hạ tầng staging.
 API nghiệp vụ, seed, đăng nhập/session,
 chống lặp và job được triển khai/kiểm tuần tự theo WP01–WP07.
 
@@ -63,6 +65,12 @@ Init chỉ chạy trên volume mới; đổi mật khẩu trong env không tự 
 
 ## Chạy API và worker
 
+Trước lần chạy đầu, thực hiện [migration lõi](docs/core-migration.md) và
+[cấp quyền runtime](docs/data-protection.md#cấp-quyền-sau-migration) bằng credential
+vận hành riêng. Runtime từ chối schema trống/thiếu history hoặc thiếu quyền; không
+tự dựng database khi chạy. Volume đã có V001 cần validate/cấp quyền đúng phiên bản,
+không chạy lại init role hoặc sửa checksum để bỏ qua lỗi.
+
 Mở hai terminal, mỗi terminal chạy một lệnh:
 
 ```powershell
@@ -75,11 +83,11 @@ CSRF dùng cookie để tránh tạo HttpSession, nhưng bootstrap/login/logout 
 Worker không có HTTP, chỉ worker bật scheduling; chưa có job nghiệp vụ.
 Worker giữ tiến trình sống và dừng bằng Ctrl+C. Cả hai cùng dùng executable JAR.
 
-Phải chọn đúng một môi trường `local`/`test` và một vai trò `api`/`worker`.
+Phải chọn đúng một môi trường `local`/`test`/`staging`/`production` và một vai trò `api`/`worker`.
 Thiếu vai trò, bật cả hai, thiếu connection/secret hoặc bật lại SQL init/Flyway sẽ bị từ chối.
-Chưa cấu hình staging/production trong khung này.
-PostgreSQL lỗi hoặc role runtime có quyền DDL làm khởi động thất bại; Redis lỗi chỉ ghi cảnh báo
-suy giảm. Cơ chế fallback nghiệp vụ thuộc WP01/WP02, chưa được tuyên bố hoạt động từ cảnh báo đó.
+Profile staging/production đã kiểm bằng fixture local, chưa triển khai môi trường thật.
+DB/schema/history/checksum/quyền không đúng làm khởi động thất bại trước nhận việc;
+Redis lỗi có trạng thái suy giảm. Bộ đếm fallback thuộc WP01-08.
 Log không dump request/body/bind SQL; dữ liệu kết nối không được chủ động ghi ra log khởi động.
 
 Các trị số local/test đã được chủ dự án xác nhận ngày 07/11/2026:
@@ -89,10 +97,14 @@ Các trị số local/test đã được chủ dự án xác nhận ngày 07/11/
 | DB pool tối đa API / worker; tối thiểu | 5 / 3; 1 |
 | Chờ DB connection / validation | 3 giây / 1 giây |
 | SQL / chờ khóa | 5 giây / 2 giây |
+| JDBC connect / socket read / cancel connect | 3 giây / 6 giây / 1 giây |
 | Redis connect / command | 1 giây / 1 giây |
 | Thời gian graceful shutdown mỗi phase / scheduler chờ kết thúc | 20 giây / 20 giây |
 
 Đây là cấu hình kiểm khung, chưa phải số đo đạt tải hoặc cấu hình phát hành.
+WP01-04 bổ sung giới hạn mạng JDBC để tránh chờ vô hạn; đây là lựa chọn kỹ thuật
+khởi điểm cần đo trên hạ tầng thật. `forward-headers-strategy=none`; cấu hình proxy/IP
+tin cậy và HTTPS phải gắn với nền tảng/domain được chốt trước smoke staging.
 Không đưa bí mật HMAC/email/ngân hàng vào khung khi chưa có tính năng cần dùng.
 
 ## Build và kiểm tra

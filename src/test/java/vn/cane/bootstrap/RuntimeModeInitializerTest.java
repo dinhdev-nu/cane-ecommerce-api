@@ -15,7 +15,7 @@ import vn.cane.CaneApplication;
 
 class RuntimeModeInitializerTest {
     @ParameterizedTest
-    @CsvSource({"local,api,servlet", "test,worker,none"})
+    @CsvSource({"local,api,servlet", "test,worker,none", "staging,api,servlet", "production,worker,none"})
     void acceptsOneEnvironmentAndOneRole(String environment, String mode, String webType) {
         try (var context = context(environment, mode, webType)) {
             assertThatCode(() -> new RuntimeModeInitializer().initialize(context))
@@ -24,8 +24,7 @@ class RuntimeModeInitializerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(
-            strings = {"", "local", "api", "local,api,worker", "local,test,api", "production,api", "local,api,extra"})
+    @ValueSource(strings = {"", "local", "api", "local,api,worker", "local,test,api", "unknown,api", "local,api,extra"})
     void rejectsMissingAmbiguousOrUnsupportedProfiles(String profiles) {
         try (var context = context("local", "api", "servlet")) {
             context.getEnvironment().setActiveProfiles(profiles.isEmpty() ? new String[0] : profiles.split(","));
@@ -60,7 +59,9 @@ class RuntimeModeInitializerTest {
         "spring.main.web-application-type,none",
         "cane.runtime.mode,worker",
         "spring.flyway.enabled,true",
-        "spring.sql.init.mode,always"
+        "spring.sql.init.mode,always",
+        "cane.environment,production",
+        "server.forward-headers-strategy,framework"
     })
     void rejectsOverridesThatBreakTheRuntimeBoundary(String property, String value) {
         try (var context = context("local", "api", "servlet")) {
@@ -82,6 +83,8 @@ class RuntimeModeInitializerTest {
 
     private static GenericApplicationContext context(String environment, String mode, String webType) {
         var properties = new MockEnvironment()
+                .withProperty("cane.environment", environment)
+                .withProperty("server.forward-headers-strategy", "none")
                 .withProperty("cane.runtime.mode", mode)
                 .withProperty("spring.main.web-application-type", webType)
                 .withProperty("spring.flyway.enabled", "false")
