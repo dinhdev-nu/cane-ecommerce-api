@@ -1,0 +1,4 @@
+interface:
+  display_name: "CANE Backend Structure"
+  short_description: "Cấu trúc, ranh giới và quy ước backend CANE"
+  default_prompt: "Dùng $cane-backend-structure để triển khai hoặc review backend CANE đúng mô-đun, file, transaction và đặc tả hiện hành."
