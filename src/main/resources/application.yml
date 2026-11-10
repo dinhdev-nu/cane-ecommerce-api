@@ -54,6 +54,8 @@ logging:
       console: logstash
   level:
     org.springframework.jdbc.core: OFF
+    org.springframework.jdbc.support.JdbcTransactionManager: OFF
+    org.springframework.transaction.support.TransactionTemplate: OFF
     org.springframework.web: WARN
     io.lettuce.core: WARN
     com.zaxxer.hikari: WARN

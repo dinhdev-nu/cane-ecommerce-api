@@ -7,6 +7,8 @@ WP01-03 bổ sung [validation, lỗi HTTP và log/requestId](docs/input-errors.m
 JSON nghiêm ngặt và giới hạn body 64 KiB; các route hiện vẫn deny-all.
 WP01-04 kiểm [runtime/readiness](docs/runtime-readiness.md) trước HTTP/scheduler,
 thêm profile staging/production và diagnostics nội bộ; chưa có hạ tầng staging.
+WP01-05 bổ sung [transaction/khóa dùng chung](docs/transactions.md), đọc snapshot,
+phân loại UNIQUE và hook sau commit; chưa triển khai guard nghiệp vụ thay các WP sau.
 API nghiệp vụ, seed, đăng nhập/session,
 chống lặp và job được triển khai/kiểm tuần tự theo WP01–WP07.
 

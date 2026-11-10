@@ -39,6 +39,10 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +57,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import vn.cane.CaneApplication;
 import vn.cane.fixture.TestInfrastructure;
+import vn.cane.support.transaction.RequestInProgressException;
+import vn.cane.support.transaction.Transactions;
 import vn.cane.support.validation.InputNormalizer;
 import vn.cane.support.validation.NumericInputs;
 
@@ -212,6 +218,13 @@ class ApiInputIT {
     }
 
     @Test
+    void busyAdvisoryLockUsesConflictAndOneSecondRetryAfter() throws Exception {
+        var response = send("GET", "/busy", HttpRequest.BodyPublishers.noBody(), Map.of());
+        assertError(response, 409, "REQUEST_IN_PROGRESS");
+        assertThat(response.headers().firstValue("Retry-After")).contains("1");
+    }
+
+    @Test
     void errorsNeverEchoRejectedDataAndIgnoreClientRequestId() throws Exception {
         String privateValue = "PRIVATE-PASSWORD-COOKIE-TOKEN";
         var response = send(
@@ -247,6 +260,9 @@ class ApiInputIT {
             var failure = send("GET", "/failure", HttpRequest.BodyPublishers.noBody(), Map.of());
             assertError(failure, 503, "SERVICE_UNAVAILABLE");
             assertThat(failure.body()).doesNotContain("PRIVATE-SQL", "DataAccess");
+            var rollbackFailure = send("GET", "/rollback-failure", HttpRequest.BodyPublishers.noBody(), Map.of());
+            assertError(rollbackFailure, 503, "SERVICE_UNAVAILABLE");
+            assertThat(rollbackFailure.body()).doesNotContain("PRIVATE-SQL", "TransactionSystem");
             assertThat(captured.requestCompletions.await(5, TimeUnit.SECONDS)).isTrue();
             var requestLogs = captured.events.stream()
                     .filter(event -> event.getLoggerName().equals(RequestTraceFilter.class.getName()))
@@ -318,7 +334,7 @@ class ApiInputIT {
 
     private static final class CapturedLogs extends AppenderBase<ILoggingEvent> {
         private final List<ILoggingEvent> events = new CopyOnWriteArrayList<>();
-        private final CountDownLatch requestCompletions = new CountDownLatch(3);
+        private final CountDownLatch requestCompletions = new CountDownLatch(4);
 
         @Override
         protected void append(ILoggingEvent event) {
@@ -402,6 +418,37 @@ class ApiInputIT {
         @GetMapping("/failure")
         void failure() {
             throw new DataAccessResourceFailureException("PRIVATE-SQL SELECT secret FROM private_address");
+        }
+
+        @GetMapping("/busy")
+        void busy() {
+            throw new RequestInProgressException();
+        }
+
+        @GetMapping("/rollback-failure")
+        void rollbackFailure() {
+            new Transactions(new RollbackFailureManager()).write(() -> {
+                throw new DataAccessResourceFailureException("PRIVATE-SQL SELECT secret FROM private_address");
+            });
+        }
+    }
+
+    /** Exercises TransactionTemplate's real error logging when rollback overrides the work error. */
+    private static final class RollbackFailureManager extends AbstractPlatformTransactionManager {
+        @Override
+        protected Object doGetTransaction() {
+            return new Object();
+        }
+
+        @Override
+        protected void doBegin(Object transaction, TransactionDefinition definition) {}
+
+        @Override
+        protected void doCommit(DefaultTransactionStatus status) {}
+
+        @Override
+        protected void doRollback(DefaultTransactionStatus status) {
+            throw new TransactionSystemException("Rollback failure fixture");
         }
     }
 

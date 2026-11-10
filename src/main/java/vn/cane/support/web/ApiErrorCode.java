@@ -5,6 +5,7 @@ public enum ApiErrorCode {
     AUTH_REQUIRED("Không thể xác thực. Vui lòng đăng nhập lại."),
     FORBIDDEN("Bạn không có quyền thực hiện thao tác này."),
     NOT_FOUND("Không tìm thấy tài nguyên."),
+    REQUEST_IN_PROGRESS("Yêu cầu đang được xử lý. Vui lòng thử lại."),
     SERVICE_UNAVAILABLE("Hệ thống tạm thời không sẵn sàng. Vui lòng thử lại.");
 
     private final String message;

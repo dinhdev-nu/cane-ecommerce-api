@@ -132,6 +132,11 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
 - `TestInfrastructure`, `BackendSkeletonIT`, `RuntimeReadinessIT`: fixture migrate +
   grant trước runtime; kiểm schema thiếu không tự migrate và readiness drift riêng.
 - `scripts/dev/init-roles.sql`: hiện tạo role, chưa cấp quyền bảng nghiệp vụ.
+- `TransactionConfiguration`/`support.transaction`: cùng manager/DataSource, write
+  READ COMMITTED, snapshot read-only REPEATABLE READ, chỉ outer boundary retry
+  deadlock sau rollback; khóa SQL ở module sở hữu. Xem `docs/transactions.md`.
+  Repository dùng proxy Spring không để class/method cần proxy là final; không
+  đổi cấu hình proxy toàn cục để che lỗi tổ chức lớp.
 - `scripts/Test-Backend.ps1`: runner chuẩn, dọn Compose riêng; kiểm image tải thêm sau
   đối chiếu inventory, không dùng prune toàn máy.
 - `.editorconfig`: UTF-8, LF chung/Java; script PowerShell và CMD theo CRLF.

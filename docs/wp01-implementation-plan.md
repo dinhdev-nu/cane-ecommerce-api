@@ -406,10 +406,13 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
   main `2d9e340`, CI PR/main đạt: validator/settings, JSON
   nghiêm ngặt, lỗi chung Security/MVC và log/requestId. Trạng thái/bằng chứng tại
   [hồ sơ WP01-03](wp01-03-verification.md); không mở endpoint nghiệp vụ sớm.
-- WP01-04 trên branch `feat/wp01-04-runtime-readiness`: kiểm DB/schema trước HTTP/job,
+- WP01-04 hoàn thành tại [PR #5](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/5),
+  main `49b7102`, CI PR/main đạt: kiểm DB/schema trước HTTP/job,
   profile staging/production, Redis degraded; [hướng dẫn](runtime-readiness.md).
   Ngày 10/11/2026 chủ dự án xác nhận chưa có staging/domain; proxy/HTTPS và smoke
   thật còn phụ thuộc lựa chọn hạ tầng, không suy từ profile/fixture local.
+- WP01-05 trên branch `feat/wp01-05-transactions`: JDBC/transaction/khóa/rollback và
+  retry deadlock; [hướng dẫn](transactions.md), [hồ sơ kiểm](wp01-05-verification.md).
 - Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
   checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
   hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.
