@@ -3,6 +3,8 @@
 Backend CANE: một dự án Maven, một bản build chạy hai chế độ `api` và `worker`.
 Đang triển khai WP01 trên khung PREP-02. Có V001, lệnh migration lõi và script cấp
 quyền API/worker theo thao tác/cột; trigger giữ nguyên V001 và được kiểm riêng với quyền runtime.
+WP01-03 bổ sung [validation, lỗi HTTP và log/requestId](docs/input-errors.md),
+JSON nghiêm ngặt và giới hạn body 64 KiB; các route hiện vẫn deny-all.
 API nghiệp vụ, seed, đăng nhập/session,
 chống lặp và job được triển khai/kiểm tuần tự theo WP01–WP07.
 
@@ -118,6 +120,8 @@ fixture khung không có migration, Redis ACL/TTL, Redis lỗi và PostgreSQL l�
 WP01-01 bổ sung kiểm V001/schema/constraint, checksum, rollback và lệnh migrate;
 xem [hồ sơ WP01-01](docs/wp01-01-verification.md). WP01-02 bổ sung kiểm trigger,
 grant chạy lại và các nhánh hợp lệ bằng role runtime; xem [hồ sơ WP01-02](docs/wp01-02-verification.md).
+WP01-03 kiểm chuẩn hóa primitive/16 settings, HTTP thật, lỗi trước/sau Security,
+giới hạn byte và log không lộ đầu vào; xem [hồ sơ WP01-03](docs/wp01-03-verification.md).
 Chưa nghiệm thu nghiệp vụ tiền/tồn,
 auth/session hoặc toàn bộ T01–T118 từ các kiểm nền này.
 Báo cáo ở `target/surefire-reports/` và `target/failsafe-reports/`.
@@ -171,8 +175,8 @@ scripts/                     # lệnh local/kiểm và init hạ tầng thử
 .github/workflows/ci.yml     # kiểm trên Linux với công cụ đã khóa
 ```
 
-Package nghiệp vụ hiện chỉ ghi trách nhiệm; thêm `api/application/domain/infrastructure`
-khi có nhiệm vụ cụ thể. API và worker gọi cùng application service; quyền sở hữu bảng,
+Package nghiệp vụ thêm `api/application/domain/infrastructure`
+khi có nhiệm vụ cụ thể; Admin đã có validator settings ở application. API và worker gọi cùng application service; quyền sở hữu bảng,
 hướng gọi và transaction tuân theo thiết kế trong repo tài liệu.
 
 ## CI và dọn tài nguyên

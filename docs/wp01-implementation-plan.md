@@ -397,9 +397,14 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
   merge tại `6a0e5b6`, CI PR/main đạt; [bằng chứng](wp01-01-verification.md).
   Truy vết Cane-MVP đã commit local. Theo chỉ dẫn mới của chủ dự án, repo tài liệu
   chỉ commit, không push; backend giữ quy trình PR/merge qua browser.
-- WP01-02 thực hiện trên branch `feat/wp01-02-data-protection`, giữ nguyên V001,
+- WP01-02 hoàn thành tại [PR #3](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/3),
+  main `3c09f08`, CI PR/main đạt; [bằng chứng](wp01-02-verification.md).
+  Giữ nguyên V001,
   kiểm sâu trigger và cấp quyền runtime riêng theo môi trường. Worker bản thủ công
   chưa có quyền ghi tiền/tồn hoặc nhánh auto; rà/bổ sung khi triển khai nhánh đó.
+- WP01-03 trên branch `feat/wp01-03-validation-errors`: validator/settings, JSON
+  nghiêm ngặt, lỗi chung Security/MVC và log/requestId. Trạng thái/bằng chứng tại
+  [hồ sơ WP01-03](wp01-03-verification.md); không mở endpoint nghiệp vụ sớm.
 - Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
   checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
   hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.

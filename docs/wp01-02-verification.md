@@ -1,7 +1,12 @@
 # WP01-02 — Hồ sơ kiểm trigger và quyền runtime
 
 Ngày: **10/11/2026**. Branch: `feat/wp01-02-data-protection`.
-Trạng thái: **local đạt: 20 unit + 32 integration, 0 lỗi/bỏ qua; chờ PR/CI/merge**.
+Trạng thái: **hoàn thành; local/CI PR/CI main đạt, đã merge**.
+
+[PR #3](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/3) squash merge thành
+`3c09f08b4ea0cff208fd41be7332650f0209532c`; commit nhánh `6dc41d5`.
+CI PR run `42774494875` và main run `42774945650` đều success; tree local trùng
+tree merge. Cane-MVP đã commit local `bc38759`, không push theo chỉ dẫn chủ dự án.
 
 ## Nguồn và thay đổi
 
@@ -36,7 +41,7 @@ volume; không còn container Testcontainers mang nhãn thử, không có image 
 với inventory trước runner. Log local nằm ngoài Git.
 
 Đã tự review diff, kiểm liên kết file/whitespace, xác nhận V001 không đổi. Phần
-PR/check/merge main ghi tiếp theo kết quả GitHub; chưa xem CI xanh là smoke staging.
+PR/check/merge main được đối chiếu trên GitHub; CI xanh không phải smoke staging.
 
 Các nhóm kiểm:
 
