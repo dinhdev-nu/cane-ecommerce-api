@@ -1,8 +1,9 @@
 # cane-ecommerce-api
 
 Backend CANE: một dự án Maven, một bản build chạy hai chế độ `api` và `worker`.
-Phạm vi hiện tại là khung PREP-02. Các API nghiệp vụ, migration lõi, seed, đăng nhập/session,
-chống lặp và job được triển khai theo WP01–WP07.
+Đang triển khai WP01 trên khung PREP-02. V001 và lệnh migration lõi thuộc WP01-01;
+quyền runtime/kiểm sâu trigger tiếp tục ở WP01-02. API nghiệp vụ, seed, đăng nhập/session,
+chống lặp và job được triển khai/kiểm tuần tự theo WP01–WP07.
 
 Đặc tả và quyết định nằm trong [repo tài liệu](https://github.com/nuservice13579-dot/cane-docs).
 Đọc [thiết kế kỹ thuật](https://github.com/nuservice13579-dot/cane-docs/blob/main/docs/03-technical-design.md),
@@ -50,8 +51,8 @@ Script init PostgreSQL chỉ tạo các role local và quyền kết nối:
 | `cane_migrator` | Tạo schema/migration riêng |
 | `cane_api`, `cane_worker` | Runtime, không sở hữu DB/schema hoặc có quyền DDL |
 
-Chưa có schema/bảng nghiệp vụ hoặc dữ liệu mở bán. WP01 thêm migration và cấp quyền
-theo từng bảng/thao tác; không cấp blanket CRUD cho ledger/event.
+Init không tạo schema nghiệp vụ hoặc dữ liệu mở bán. V001 chạy riêng bằng role DDL;
+quyền từng bảng/thao tác được cấp/kiểm tại WP01-02, không cấp blanket CRUD cho ledger/event.
 Init chỉ chạy trên volume mới; đổi mật khẩu trong env không tự đổi mật khẩu của DB đã khởi tạo.
 
 ## Chạy API và worker
@@ -109,8 +110,10 @@ Lệnh ghi phiên bản thực tế và sai khác; CI vẫn yêu cầu đúng b�
 Sau khi cập nhật Docker, chạy lại lệnh chuẩn để xác minh cấu hình mục tiêu.
 
 Test hiện kiểm vai trò chạy, HTTP/scheduler, cấu hình thiếu/sai, quyền DDL, timeout,
-Flyway validate thư mục rỗng, Redis ACL/TTL, Redis lỗi và PostgreSQL lỗi.
-Không có kiểm tiền/tồn, migration lõi, auth/session hay nghiệm thu T01–T118 ở PREP-02.
+fixture khung không có migration, Redis ACL/TTL, Redis lỗi và PostgreSQL lỗi.
+WP01-01 bổ sung kiểm V001/schema/constraint, checksum, rollback và lệnh migrate;
+xem [hồ sơ WP01-01](docs/wp01-01-verification.md). Chưa nghiệm thu nghiệp vụ tiền/tồn,
+auth/session hoặc toàn bộ T01–T118 từ các kiểm nền này.
 Báo cáo ở `target/surefire-reports/` và `target/failsafe-reports/`.
 
 Để chỉ build executable JAR trước khi Docker sẵn sàng:
@@ -126,20 +129,22 @@ Các lệnh local có sẵn thực hiện việc cấp biến này và dùng rol
 
 ## Flyway và WP01
 
-`src/main/resources/db/migration/core/` dành cho `V001__cane_core.sql`; khung chưa có migration SQL.
-Runtime không migrate; không chạy `schema.sql`/`data.sql`.
-Plugin dùng `CANE_MIGRATION_URL`, `CANE_MIGRATION_USER`, `CANE_MIGRATION_PASSWORD` riêng,
-schema/history `cane`, `createSchemas=true`, `baselineOnMigrate=false`, `outOfOrder=false`,
-`cleanDisabled=true`. Không truyền mật khẩu bằng tham số `-D`.
+`src/main/resources/db/migration/core/V001__cane_core.sql` tạo 10 bảng/122 cột lõi,
+khóa/check/index, 3 function/11 trigger và 16 settings. Runtime không migrate;
+không chạy `schema.sql`/`data.sql`. Chưa có inbox ngân hàng, SKU hoặc staff seed.
 
-Sau khi WP01 có migration và xác minh đúng DB/môi trường, cấp các biến migration qua môi trường rồi chạy:
+Xác minh đúng DB/môi trường, cấp `CANE_MIGRATION_URL`, `CANE_MIGRATION_USER`,
+`CANE_MIGRATION_PASSWORD` cho tiến trình bằng credential DDL riêng rồi chạy:
 
 ```powershell
-.\mvnw.cmd flyway:validate flyway:migrate
+pwsh -NoProfile -File scripts/database/Migrate-Core.ps1
 ```
 
-PREP-02 chỉ validate thư mục rỗng trong test; chưa coi migration nghiệp vụ hoặc quyền bảng đã đạt.
-Nhánh ngân hàng tự động và location tùy chọn được thêm khi triển khai nhánh đó.
+Lệnh từ chối migration repeatable trong core; kiểm trước migrate chỉ bỏ qua
+`*:pending`, sau migrate validate đầy đủ. Core chỉ dùng migration versioned.
+Không truyền password bằng tham số `-D`, không tự baseline/repair/clean. Quyền runtime
+và kiểm sâu trigger hoàn thiện ở WP01-02 trước khi áp vào môi trường dùng lâu dài.
+Xem [hướng dẫn migration và phục hồi](docs/core-migration.md).
 
 ## Cấu trúc
 

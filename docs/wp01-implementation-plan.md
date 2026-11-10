@@ -5,8 +5,9 @@ Trạng thái: **Chủ dự án cho phép bắt đầu ngày 10/11/2026; triển
 Đây là kế hoạch thực thi trong repo backend, dẫn tới yêu cầu/thiết kế chính thức;
 không thay backlog, DoD hoặc kết quả nghiệm thu trong repo tài liệu.
 
-Theo yêu cầu chủ dự án: **không bịa; nếu tài liệu không nhắc hoặc chưa rõ thì hỏi
-trước khi chọn và áp dụng**. Kế hoạch phân biệt hiện trạng có bằng chứng, yêu cầu có
+Theo yêu cầu chủ dự án: **không bịa; hỏi khi yêu cầu nghiệp vụ, hệ thống hoặc kiến
+trúc còn thiếu, chưa rõ hay mâu thuẫn**. Chủ động chọn giải pháp kỹ thuật phù hợp.
+Kế hoạch phân biệt hiện trạng có bằng chứng, yêu cầu có
 nguồn và đề xuất chờ chốt; không dùng đề xuất để tự mở rộng phạm vi.
 
 Đã ghi nhận chỉ dẫn ngày 10/11/2026: cây mẫu là tham khảo; giữ cấu trúc phù hợp,
@@ -20,9 +21,9 @@ hành; không cần duyệt từng tên lớp/hàm/biến/package con. Quyết �
 schema, API, quyền hoặc kiến trúc chưa có trong tài liệu vẫn phải hỏi trước.
 
 Skill là hướng dẫn hỗ trợ, có thể còn thiếu sót và được cải thiện trong quá trình
-làm. Ý tưởng cải tiến chưa có trong skill phải trình bày lợi ích/tác động và hỏi
-chủ dự án trước khi áp dụng; cập nhật skill theo quyết định đã thống nhất và kết
-quả thực tế, không tự thay yêu cầu/đặc tả bằng một quy tắc mới trong skill.
+làm. Chỉ dẫn mới nhất ngày 10/11/2026 cho phép chủ động chọn cách giải quyết kỹ
+thuật và báo khi có điểm đáng lưu ý; không cần xin duyệt vì skill chưa đề cập.
+Cập nhật skill theo thực tế, không tự thay yêu cầu/đặc tả bằng một quy tắc mới.
 
 ## 1. Kết quả khảo sát và phạm vi lượt này
 
@@ -58,7 +59,7 @@ phải kiểm lại ngay trước triển khai, không coi các quan sát này l
 |---|---|
 | Thẩm quyền nghiệp vụ, phạm vi | [Hợp đồng nghiệp vụ](../../cane-mvp/01-HOP-DONG-NGHIEP-VU.md), [SRS](../../cane-mvp/docs/01-srs.md), [Use Case](../../cane-mvp/docs/01-use-case.md) |
 | Kiến trúc, mô-đun, hướng gọi | [Thiết kế kỹ thuật](../../cane-mvp/docs/03-technical-design.md), [ADR-001](../../cane-mvp/docs/adr/0001-kien-truc-va-java-spring-boot.md), [ADR-002](../../cane-mvp/docs/adr/0002-spring-jdbc-va-transaction-sql.md) |
-| Bảng/cột/check/index/trigger/migration/seed | [Dữ liệu](../../cane-mvp/docs/03-database-design.md), [SQL tham chiếu](../../cane-mvp/cane-mvp.sql), [kiểm schema tham chiếu](../../cane-mvp/tests/cane-schema-check.sql) |
+| Bảng/cột/check/index/trigger/migration/seed | [Dữ liệu và hạ tầng gốc](../../cane-mvp/04-DU-LIEU-VA-HA-TANG.md), [nghiệm thu/triển khai gốc](../../cane-mvp/05-NGHIEM-THU-VA-TRIEN-KHAI.md), [thiết kế database](../../cane-mvp/docs/03-database-design.md), [SQL tham chiếu](../../cane-mvp/cane-mvp.sql), [kiểm schema tham chiếu](../../cane-mvp/tests/cane-schema-check.sql) |
 | Transaction/replay/nguồn event và outbox | [Luồng xử lý](../../cane-mvp/docs/03-processing-design.md), [API chung](../../cane-mvp/docs/03-api-design.md#common) |
 | Auth/CSRF/HMAC/rate/secret | [Bảo mật](../../cane-mvp/docs/03-security-design.md), [API auth](../../cane-mvp/docs/03-api-design.md#auth), [ADR-003](../../cane-mvp/docs/adr/0003-redis-cache-prices-va-gioi-han-tan-suat.md) |
 | Task và điều kiện đạt | [Backlog WP01](../../cane-mvp/docs/pm/backlog.md#wp01-tasks), [16 nhóm kiểm](../../cane-mvp/docs/05-test-cases.md), [Test Plan](../../cane-mvp/docs/04-test-plan.md), [DoD](../../cane-mvp/docs/pm/milestone-plan.md#dod-task) |
@@ -137,9 +138,9 @@ thiết kế/backlog trước khi triển khai; không tự thay phương án tr
 
 Tên lớp/package dưới đây là ví dụ tổ chức, không phải yêu cầu tạo mọi file sẵn.
 Mô-đun/bốn lớp theo thiết kế; chủ động chọn tên/package phù hợp code thực tế. Tài
-liệu quy định script/encoder dùng chung, chưa quyết định bootstrap Java CLI; các
-chỗ nhắc Java CLI dưới đây là phương án dự kiến cần làm rõ khi tới task liên quan,
-không phải lựa chọn đã chốt. Mỗi task đáp ứng toàn bộ đầu ra/DoD tại backlog.
+liệu quy định script/encoder dùng chung; bootstrap Java CLI là lựa chọn triển khai
+được chủ động quyết định trong kiến trúc hiện hành. Quyền/yêu cầu hệ thống còn thiếu
+vẫn phải làm rõ. Mỗi task đáp ứng toàn bộ đầu ra/DoD tại backlog.
 
 ### WP01-01 — Migration lõi · phụ thuộc: không
 
@@ -344,7 +345,7 @@ không phải lựa chọn đã chốt. Mỗi task đáp ứng toàn bộ đầu
 | Đầu vào / quyết định | Thời điểm cần |
 |---|---|
 | Kế hoạch tuần tự, cấu trúc skill và cách tách 01/02 | Đã được phép bắt đầu ngày 10/11/2026; giữ V001 theo thiết kế |
-| Java CLI/bootstrap và quyền DB lệnh vận hành | Làm rõ trước task phụ thuộc; tên/package nội bộ chủ động theo thiết kế đã có |
+| Java CLI/bootstrap và quyền DB lệnh vận hành | Chủ động chọn bootstrap; làm rõ quyền/yêu cầu hệ thống còn thiếu trước task phụ thuộc |
 | Engine Docker/toolchain chạy đúng bộ khóa; truy cập Git/GitHub sẵn có | Kiểm lại trước task đầu và khi môi trường thay đổi |
 | Chọn hosting/domain/HTTPS/proxy, quyền triển khai và chi phí | Chuẩn bị khi làm runtime; phải có trước smoke 16 |
 | Manifest SKU, giá/tồn thật, Owner vận hành | Trước nhập dữ liệu thật; test nền dùng fixture riêng |
@@ -360,18 +361,18 @@ lượt chuẩn bị này. Lựa chọn vận hành cần được chốt khi t�
 
 1. Dùng skill repo-local và AGENTS làm điểm đọc trước khi sửa backend. Chỉ dẫn về
    cây tham khảo, chất lượng code, phân lớp/interface và cân nhắc pattern đã được
-   ghi nhận; cơ chế CLI còn cần làm rõ ở task liên quan.
+   ghi nhận; chủ động chọn cách triển khai CLI trong thiết kế hiện hành.
 2. Giữ thứ tự 01 → 16, kiểm đúng rồi mới chuyển; mỗi task một branch/PR mặc định,
    commit có ý nghĩa, PR/merge qua browser và kiểm main sau merge.
 3. V001 theo thiết kế đầy đủ, task 02 kiểm sâu trigger/quyền; không sửa checksum cũ.
 4. Khởi đầu bằng PR tài liệu/skill, sau đó WP01-01; giữ các diff cũ riêng. Mỗi task
-   một PR, tên branch và squash merge cũng là đề xuất quy trình để chủ dự án chốt.
+   một PR, tên branch và squash merge được chủ động áp dụng theo quy trình đã cho phép.
 5. Staging HTTPS là điều kiện hoàn thành task 16; kết thúc nền có demo/chấp nhận,
    chưa đồng nghĩa mở bán hoặc nghiệm thu toàn bộ T01–T118.
 
 Ngày **10/11/2026**, chủ dự án yêu cầu bắt đầu WP01 theo các tài liệu, skill và
-những điểm đã thống nhất. Thực hiện quy trình trên; cơ chế CLI, môi trường staging
-và dữ liệu thật còn mở được hỏi tại thời điểm cần. Chỉ ghi task hoàn thành theo
+những điểm đã thống nhất. Thực hiện quy trình trên; môi trường staging, quyền/yêu cầu
+hệ thống hoặc dữ liệu thật còn thiếu được hỏi tại thời điểm cần. Chỉ ghi task hoàn thành theo
 bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt đầu.
 
 ## 9. Rà soát trước triển khai — 10/11/2026
@@ -386,3 +387,18 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
 - Không yêu cầu cài thêm skill Java/Spring/design pattern để bắt đầu WP01. Skill
   CANE, đặc tả, code hiện hành và bộ kiểm là nền làm việc; skill cộng đồng chỉ là
   tài liệu hỗ trợ tùy nhu cầu, không thay stack/contract hoặc ép thêm pattern.
+
+## 10. Nhật ký thực hiện
+
+- 10/11/2026: chủ dự án yêu cầu bắt đầu WP01. PR hướng dẫn/skill
+  [#1](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/1) đã squash merge vào
+  `1a97233`; CI PR và CI main đều đạt. Hai diff có sẵn ở checkout ban đầu giữ riêng.
+- WP01-01 đang thực hiện trên branch `feat/wp01-01-core-migration`, worktree riêng.
+  Chưa chuyển WP01-02 trước khi các kiểm/PR/main của task 01 đạt.
+- Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
+  checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
+  hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.
+- Test thực trên Flyway 12.4.0 phát hiện ngoại lệ này vẫn báo schema chưa tồn tại
+  khi dựng DB mới. Chủ dự án đã đồng ý chặn repeatable trong core và dùng
+  `*:pending` ở bước trước; sau migrate vẫn kiểm đầy đủ. Đang kiểm lại, chưa ghi
+  task 01 hoàn thành.

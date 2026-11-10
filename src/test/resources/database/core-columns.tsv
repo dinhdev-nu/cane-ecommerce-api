@@ -1,0 +1,124 @@
+# Database design 1.3 sections 3.1-3.10; frozen expected contract, not read from migration.
+# table	column	type	nullable	generated
+staff_users	id	uuid	NO	NEVER
+staff_users	username	text	NO	NEVER
+staff_users	password_hash	text	NO	NEVER
+staff_users	role	text	NO	NEVER
+staff_users	is_active	boolean	NO	NEVER
+staff_users	auth_version	integer	NO	NEVER
+staff_users	failed_count	integer	NO	NEVER
+staff_users	locked_until	timestamp with time zone	YES	NEVER
+staff_users	created_at	timestamp with time zone	NO	NEVER
+staff_sessions	token_hash	bytea	NO	NEVER
+staff_sessions	staff_id	uuid	NO	NEVER
+staff_sessions	auth_version	integer	NO	NEVER
+staff_sessions	created_at	timestamp with time zone	NO	NEVER
+staff_sessions	expires_at	timestamp with time zone	NO	NEVER
+products	sku	text	NO	NEVER
+products	name	text	NO	NEVER
+products	unit_label	text	NO	NEVER
+products	price_vnd	bigint	NO	NEVER
+products	stock_qty	integer	NO	NEVER
+products	is_active	boolean	NO	NEVER
+products	delivery_scope	text	NO	NEVER
+products	updated_at	timestamp with time zone	NO	NEVER
+products	updated_by	uuid	YES	NEVER
+settings	key	text	NO	NEVER
+settings	value	jsonb	NO	NEVER
+settings	updated_at	timestamp with time zone	NO	NEVER
+settings	updated_by	uuid	YES	NEVER
+orders	id	uuid	NO	NEVER
+orders	order_number	text	NO	NEVER
+orders	status	text	NO	NEVER
+orders	payment_status	text	NO	NEVER
+orders	fulfillment_method	text	NO	NEVER
+orders	payment_method	text	NO	NEVER
+orders	recipient_name	text	NO	NEVER
+orders	recipient_phone	text	NO	NEVER
+orders	recipient_email	text	NO	NEVER
+orders	address	jsonb	YES	NEVER
+orders	store_snapshot	jsonb	YES	NEVER
+orders	note	text	YES	NEVER
+orders	subtotal_vnd	bigint	NO	NEVER
+orders	shipping_fee_vnd	bigint	NO	NEVER
+orders	total_vnd	bigint	YES	ALWAYS
+orders	bank_snapshot	jsonb	YES	NEVER
+orders	bank_confirmation_mode	text	YES	NEVER
+orders	payment_due_at	timestamp with time zone	YES	NEVER
+orders	link_version	bigint	NO	NEVER
+orders	link_expires_at	timestamp with time zone	NO	NEVER
+orders	idempotency_key	text	NO	NEVER
+orders	request_hash	bytea	NO	NEVER
+orders	delivery_issue	boolean	NO	NEVER
+orders	delivery_issue_reason	text	YES	NEVER
+orders	cancel_requested_at	timestamp with time zone	YES	NEVER
+orders	cancel_request_note	text	YES	NEVER
+orders	cancel_kind	text	YES	NEVER
+orders	cancel_reason	text	YES	NEVER
+orders	cancelled_at	timestamp with time zone	YES	NEVER
+orders	created_at	timestamp with time zone	NO	NEVER
+orders	updated_at	timestamp with time zone	NO	NEVER
+order_items	id	uuid	NO	NEVER
+order_items	order_id	uuid	NO	NEVER
+order_items	sku	text	NO	NEVER
+order_items	name_snapshot	text	NO	NEVER
+order_items	unit_label_snapshot	text	NO	NEVER
+order_items	unit_price_vnd	bigint	NO	NEVER
+order_items	quantity	integer	NO	NEVER
+order_items	line_total_vnd	bigint	YES	ALWAYS
+order_items	delivery_scope_snapshot	text	NO	NEVER
+payments	id	uuid	NO	NEVER
+payments	order_id	uuid	YES	NEVER
+payments	method	text	NO	NEVER
+payments	amount_vnd	bigint	NO	NEVER
+payments	status	text	NO	NEVER
+payments	provider_ref	text	YES	NEVER
+payments	applied_to_order	boolean	NO	NEVER
+payments	order_link_verified	boolean	NO	NEVER
+payments	confirmed_by	text	NO	NEVER
+payments	confirmed_at	timestamp with time zone	NO	NEVER
+payments	refunded_at	timestamp with time zone	YES	NEVER
+payments	refund_reference	text	YES	NEVER
+payments	bank_receipt	jsonb	YES	NEVER
+payments	needs_review	boolean	NO	NEVER
+payments	reviewed_by	text	YES	NEVER
+payments	reviewed_at	timestamp with time zone	YES	NEVER
+payments	note	text	YES	NEVER
+business_events	id	uuid	NO	NEVER
+business_events	order_id	uuid	YES	NEVER
+business_events	payment_id	uuid	YES	NEVER
+business_events	kind	text	NO	NEVER
+business_events	from_status	text	YES	NEVER
+business_events	to_status	text	YES	NEVER
+business_events	actor	text	NO	NEVER
+business_events	public_label	text	YES	NEVER
+business_events	note	text	YES	NEVER
+business_events	created_at	timestamp with time zone	NO	NEVER
+business_events	data	jsonb	NO	NEVER
+business_events	source_key	text	YES	NEVER
+business_events	operation_key	text	YES	NEVER
+business_events	request_hash	bytea	YES	NEVER
+business_events	operation_result	jsonb	YES	NEVER
+stock_movements	id	uuid	NO	NEVER
+stock_movements	sku	text	NO	NEVER
+stock_movements	delta	integer	NO	NEVER
+stock_movements	reason	text	NO	NEVER
+stock_movements	order_id	uuid	YES	NEVER
+stock_movements	event_id	uuid	NO	NEVER
+stock_movements	actor	text	NO	NEVER
+stock_movements	note	text	YES	NEVER
+stock_movements	created_at	timestamp with time zone	NO	NEVER
+notification_outbox	id	uuid	NO	NEVER
+notification_outbox	kind	text	NO	NEVER
+notification_outbox	order_id	uuid	YES	NEVER
+notification_outbox	event_id	uuid	NO	NEVER
+notification_outbox	payment_id	uuid	YES	NEVER
+notification_outbox	channel	text	NO	NEVER
+notification_outbox	recipient	text	NO	NEVER
+notification_outbox	status	text	NO	NEVER
+notification_outbox	attempts	integer	NO	NEVER
+notification_outbox	next_attempt_at	timestamp with time zone	NO	NEVER
+notification_outbox	locked_at	timestamp with time zone	YES	NEVER
+notification_outbox	last_error	text	YES	NEVER
+notification_outbox	created_at	timestamp with time zone	NO	NEVER
+notification_outbox	sent_at	timestamp with time zone	YES	NEVER

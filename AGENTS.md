@@ -8,9 +8,11 @@ Trước khi thêm, sửa, refactor hoặc review backend, đọc skill
 [cấu trúc tham chiếu](.agents/skills/cane-backend-structure/references/backend-structure.md).
 
 Skill là hướng dẫn hỗ trợ, có thể còn thiếu sót; không áp dụng máy móc hoặc coi mọi
-chỉ dẫn trong skill là ràng buộc cứng. Khi có ý tưởng cải tiến mà skill chưa đề cập,
-nêu vấn đề, lợi ích/tác động và hỏi chủ dự án trước khi áp dụng. Cập nhật skill theo
-quyết định đã thống nhất và kinh nghiệm thực tế; giữ đúng yêu cầu/đặc tả hiện hành.
+chỉ dẫn trong skill là ràng buộc cứng. Theo chỉ dẫn mới nhất ngày 10/11/2026, chủ động
+chọn giải pháp kỹ thuật phù hợp và cải thiện skill theo thực tế; báo chủ dự án khi
+có điểm đáng lưu ý. Chỉ hỏi trước khi yêu cầu nghiệp vụ, hệ thống hoặc kiến trúc còn
+thiếu, chưa rõ hay mâu thuẫn; không xin duyệt cách giải quyết kỹ thuật thông thường.
+Giữ đúng yêu cầu/đặc tả hiện hành.
 
 Repo này chứa API và worker Java/Spring Boot. Hợp đồng, thiết kế và backlog chính thức
 ở repo `cane-mvp/` cùng workspace; frontend ở `cane-ui-nextjs/`. Nếu làm trong worktree,
@@ -28,8 +30,8 @@ tìm repo tài liệu tại workspace gốc thay vì chép một bộ đặc t�
   chủ động tổ chức code trong thiết kế hiện hành; không xin duyệt từng tên lớp,
   hàm, biến hoặc package con và không dùng lựa chọn đó để thêm yêu cầu mới.
 - Application service sở hữu transaction; controller và job gọi service. Script
-  dùng thành phần nghiệp vụ/encoder chung theo task; cơ chế CLI chưa quyết định
-  trong lượt chuẩn bị. Domain không phụ thuộc HTTP/JDBC/Redis. Repository chứa
+  dùng thành phần nghiệp vụ/encoder chung theo task; chủ động chọn bootstrap CLI
+  trong thiết kế hiện hành. Domain không phụ thuộc HTTP/JDBC/Redis. Repository chứa
   SQL bind và mapping.
 - Spring JDBC/SQL, Flyway và PostgreSQL là lựa chọn hiện hành. Không tự thay stack,
   schema, API, thuật ngữ hoặc ranh giới nghiệp vụ để làm test dễ hơn.
