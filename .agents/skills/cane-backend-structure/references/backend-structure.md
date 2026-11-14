@@ -93,6 +93,13 @@ controller/repository Orders. Nếu cần đổi contract, cập nhật thiết 
 đã xác định bởi service nghiệp vụ; không tự suy người nhận hoặc quan hệ tiền–đơn từ
 trạng thái hiện tại. Dispatcher/lease/provider ở Worker là phần khác với writer WP01.
 
+Khung A-TX trong `support/idempotency` nhận callback kiểm quyền hiện hành từ
+application caller; không import ngược Admin hoặc nhận actor từ body/cache.
+Caller dùng cùng command bất biến đã validate/normalize cho hash và phần ghi,
+dựng route từ constant/ID chuẩn hóa, ghi một neo đúng actor/key trong callback.
+HTTP phải qua origin/CSRF/session trước; CLI có xác thực Owner của luồng vận hành.
+Đọc [contract A-TX](../../../../docs/admin-idempotency.md) trước khi tích hợp.
+
 ## Ví dụ phân chia file theo trách nhiệm
 
 | Việc | Chủ quản / nơi đặt |

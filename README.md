@@ -19,6 +19,8 @@ tin cậy. WP01-11 thêm login/khóa tài khoản 5 lần/15 phút và xoay phi�
 commit; các route nghiệp vụ chưa triển khai vẫn deny-all.
 WP01-12 có [writer event, biên nhận và outbox](docs/event-receipts-outbox.md)
 trên transaction caller, giữ nguồn lịch sử và ưu tiên người nhận khách khi trùng.
+WP01-13 có [khung POST admin chống lặp](docs/admin-idempotency.md): canonical hash,
+quyền trước replay, advisory actor/key và biên nhận cũ trước guard biến động.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
 API nghiệp vụ, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
