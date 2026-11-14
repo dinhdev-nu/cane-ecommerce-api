@@ -6,6 +6,7 @@ public enum ApiErrorCode {
     FORBIDDEN("Bạn không có quyền thực hiện thao tác này."),
     NOT_FOUND("Không tìm thấy tài nguyên."),
     REQUEST_IN_PROGRESS("Yêu cầu đang được xử lý. Vui lòng thử lại."),
+    IDEMPOTENCY_MISMATCH("Mã thao tác đã được dùng cho yêu cầu khác."),
     RATE_LIMITED("Bạn gửi yêu cầu quá nhanh. Vui lòng chờ rồi thử lại."),
     SERVICE_UNAVAILABLE("Hệ thống tạm thời không sẵn sàng. Vui lòng thử lại.");
 

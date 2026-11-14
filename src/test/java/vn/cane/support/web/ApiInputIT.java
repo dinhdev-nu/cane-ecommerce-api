@@ -57,6 +57,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import vn.cane.CaneApplication;
 import vn.cane.fixture.TestInfrastructure;
+import vn.cane.support.idempotency.IdempotencyMismatchException;
 import vn.cane.support.transaction.RequestInProgressException;
 import vn.cane.support.transaction.Transactions;
 import vn.cane.support.validation.InputNormalizer;
@@ -222,6 +223,9 @@ class ApiInputIT {
         var response = send("GET", "/busy", HttpRequest.BodyPublishers.noBody(), Map.of());
         assertError(response, 409, "REQUEST_IN_PROGRESS");
         assertThat(response.headers().firstValue("Retry-After")).contains("1");
+        var mismatch = send("GET", "/mismatch", HttpRequest.BodyPublishers.noBody(), Map.of());
+        assertError(mismatch, 409, "IDEMPOTENCY_MISMATCH");
+        assertThat(mismatch.headers().firstValue("Retry-After")).isEmpty();
     }
 
     @Test
@@ -423,6 +427,11 @@ class ApiInputIT {
         @GetMapping("/busy")
         void busy() {
             throw new RequestInProgressException();
+        }
+
+        @GetMapping("/mismatch")
+        void mismatch() {
+            throw new IdempotencyMismatchException();
         }
 
         @GetMapping("/rollback-failure")

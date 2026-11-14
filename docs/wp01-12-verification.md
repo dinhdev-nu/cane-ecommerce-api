@@ -1,7 +1,9 @@
 # WP01-12 — Hồ sơ kiểm event/biên nhận/outbox
 
 Bắt đầu **14/11/2026**, branch `feat/wp01-12-event-receipt-outbox` từ main WP01-11
-`1dbe2842b41483c1f755c7ff9731365a07a308da`. Đang kiểm, chưa PR/CI/merge.
+`1dbe2842b41483c1f755c7ff9731365a07a308da`. Đã merge qua
+[PR #13](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/13), main
+`f565ebc1de3527b55336c9555122d07fc3294eb4`.
 [Runbook](event-receipts-outbox.md) ghi contract caller và giới hạn.
 
 Nguồn: database §3.8–3.10/§4/§7, processing §1/§8.2, test cases
@@ -37,4 +39,8 @@ Log ngoài Git `.local/wp01-12-release.log`; XML đã đối chiếu 16 unit sui
 suite. JAR không chứa fixture/probe/test; Compose `cane-prep02-check-f59a9bc7d368`
 đã dọn container/network/volume, không còn Testcontainers CANE hoặc image mới.
 V001/16 settings/grants và hai diff có sẵn ở checkout gốc giữ nguyên; SHA-256 hai
-file khớp trước khi làm. Diff và liên kết local đã rà; chờ PR/CI/merge.
+file khớp trước khi làm. Diff và liên kết local đạt. [CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43563637224)
+Success, tổng 3 phút 20 giây (job verify 3 phút 18 giây); [CI main](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43563945061)
+Success, tổng 3 phút 35 giây (job verify 3 phút 33 giây). Git fetch xác nhận SHA/tree
+trùng branch đã kiểm. Cane-MVP commit local `f20f1af`, không push.
+Hồ sơ này được cập nhật trong task kế tiếp.

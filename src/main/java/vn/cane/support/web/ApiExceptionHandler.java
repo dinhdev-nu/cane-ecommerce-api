@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import vn.cane.support.idempotency.IdempotencyMismatchException;
 import vn.cane.support.transaction.RequestInProgressException;
 import vn.cane.support.validation.InputValidationException;
 
@@ -48,6 +49,11 @@ public final class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         var headers = new HttpHeaders();
         headers.set(HttpHeaders.RETRY_AFTER, "1");
         return response(request, 409, ApiErrorCode.REQUEST_IN_PROGRESS, Map.of(), headers);
+    }
+
+    @ExceptionHandler(IdempotencyMismatchException.class)
+    ResponseEntity<Object> mismatch(IdempotencyMismatchException failure, HttpServletRequest request) {
+        return response(request, 409, ApiErrorCode.IDEMPOTENCY_MISMATCH, Map.of());
     }
 
     @Override
