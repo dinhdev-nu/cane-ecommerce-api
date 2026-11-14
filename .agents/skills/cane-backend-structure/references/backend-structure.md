@@ -140,6 +140,9 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
   `CatalogSeedCommand` ghép context tối thiểu qua `bootstrap/cli/OperationalDatabase`,
   không khởi động Boot/HTTP/worker/Redis. `scripts/catalog/Seed-Catalog.ps1` gọi JAR;
   fixture chỉ ở test, template release chưa có dữ liệu thật. Xem `docs/catalog-seed.md`.
+- `support.ratelimit`: Redis Lua counter và process fallback dùng chung; bootstrap
+  ghép bean ở API, `RateLimitFilter` gắn login một lần trước Security. Chỉ tin proxy
+  allowlist; không đưa session/key nghiệp vụ vào Redis. Xem `docs/rate-limits.md`.
 - `TransactionConfiguration`/`support.transaction`: cùng manager/DataSource, write
   READ COMMITTED, snapshot read-only REPEATABLE READ, chỉ outer boundary retry
   deadlock sau rollback; khóa SQL ở module sở hữu. Xem `docs/transactions.md`.

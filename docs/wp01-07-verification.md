@@ -1,7 +1,7 @@
 # WP01-07 — Hồ sơ kiểm mật khẩu và script staff
 
 Khởi đầu **14/11/2026**, branch `feat/wp01-07-staff-commands`.
-Trạng thái: đang triển khai/kiểm, chưa PR/CI/merge.
+Trạng thái: hoàn thành local/PR/main CI; đã merge [PR #8](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/8).
 
 Phạm vi: encoder Argon2id dùng chung, prompt console kín/xác nhận, tạo Owner/Operator
 không ghi đè khi chạy lại, đổi password/role/active thu hồi phiên nguyên tử và guard
@@ -29,7 +29,13 @@ skipped; format/build JAR đạt, Maven 5 phút 07 giây, kết thúc **09:58:54
 Log ngoài Git `.local/wp01-07-release.log`; XML đã đối chiếu. Project Compose
 `cane-prep02-check-e45cf5316847` đã dọn container/network/volume, không còn
 Testcontainers CANE hoặc image mới so inventory. JAR không có fixture/probe/lớp
-thử. V001/grant runtime không đổi; diff và liên kết local đã kiểm. Chờ PR/CI/merge.
+thử. V001/grant runtime không đổi; diff và liên kết local đã kiểm.
+
+Commit branch `4f951cd7eb997630becf8ac7bee02f2e4a5ae595`; merge main
+`7d50084d97c6405828f818199b8b94a7b0ab5afc`. [PR CI](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43549352379)
+và [main CI đúng SHA](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43549751727)
+đều thành công (2 phút 51 giây và 2 phút 34 giây). Đã đối chiếu Git local với main.
+Tài liệu Cane-MVP commit local `b78d554fdb2948079a1a2a0df289da020752b593`, không push.
 
 Login/session/quyền HTTP/CSRF và HTTPS staging thuộc các task tiếp theo; chưa tạo
 tài khoản hoặc mật khẩu production.

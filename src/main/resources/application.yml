@@ -1,3 +1,6 @@
+cane:
+  http:
+    trusted-proxies: ${CANE_TRUSTED_PROXIES:}
 spring:
   application:
     name: cane-ecommerce-api

@@ -25,6 +25,13 @@ làm. Chỉ dẫn mới nhất ngày 10/11/2026 cho phép chủ động chọn c
 thuật và báo khi có điểm đáng lưu ý; không cần xin duyệt vì skill chưa đề cập.
 Cập nhật skill theo thực tế, không tự thay yêu cầu/đặc tả bằng một quy tắc mới.
 
+Chỉ dẫn bổ sung ngày 14/11: báo “Bắt đầu làm Task WP01-xx” khi sang task mới;
+log theo “Task WP01-xx : …”; tiếp tục tuần tự đến hết WP01, chỉ dừng khi cần quyết
+định/truy cập người dùng mà không tự giải quyết được. Tài liệu Cane-MVP chỉ commit
+local, không push. Staging dự kiến AWS hoặc Google Cloud, ngân sách 10–25 USD/tháng;
+production tối đa 100 USD/tháng. Chưa chọn nền tảng/chưa triển khai hoặc phát sinh
+chi phí; domain chủ dự án mua khi đến WP01-16. Tiếp tục backend độc lập trước đó.
+
 ## 1. Kết quả khảo sát và phạm vi lượt này
 
 Đây là snapshot tại lượt khảo sát ban đầu; Git/GitHub, toolchain và kết nối hạ tầng
