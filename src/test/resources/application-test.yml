@@ -1,5 +1,7 @@
 cane:
   environment: test
+  http:
+    public-origin: https://cane.example.test
 spring:
   main:
     keep-alive: false

@@ -173,6 +173,23 @@ class RuntimeReadinessIT {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"", "http://cane.example.test", "https://cane.example.test/path"})
+    void invalidPublicOriginPreventsApiFromServingRequests(String origin) {
+        var serverStarted = new AtomicBoolean();
+        var app = application("api");
+        app.addListeners((ApplicationListener<WebServerInitializedEvent>) event -> serverStarted.set(true));
+        assertThatThrownBy(() -> app.run(
+                        "--spring.profiles.active=staging,api",
+                        "--server.port=0",
+                        "--spring.main.keep-alive=false",
+                        "--cane.http.public-origin=" + origin))
+                .hasRootCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage(
+                        "PUBLIC_ORIGIN must be a configured HTTP origin; staging/production require HTTPS");
+        assertThat(serverStarted.get()).isFalse();
+    }
+
     @Test
     void onDemandDiagnosticsDetectSchemaLossAfterStartupWithoutCachingAHealthyResult() {
         try (var context =
@@ -218,6 +235,7 @@ class RuntimeReadinessIT {
         properties.put("CANE_REDIS_PORT", REDIS.getMappedPort(6379).toString());
         properties.put("CANE_REDIS_USER", "cane_runtime");
         properties.put("CANE_REDIS_PASSWORD", TestInfrastructure.REDIS_PASSWORD);
+        properties.put("PUBLIC_ORIGIN", "https://cane.example.test");
         var app = new SpringApplication(CaneApplication.class, HeartbeatConfiguration.class);
         app.setDefaultProperties(properties);
         app.setLogStartupInfo(false);
