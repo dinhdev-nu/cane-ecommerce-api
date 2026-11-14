@@ -37,14 +37,18 @@ public final class InputNormalizer {
     }
 
     public static String creationPassword(String value) {
+        validateCreationPassword(value);
+        return value;
+    }
+
+    public static void validateCreationPassword(CharSequence value) {
         if (value == null) {
             throw InputValidationException.malformed("password");
         }
-        int length = length(value);
+        int length = Character.codePointCount(value, 0, value.length());
         if (length < 15 || length > 128) {
             throw InputValidationException.invalid("password", "Mật khẩu cần 15–128 ký tự.");
         }
-        return value;
     }
 
     public String email(String value, String field) {

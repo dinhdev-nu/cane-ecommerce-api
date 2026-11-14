@@ -132,6 +132,10 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
 - `TestInfrastructure`, `BackendSkeletonIT`, `RuntimeReadinessIT`: fixture migrate +
   grant trước runtime; kiểm schema thiếu không tự migrate và readiness drift riêng.
 - `scripts/dev/init-roles.sql`: hiện tạo role, chưa cấp quyền bảng nghiệp vụ.
+- `StaffCommandService`/`JdbcStaffCommandRepository` sở hữu lệnh staff và guard Owner
+  cuối; `PasswordConfiguration` cấp cùng Argon2id encoder cho CLI/login. CLI riêng
+  dùng `ConsolePasswordPrompt`, không đọc password từ argument/env/file; wrapper
+  `scripts/staff/Manage-Staff.ps1`. Xem `docs/staff-commands.md`.
 - `CatalogSeedService` và `JdbcCatalogSeedRepository`: seed chỉ thêm SKU thiếu;
   `CatalogSeedCommand` ghép context tối thiểu qua `bootstrap/cli/OperationalDatabase`,
   không khởi động Boot/HTTP/worker/Redis. `scripts/catalog/Seed-Catalog.ps1` gọi JAR;

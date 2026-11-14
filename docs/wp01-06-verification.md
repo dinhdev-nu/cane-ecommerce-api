@@ -1,7 +1,11 @@
 # WP01-06 — Hồ sơ kiểm seed chín SKU
 
 Khởi đầu **10/11/2026**, tiếp tục **14/11/2026**, branch `feat/wp01-06-catalog-seed`.
-Trạng thái: đang kiểm trước PR/CI/merge.
+Trạng thái: **hoàn thành ngày 14/11/2026**. [PR #7](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/7)
+đã squash merge tại `5e8809ef2cf822419f011e9701b73437ae30b309`; cây local trùng bản merge.
+[CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43547251715) và
+[CI main đúng commit](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43547527199)
+đều đạt. Cane-MVP cập nhật bằng chứng/quyết định SKU tại commit local `bc3b4c2`, không push.
 
 Nguồn: dữ liệu/hạ tầng gốc, thiết kế dữ liệu §9.1, Storefront SCR-02, backlog
 WP01-06 và nhóm kiểm §3.4. Chủ dự án đồng ý chín ID frontend làm SKU ngày 10/11;
