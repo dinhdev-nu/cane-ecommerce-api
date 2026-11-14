@@ -106,6 +106,12 @@ credential vận hành chọn Owner audit active từ Admin service, không thay
 cùng command bất biến. Không sinh key mới để chữa timeout, không đưa SQL chỉnh tồn
 vào wrapper. Xem [lệnh nhập tồn đầu](../../../../docs/initial-stock.md).
 
+Orders giữ `OrderLinkService`/contract token/repository, crypto ở infrastructure/security;
+bootstrap ghép key ring chung API-worker. Support không import ngược exception Orders:
+Orders advice ánh xạ qua ApiErrors. Không dùng kết quả đọc để cấp quyền ghi sau rotate;
+kiểm lại dưới khóa trong TX caller. Không làm tròn hạn DB lúc authorize hoặc lưu token
+vào audit/outbox/neo. Xem [HMAC link](../../../../docs/order-links.md).
+
 ## Ví dụ phân chia file theo trách nhiệm
 
 | Việc | Chủ quản / nơi đặt |

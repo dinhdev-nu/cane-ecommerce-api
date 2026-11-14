@@ -58,7 +58,7 @@ class AdminAuthIT {
                 POSTGRES.getJdbcUrl(), "cane_migrator", TestInfrastructure.MIGRATION_PASSWORD));
         var app = new SpringApplication(CaneApplication.class);
         app.setLogStartupInfo(false);
-        app.setDefaultProperties(Map.of(
+        app.setDefaultProperties(vn.cane.fixture.LinkTestKeys.with(Map.of(
                 "CANE_DB_URL",
                 POSTGRES.getJdbcUrl(),
                 "CANE_DB_USER",
@@ -72,7 +72,7 @@ class AdminAuthIT {
                 "CANE_REDIS_USER",
                 "cane_runtime",
                 "CANE_REDIS_PASSWORD",
-                TestInfrastructure.REDIS_PASSWORD));
+                TestInfrastructure.REDIS_PASSWORD)));
         context = app.run("--spring.profiles.active=test,api", "--spring.main.keep-alive=false");
         sessions = context.getBean(StaffSessionService.class);
         transactions = context.getBean(Transactions.class);

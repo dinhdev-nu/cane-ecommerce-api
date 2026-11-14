@@ -1,7 +1,15 @@
 # WP01-14 — Hồ sơ kiểm nhập tồn đầu
 
 Bắt đầu **14/11/2026**, branch `feat/wp01-14-initial-stock` từ main WP01-13
-`6c358012208e355df761d7f4812bd25b1f28f47a`. Đang kiểm, chưa PR/CI/merge.
+`6c358012208e355df761d7f4812bd25b1f28f47a`.
+[PR #15](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/15) đã squash merge
+`385e3026bc932a547192868140734a2b5b1d7d84`; tree trùng branch đã kiểm
+`8fa5b437ee7035f9bcd0bcb0f865fa9f3ccd78c8`.
+[CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43568512585)
+đạt tổng 4 phút 04 giây, job verify 4 phút 01 giây;
+[CI main](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43568869039)
+đạt tổng 3 phút 40 giây, job verify 3 phút 37 giây.
+Cane-MVP commit local `49dbbc3`, không push.
 [Runbook](initial-stock.md) ghi quyền vận hành, file/key và cách retry an toàn.
 Nguồn dữ liệu §9.1–9.2, processing §1, test cases §3.4/3.11–3.13 và kế hoạch WP01-14.
 
@@ -41,7 +49,7 @@ Maven 6 phút 12 giây, kết thúc **13:50:56 GMT+7** ngày 14/11. Log ngoài G
 JAR đạt, không fixture/probe/test. Compose `cane-prep02-check-7410d70b8a0c` đã dọn
 container/network/volume; không còn Testcontainers CANE hoặc image mới. Wrapper
 PowerShell parse đạt; diff/liên kết đạt, hai file có sẵn ở checkout gốc giữ đúng
-SHA-256 ban đầu. Chờ PR/CI/merge.
+SHA-256 ban đầu. PR/CI/merge xem đầu hồ sơ.
 
 Chưa nhập tồn thật: chưa có lượng/manifest được xác nhận.
 Đây là nền BR-006/011, NFR-005/009, T93–T100/T116–T117 theo phạm vi áp dụng;

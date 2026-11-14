@@ -23,6 +23,8 @@ WP01-13 có [khung POST admin chống lặp](docs/admin-idempotency.md): canonic
 quyền trước replay, advisory actor/key và biên nhận cũ trước guard biến động.
 WP01-14 có [lệnh nhập tồn đầu](docs/initial-stock.md) qua service/CLI, Owner hiện
 hành và key cố định; tồn/event/ledger/neo cùng transaction, lượng 0 chỉ neo no-op.
+WP01-15 có [HMAC link một đơn](docs/order-links.md), kiểm version/hạn SQL và kiểm
+lại dưới khóa. API/worker cần cùng LINK_SECRETS/LINK_ACTIVE_KID; xem runbook trước chạy.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
 API nghiệp vụ, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
