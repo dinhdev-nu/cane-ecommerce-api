@@ -27,7 +27,7 @@ API loopback và dành `/` cho FE. FE/UI và các route nghiệp vụ chưa đư
 | [Compose](../scripts/operations/staging/compose.yaml), [role init](../scripts/operations/staging/init-roles.sql), [Redis](../scripts/operations/staging/redis-start.sh) | Chỉ hạ tầng staging mới; không migrate/seed trong startup |
 | [khởi động infra](../scripts/operations/staging/Start-Infrastructure.sh) | Chặn thiếu/trùng key, placeholder/secret sai định dạng/trùng nhau trước tạo container; không source env |
 | [infra env](../scripts/operations/staging/infrastructure.env.example), [API env](../scripts/operations/staging/api.env.example), [worker env](../scripts/operations/staging/worker.env.example) | Placeholder, ba loại file khác nhau; không chứa secret thật |
-| [API unit](../scripts/operations/staging/cane-api.service), [worker unit](../scripts/operations/staging/cane-worker.service) | systemd user riêng, restart có giới hạn, cùng artifact, không root |
+| [API unit](../scripts/operations/staging/cane-api.service), [worker unit](../scripts/operations/staging/cane-worker.service) | systemd user riêng, retry sau 30 giây không hết lượt, cùng artifact, không root |
 | [Nginx](../scripts/operations/staging/nginx.conf.template), [API headers](../scripts/operations/staging/api-security-headers.conf) | TLS/origin/forwarding/no-cache/header, edge rate và JSON lỗi proxy |
 
 Không dùng `compose.yaml`, `.local/dev.env` hoặc `scripts/dev/init-roles.sql` cho
@@ -130,6 +130,15 @@ local; phiên bản package trên máy thật còn phải ghi/kiểm trước b�
    `127.0.0.1/32` trong template; topology khác phải xác định lại peer/network trước
    chạy. Chép hai unit, `systemctl daemon-reload`, rồi enable/start hai service.
    Check startup `database=READY`, mode đúng và worker không có listener HTTP.
+   Hai unit dùng `StartLimitIntervalSec=0`, `Restart=on-failure`, `RestartSec=30`:
+   DB chưa sẵn sàng vẫn làm startup thất bại, systemd tiếp tục thử sau 30 giây kể
+   cả khi lỗi kéo dài; không mất lượt retry trước khi DB phục hồi. `systemctl stop`
+   vẫn dừng service. Nếu cấu hình/schema/quyền sai, dừng service, sửa nguyên nhân
+   rồi start lại; theo dõi lỗi lặp, không coi việc process restart là readiness.
+   Linux CI kiểm chính sách này bằng
+   [probe systemd](../scripts/operations/Test-SystemdRecovery.sh): thay executable/
+   đường dẫn/user bằng fixture, rút delay còn 1 giây, vượt ba lần lỗi rồi phục hồi
+   và kiểm stop thủ công. Probe không chạy JAR và không chứng minh VM staging.
 7. Trỏ DNS, cấp chứng chỉ từ CA công khai bằng ACME với webroot `/var/www/cane-acme`;
    bật site HTTP challenge trước lấy cert, sau đó mới site HTTPS. Thay hostname
    trong Nginx template, đặt API snippet đúng đường dẫn. Kiểm `nginx -t` trước

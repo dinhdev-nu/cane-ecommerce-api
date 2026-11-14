@@ -47,6 +47,10 @@ jobs:
           sh -n scripts/dev/redis-start.sh
           sh -n scripts/operations/staging/redis-start.sh
           sh -n scripts/operations/staging/Start-Infrastructure.sh
+          sh -n scripts/operations/Test-SystemdRecovery.sh
+      - name: Verify systemd recovery policy
+        shell: bash
+        run: sudo sh scripts/operations/Test-SystemdRecovery.sh
       - name: Verify toolchain, Compose and backend
         shell: pwsh
         run: ./scripts/Test-Backend.ps1
