@@ -1,7 +1,9 @@
 # WP01-11 — Hồ sơ kiểm đăng nhập và khóa tài khoản
 
 Bắt đầu **14/11/2026**, branch `feat/wp01-11-staff-login` từ main WP01-10
-`1e52bb3f0b77e1ac0bcc44799ae3ebb7090e029d`. Đang kiểm, chưa PR/CI/merge.
+`1e52bb3f0b77e1ac0bcc44799ae3ebb7090e029d`. Đã merge qua
+[PR #12](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/12), main
+`1dbe2842b41483c1f755c7ff9731365a07a308da`.
 [Runbook](admin-auth.md) ghi luồng và giới hạn; nguồn Cane-MVP API §5.1, bảo mật
 §2.1–2.3, kịch bản §3.6–3.8/3.14/3.16; T58/T59/T64 tiếp nối trên nghiệp vụ.
 
@@ -39,7 +41,12 @@ suite). Compose `cane-prep02-check-61921c988154` đã dọn container/network/vo
 không còn Testcontainers CANE hoặc image mới. JAR không chứa fixture/probe/lớp thử.
 Log tập trung/toàn bộ không có password fixture hoặc marker hash hỏng. V001,
 settings/grant và hai diff có sẵn ở checkout backend gốc giữ nguyên; SHA-256 của
-hai file gốc khớp trước khi làm. Diff/liên kết local đã rà; chờ PR/CI/merge.
+hai file gốc khớp trước khi làm. Diff/liên kết local đạt. Job verify
+[PR CI](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43560363866)
+đạt 3 phút 25 giây; [main CI](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43560731511)
+Success, tổng 3 phút 03 giây (job verify 3 phút). Git fetch xác nhận SHA và tree
+trùng branch đã kiểm. Cane-MVP commit local `ecf3b68`, không push.
+Hồ sơ này được cập nhật trong task kế tiếp.
 
 Đây là bằng chứng API auth/cơ chế nền, chưa Verified toàn UC-A01/BR-016/NFR-006
 hoặc T58/T59/T64 trên hệ thống triển khai. Không benchmark hash trên máy staging,
