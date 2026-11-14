@@ -1,0 +1,77 @@
+{
+  "dataKind": "fixture",
+  "products": [
+    {
+      "sku": "cane-juice-bottle",
+      "name": "Fixture cane-juice-bottle",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-juice-cup",
+      "name": "Fixture cane-juice-cup",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "near"
+    },
+    {
+      "sku": "cane-tea",
+      "name": "Fixture cane-tea",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-candy",
+      "name": "Fixture cane-candy",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-syrup",
+      "name": "Fixture cane-syrup",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-molasses",
+      "name": "Fixture cane-molasses",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "raw-cane-sugar",
+      "name": "Fixture raw-cane-sugar",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "whole-cane-sugar",
+      "name": "Fixture whole-cane-sugar",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-vinegar",
+      "name": "Fixture cane-vinegar",
+      "unitLabel": "fixture unit",
+      "priceVnd": 25000,
+      "isActive": true,
+      "deliveryScope": "city"
+    }
+  ]
+}

@@ -1,7 +1,9 @@
 # WP01-05 — Hồ sơ kiểm JDBC/transaction/khóa
 
 Ngày **10/11/2026**, branch `feat/wp01-05-transactions`.
-Trạng thái: local đạt; chờ PR/CI/merge.
+Trạng thái: **hoàn thành**, [PR #6](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/6)
+merge main `d29cf87`; CI PR `42791459851`, main `42791943528` đạt. Truy vết
+Cane-MVP commit local `c3cc37d`, không push.
 
 ## Nguồn và phạm vi
 

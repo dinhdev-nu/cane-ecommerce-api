@@ -132,6 +132,10 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
 - `TestInfrastructure`, `BackendSkeletonIT`, `RuntimeReadinessIT`: fixture migrate +
   grant trước runtime; kiểm schema thiếu không tự migrate và readiness drift riêng.
 - `scripts/dev/init-roles.sql`: hiện tạo role, chưa cấp quyền bảng nghiệp vụ.
+- `CatalogSeedService` và `JdbcCatalogSeedRepository`: seed chỉ thêm SKU thiếu;
+  `CatalogSeedCommand` ghép context tối thiểu qua `bootstrap/cli/OperationalDatabase`,
+  không khởi động Boot/HTTP/worker/Redis. `scripts/catalog/Seed-Catalog.ps1` gọi JAR;
+  fixture chỉ ở test, template release chưa có dữ liệu thật. Xem `docs/catalog-seed.md`.
 - `TransactionConfiguration`/`support.transaction`: cùng manager/DataSource, write
   READ COMMITTED, snapshot read-only REPEATABLE READ, chỉ outer boundary retry
   deadlock sau rollback; khóa SQL ở module sở hữu. Xem `docs/transactions.md`.

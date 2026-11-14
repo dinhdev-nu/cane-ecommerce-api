@@ -1,0 +1,77 @@
+{
+  "dataKind": "release",
+  "products": [
+    {
+      "sku": "cane-juice-bottle",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "cane-juice-cup",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": "near"
+    },
+    {
+      "sku": "cane-tea",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "cane-candy",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "cane-syrup",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "cane-molasses",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "raw-cane-sugar",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "whole-cane-sugar",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    },
+    {
+      "sku": "cane-vinegar",
+      "name": null,
+      "unitLabel": null,
+      "priceVnd": null,
+      "isActive": null,
+      "deliveryScope": null
+    }
+  ]
+}
