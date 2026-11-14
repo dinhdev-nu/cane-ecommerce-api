@@ -5,6 +5,8 @@ import java.util.UUID;
 import vn.cane.admin.domain.StaffRole;
 
 public interface StaffCommandRepository {
+    Optional<Staff> findById(UUID staffId);
+
     Optional<Staff> lockByUsername(String username);
 
     Staff insert(String username, String passwordHash, StaffRole role);

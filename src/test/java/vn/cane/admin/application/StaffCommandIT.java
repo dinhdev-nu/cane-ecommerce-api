@@ -357,6 +357,10 @@ class StaffCommandIT {
     private StaffCommandService decoratedService(Consumer<UUID> afterRevoke) {
         var delegate = context.getBean(JdbcStaffCommandRepository.class);
         var repository = new StaffCommandRepository() {
+            public Optional<Staff> findById(UUID id) {
+                return delegate.findById(id);
+            }
+
             public Optional<Staff> lockByUsername(String username) {
                 return delegate.lockByUsername(username);
             }

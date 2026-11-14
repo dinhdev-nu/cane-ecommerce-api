@@ -100,6 +100,12 @@ dựng route từ constant/ID chuẩn hóa, ghi một neo đúng actor/key trong
 HTTP phải qua origin/CSRF/session trước; CLI có xác thực Owner của luồng vận hành.
 Đọc [contract A-TX](../../../../docs/admin-idempotency.md) trước khi tích hợp.
 
+Nhập tồn đầu là luồng vận hành của Catalog, dùng `InitialStockService` và CLI riêng;
+credential vận hành chọn Owner audit active từ Admin service, không thay auth HTTP.
+`CanonicalOperation` tách factory POST và CLI, giữ hash HTTP cũ; service/hash dùng
+cùng command bất biến. Không sinh key mới để chữa timeout, không đưa SQL chỉnh tồn
+vào wrapper. Xem [lệnh nhập tồn đầu](../../../../docs/initial-stock.md).
+
 ## Ví dụ phân chia file theo trách nhiệm
 
 | Việc | Chủ quản / nơi đặt |

@@ -29,7 +29,7 @@ public final class IdempotentOperations {
     }
 
     /** Authorization must query current SQL permissions and return the authenticated staff UUID each time. */
-    public OperationReceipt execute(Supplier<UUID> authorize, CanonicalAdminPost command, Consumer<Operation> work) {
+    public OperationReceipt execute(Supplier<UUID> authorize, CanonicalOperation command, Consumer<Operation> work) {
         if (TransactionSynchronizationManager.isActualTransactionActive())
             throw new IllegalStateException("Admin operation must own its outer transaction");
         Objects.requireNonNull(work);
@@ -74,16 +74,16 @@ public final class IdempotentOperations {
     }
 
     private static OperationReceipt response(
-            OperationReceipts.Stored stored, CanonicalAdminPost command, boolean replayed) {
+            OperationReceipts.Stored stored, CanonicalOperation command, boolean replayed) {
         if (!MessageDigest.isEqual(stored.requestHash(), command.hash())) throw new IdempotencyMismatchException();
         return new OperationReceipt(stored.operationId(), replayed, stored.result());
     }
 
     public static final class Operation {
         private final UUID actor;
-        private final CanonicalAdminPost command;
+        private final CanonicalOperation command;
 
-        private Operation(UUID actor, CanonicalAdminPost command) {
+        private Operation(UUID actor, CanonicalOperation command) {
             this.actor = actor;
             this.command = command;
         }

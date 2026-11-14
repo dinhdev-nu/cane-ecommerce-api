@@ -12,16 +12,15 @@ import tools.jackson.databind.json.JsonMapper;
 import vn.cane.support.validation.InputNormalizer;
 
 /** Built from a validated immutable command and the server's resolved route, never raw request JSON. */
-public final class CanonicalAdminPost {
+public final class CanonicalOperation {
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private final String key;
     private final byte[] hash;
 
-    public CanonicalAdminPost(String method, String normalizedRoute, JsonNode normalizedBody, String key) {
+    private CanonicalOperation(String verb, String normalizedRoute, JsonNode normalizedBody, String key) {
         this.key = InputNormalizer.idempotencyKey(key);
-        String verb = Objects.requireNonNull(method).toUpperCase(Locale.ROOT);
-        if (!verb.equals("POST") || !supportedRoute(normalizedRoute) || !normalizedBody.isObject())
-            throw new IllegalArgumentException("A normalized admin business POST is required");
+        if (normalizedBody == null || !normalizedBody.isObject())
+            throw new IllegalArgumentException("A normalized operation body is required");
         try {
             var digest = MessageDigest.getInstance("SHA-256");
             frame(digest, verb.getBytes(StandardCharsets.UTF_8));
@@ -31,6 +30,21 @@ public final class CanonicalAdminPost {
         } catch (NoSuchAlgorithmException unavailable) {
             throw new IllegalStateException("SHA-256 is unavailable");
         }
+    }
+
+    public static CanonicalOperation adminPost(
+            String method, String normalizedRoute, JsonNode normalizedBody, String key) {
+        String verb = Objects.requireNonNull(method).toUpperCase(Locale.ROOT);
+        if (!verb.equals("POST") || !supportedRoute(normalizedRoute))
+            throw new IllegalArgumentException("A normalized admin business POST is required");
+        return new CanonicalOperation(verb, normalizedRoute, normalizedBody, key);
+    }
+
+    /** Command name is a server constant, never a user-supplied route. Separate framing from HTTP POST. */
+    public static CanonicalOperation commandLine(String commandName, JsonNode normalizedBody, String key) {
+        if (commandName == null || !commandName.matches("[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)*"))
+            throw new IllegalArgumentException("A normalized operational command name is required");
+        return new CanonicalOperation("CLI", commandName, normalizedBody, key);
     }
 
     public String key() {
@@ -79,6 +93,6 @@ public final class CanonicalAdminPost {
 
     @Override
     public String toString() {
-        return "CanonicalAdminPost[redacted]";
+        return "CanonicalOperation[redacted]";
     }
 }

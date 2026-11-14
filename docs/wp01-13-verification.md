@@ -1,7 +1,13 @@
 # WP01-13 — Hồ sơ kiểm POST quản trị chống lặp
 
 Bắt đầu **14/11/2026**, branch `feat/wp01-13-admin-post-idempotency` từ main WP01-12
-`f565ebc1de3527b55336c9555122d07fc3294eb4`. Đang kiểm, chưa PR/CI/merge.
+`f565ebc1de3527b55336c9555122d07fc3294eb4`.
+[PR #14](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/14) đã squash merge
+`6c358012208e355df761d7f4812bd25b1f28f47a`; tree khớp branch đã kiểm
+`b4b57ba94d8316e35727cd862c32e64c467ab43f`.
+[CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43566044989)
+đạt (tổng 3 phút 47 giây); [CI main](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43566560236)
+đạt, job verify 3 phút 45 giây. Cane-MVP commit local `2000bdc`, không push.
 [Runbook](admin-idempotency.md) ghi canonicalization, contract quyền và transaction.
 
 Nguồn API §1.2–1.3, processing §1, security §1–3, test cases §3.8/3.11–3.13 và
@@ -42,4 +48,4 @@ suite. JAR không chứa fixture/probe/test; Compose `cane-prep02-check-4cc6cfd4
 đã dọn container/network/volume, không còn Testcontainers CANE hoặc image mới.
 Log cuối không lộ marker hash-body/key/source hoặc lỗi SQLSTATE fixture. V001,
 settings/grants và hai diff có sẵn ở checkout gốc giữ nguyên; SHA-256 hai file
-khớp trước khi làm. Diff và liên kết local đạt; chờ PR/CI/merge.
+khớp trước khi làm. Diff và liên kết local đạt; PR/CI/merge xem đầu hồ sơ. WP01-14 đổi tên thành phần hash thành CanonicalOperation, giữ factory/golden POST và thêm framing CLI tách biệt.

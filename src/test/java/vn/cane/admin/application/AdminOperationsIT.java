@@ -35,7 +35,7 @@ import vn.cane.bootstrap.TransactionConfiguration;
 import vn.cane.fixture.TestInfrastructure;
 import vn.cane.support.audit.BusinessEvent;
 import vn.cane.support.audit.BusinessEventWriter;
-import vn.cane.support.idempotency.CanonicalAdminPost;
+import vn.cane.support.idempotency.CanonicalOperation;
 import vn.cane.support.idempotency.IdempotencyMismatchException;
 import vn.cane.support.idempotency.IdempotentOperations;
 import vn.cane.support.idempotency.OperationReceipt;
@@ -141,7 +141,7 @@ class AdminOperationsIT {
         operations.execute(ownerPermission(), command(KEY, 1, null), stock(1, null));
         assertThatThrownBy(() -> operations.execute(ownerPermission(), command(KEY, 2, null), forbiddenWork()))
                 .isInstanceOf(IdempotencyMismatchException.class);
-        var otherRoute = new CanonicalAdminPost("POST", "/api/v1/admin/payments", json.createObjectNode(), KEY);
+        var otherRoute = CanonicalOperation.adminPost("POST", "/api/v1/admin/payments", json.createObjectNode(), KEY);
         assertThatThrownBy(() -> operations.execute(ownerPermission(), otherRoute, forbiddenWork()))
                 .isInstanceOf(IdempotencyMismatchException.class);
         assertThat(stockQty()).isEqualTo(1);
@@ -475,7 +475,7 @@ class AdminOperationsIT {
         return () -> authorization.requireOwner(principal).id();
     }
 
-    private CanonicalAdminPost command(String key, int delta, Integer expected) {
+    private CanonicalOperation command(String key, int delta, Integer expected) {
         var body = json.createObjectNode()
                 .put("sku", "IDEM-A")
                 .put("kind", "restock")
@@ -483,7 +483,7 @@ class AdminOperationsIT {
                 .put("value", delta);
         if (expected == null) body.putNull("expectedStockQty");
         else body.put("expectedStockQty", expected);
-        return new CanonicalAdminPost("POST", ROUTE, body, key);
+        return CanonicalOperation.adminPost("POST", ROUTE, body, key);
     }
 
     private Consumer<IdempotentOperations.Operation> stock(int delta, Integer expected) {

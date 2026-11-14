@@ -1,13 +1,13 @@
 # POST quản trị chống thực hiện lặp
 
-WP01-13 cung cấp `CanonicalAdminPost`, `IdempotentOperations` và
+WP01-13 cung cấp hash POST (từ WP01-14 dùng factory `CanonicalOperation.adminPost`), `IdempotentOperations` và
 `OperationReceipt` trong `support/idempotency`. Nguồn Cane-MVP API §1.2–1.3,
 processing §1.1–1.2, security §1–3, test cases §3.8/3.11–3.13.
 Không có bảng hoặc POST thử mới; các service nghiệp vụ dùng khung này khi được
 triển khai. Login/logout, PATCH giá, PUT settings và hash đặt đơn không dùng A-TX.
 
 Caller bind/validate/normalize **một command bất biến**, dùng chính command đó
-cho hash và phần ghi. Tạo `CanonicalAdminPost` bằng method POST, route thực do
+cho hash và phần ghi. Tạo `CanonicalOperation.adminPost` bằng method POST, route thực do
 server dựng từ constant + ID/SKU đã chuẩn hóa, body JSON đã chọn đủ trường DTO,
 và Idempotency-Key. Không dùng raw JSON hay route template chứa `:id`, không đưa
 cookie/CSRF vào body. Body phải chuẩn hóa optional null, chuỗi, thời gian và thứ
@@ -65,3 +65,5 @@ lỗi sau commit không đảo kết quả. Không xóa neo hoặc sinh key mớ
 
 [Hồ sơ kiểm WP01-13](wp01-13-verification.md) phân biệt harness thành phần và
 kiểm qua các POST nghiệp vụ thật ở WP03–WP06.
+
+WP01-14 dùng thêm `CanonicalOperation.commandLine` với framing CLI riêng cho lệnh vận hành; không đổi hash POST hoặc phạm vi route HTTP. Xem [nhập tồn đầu](initial-stock.md).
