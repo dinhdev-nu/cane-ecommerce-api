@@ -85,7 +85,11 @@ class InitialStockIT {
                 "CANE_OPERATIONS_DB_USER",
                 "cane_migrator",
                 "CANE_OPERATIONS_DB_PASSWORD",
-                TestInfrastructure.MIGRATION_PASSWORD);
+                TestInfrastructure.MIGRATION_PASSWORD,
+                "CANE_API_DB_USER",
+                "cane_api",
+                "CANE_WORKER_DB_USER",
+                "cane_worker");
         owner = new JdbcTemplate(
                 new DriverManagerDataSource(url, "cane_migrator", TestInfrastructure.MIGRATION_PASSWORD));
         owner.execute("REVOKE ALL ON DATABASE " + database + " FROM PUBLIC");
@@ -313,16 +317,7 @@ class InitialStockIT {
 
     @Test
     void operationalCliUsesRealServiceReplaysAndRejectsRuntimeCredentialAndFixturesInProduction() throws Exception {
-        var file = directory.resolve("initial.json");
-        Files.writeString(
-                file,
-                json.writeValueAsString(json.createObjectNode()
-                        .put("dataKind", "fixture")
-                        .put("ownerId", actor.toString())
-                        .put("sku", SKU)
-                        .put("quantity", 1)
-                        .put("reason", "Initial fixture count")
-                        .put("key", KEY)));
+        var file = cliManifest();
         var output = new StringWriter();
         String[] args = {"--manifest", file.toString(), "--environment", "test"};
         assertThat(InitialStockCli.run(args, environment, new PrintWriter(output)))
@@ -344,6 +339,114 @@ class InitialStockIT {
                         new PrintWriter(output)))
                 .isOne();
         assertCounts(1, 1);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"api", "worker"})
+    void cliRejectsConfiguredRuntimeRolesAfterRenamingWithoutWritingAnything(String mode) throws Exception {
+        String original = "cane_" + mode;
+        String renamed = "runtime_" + mode + "_" + UUID.randomUUID().toString().replace("-", "");
+        var variables = new java.util.HashMap<>(environment);
+        variables.put("CANE_OPERATIONS_DB_USER", renamed);
+        variables.put(
+                "CANE_OPERATIONS_DB_PASSWORD",
+                mode.equals("api") ? TestInfrastructure.API_PASSWORD : TestInfrastructure.WORKER_PASSWORD);
+        variables.put(mode.equals("api") ? "CANE_API_DB_USER" : "CANE_WORKER_DB_USER", renamed);
+        var file = cliManifest();
+        try (var connection = POSTGRES.createConnection("");
+                var statement = connection.createStatement()) {
+            statement.execute("ALTER ROLE " + original + " RENAME TO " + renamed);
+            try {
+                assertThat(InitialStockCli.run(
+                                new String[] {"--manifest", file.toString(), "--environment", "test"},
+                                variables,
+                                new PrintWriter(new StringWriter())))
+                        .isOne();
+                assertThat(stock()).isZero();
+                assertCounts(0, 0);
+            } finally {
+                statement.execute("ALTER ROLE " + renamed + " RENAME TO " + original);
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"missing-api", "missing-worker", "unknown-api", "unknown-worker", "same-role"})
+    void cliFailsClosedWhenRuntimeRoleConfigurationIsIncompleteOrInvalid(String fault) throws Exception {
+        var variables = new java.util.HashMap<>(environment);
+        switch (fault) {
+            case "missing-api" -> variables.remove("CANE_API_DB_USER");
+            case "missing-worker" -> variables.remove("CANE_WORKER_DB_USER");
+            case "unknown-api" -> variables.put("CANE_API_DB_USER", "nonexistent_runtime_role");
+            case "unknown-worker" -> variables.put("CANE_WORKER_DB_USER", "nonexistent_runtime_role");
+            case "same-role" -> variables.put("CANE_WORKER_DB_USER", "cane_api");
+            default -> throw new AssertionError("Unknown fault");
+        }
+        var file = cliManifest();
+        assertThat(InitialStockCli.run(
+                        new String[] {"--manifest", file.toString(), "--environment", "test"},
+                        variables,
+                        new PrintWriter(new StringWriter())))
+                .isOne();
+        assertThat(stock()).isZero();
+        assertCounts(0, 0);
+    }
+
+    @Test
+    void cliAcceptsSeparateLeastPrivilegeOperationalRoleAndReplays() throws Exception {
+        String role = "stock_ops_" + UUID.randomUUID().toString().replace("-", "");
+        String database = owner.queryForObject("SELECT current_database()", String.class);
+        try (var connection = POSTGRES.createConnection("");
+                var statement = connection.createStatement()) {
+            // Password is an ephemeral hex fixture, never an operator credential.
+            statement.execute(
+                    "CREATE ROLE " + role + " LOGIN PASSWORD '" + TestInfrastructure.MIGRATION_PASSWORD + "'");
+        }
+        owner.execute("GRANT CONNECT ON DATABASE " + database + " TO " + role);
+        owner.execute("GRANT USAGE ON SCHEMA cane TO " + role);
+        owner.execute(
+                "GRANT SELECT ON cane.flyway_schema_history,cane.staff_users,cane.products,cane.business_events TO "
+                        + role);
+        owner.execute("GRANT UPDATE (stock_qty,updated_by,updated_at) ON cane.products TO " + role);
+        owner.execute("GRANT INSERT ON cane.business_events,cane.stock_movements TO " + role);
+        var variables = new java.util.HashMap<>(environment);
+        variables.put("CANE_OPERATIONS_DB_USER", role);
+        var file = cliManifest();
+        var output = new StringWriter();
+        String[] arguments = {"--manifest", file.toString(), "--environment", "test"};
+        assertThat(InitialStockCli.run(arguments, variables, new PrintWriter(output)))
+                .isZero();
+        assertThat(InitialStockCli.run(arguments, variables, new PrintWriter(output)))
+                .isZero();
+        assertThat(output.toString()).contains("replayed=false", "replayed=true");
+        assertThat(stock()).isEqualTo(1);
+        assertCounts(1, 1);
+        try (var connection = POSTGRES.createConnection("");
+                var statement = connection.createStatement()) {
+            statement.execute("GRANT cane_api TO " + role);
+            try {
+                assertThat(InitialStockCli.run(arguments, variables, new PrintWriter(output)))
+                        .isOne();
+                assertThat(stock()).isEqualTo(1);
+                assertCounts(1, 1);
+            } finally {
+                statement.execute("REVOKE cane_api FROM " + role);
+            }
+        }
+    }
+
+    private Path cliManifest() throws Exception {
+        var file = directory.resolve("initial.json");
+        Files.writeString(
+                file,
+                json.writeValueAsString(json.createObjectNode()
+                        .put("dataKind", "fixture")
+                        .put("ownerId", actor.toString())
+                        .put("sku", SKU)
+                        .put("quantity", 1)
+                        .put("reason", "Initial fixture count")
+                        .put("key", KEY)));
+        return file;
     }
 
     private InitialStockService build(

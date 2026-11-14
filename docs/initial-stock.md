@@ -9,6 +9,15 @@ Build JAR và migrate/validate schema trước; seed SKU tồn 0 rồi tạo Own
 nhân viên. Dùng credential vận hành riêng qua `CANE_OPERATIONS_DB_URL`,
 `CANE_OPERATIONS_DB_USER`, `CANE_OPERATIONS_DB_PASSWORD`. Lệnh không tự migrate,
 không mở HTTP/worker/Redis, không dùng credential runtime `cane_api`/`cane_worker`.
+Đặt thêm hai biến **tên role, không phải mật khẩu** `CANE_API_DB_USER` và
+`CANE_WORKER_DB_USER` đúng theo `cane_api_role`/`cane_worker_role` đã cấp bằng
+`Grant-Runtime.sql` trên DB đích. Không mặc định tên role: thiếu/rỗng, role không
+tồn tại hoặc hai role trùng nhau đều dừng trước thao tác kho. CLI từ chối login/
+current role runtime và login có membership trực tiếp/gián tiếp vào runtime,
+kể cả khi đổi tên role. Dùng login vận hành riêng, không superuser và không có
+membership vào runtime; role schema owner `cane_migrator` hoặc role vận hành có
+quyền tối thiểu bên dưới đều dùng được. Lấy tên từ cấu hình triển khai tin cậy;
+không điền tên khác để bỏ qua hàng rào kiểm credential.
 Cần đọc Flyway history, SELECT staff_users/products/business_events, UPDATE ba cột
 products stock_qty/updated_by/updated_at, INSERT business_events/stock_movements và
 USAGE schema. Không cần ghi staff/settings/outbox hoặc quyền DDL; không nới grants

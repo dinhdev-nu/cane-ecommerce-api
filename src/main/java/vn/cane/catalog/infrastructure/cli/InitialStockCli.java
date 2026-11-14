@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import tools.jackson.databind.json.JsonMapper;
 import vn.cane.admin.application.StaffCommandService;
@@ -41,18 +40,7 @@ public final class InitialStockCli {
             try (var source = OperationalDatabase.open(environment);
                     var context = new AnnotationConfigApplicationContext()) {
                 OperationalDatabase.requireCurrentSchema(source);
-                if (!Boolean.TRUE.equals(new JdbcTemplate(source).queryForObject("""
-                        SELECT current_user NOT IN ('cane_api','cane_worker')
-                          AND has_table_privilege(current_user,'cane.staff_users','SELECT')
-                          AND has_table_privilege(current_user,'cane.products','SELECT')
-                          AND has_column_privilege(current_user,'cane.products','stock_qty','UPDATE')
-                          AND has_column_privilege(current_user,'cane.products','updated_by','UPDATE')
-                          AND has_column_privilege(current_user,'cane.products','updated_at','UPDATE')
-                          AND has_table_privilege(current_user,'cane.business_events','SELECT')
-                          AND has_table_privilege(current_user,'cane.business_events','INSERT')
-                          AND has_table_privilege(current_user,'cane.stock_movements','INSERT')
-                        """, Boolean.class)))
-                    throw new IllegalStateException("Operational permissions are required");
+                requireOperationalPermissions(source, environment);
                 context.registerBean(DataSource.class, () -> source);
                 context.registerBean(NamedParameterJdbcTemplate.class, () -> new NamedParameterJdbcTemplate(source));
                 context.registerBean(
@@ -86,5 +74,31 @@ public final class InitialStockCli {
             output.flush();
             return 1;
         }
+    }
+
+    private static void requireOperationalPermissions(DataSource source, Map<String, String> environment) {
+        String apiRole = environment.get("CANE_API_DB_USER");
+        String workerRole = environment.get("CANE_WORKER_DB_USER");
+        if (apiRole == null || apiRole.isBlank() || workerRole == null || workerRole.isBlank())
+            throw new IllegalStateException("Both configured runtime role names are required");
+        if (!Boolean.TRUE.equals(new NamedParameterJdbcTemplate(source)
+                .queryForObject("""
+                        SELECT :apiRole <> :workerRole
+                          AND EXISTS (SELECT 1 FROM pg_roles WHERE rolname=:apiRole)
+                          AND EXISTS (SELECT 1 FROM pg_roles WHERE rolname=:workerRole)
+                          AND current_user NOT IN (:apiRole,:workerRole)
+                          AND session_user NOT IN (:apiRole,:workerRole)
+                          AND NOT pg_has_role(session_user,:apiRole,'MEMBER')
+                          AND NOT pg_has_role(session_user,:workerRole,'MEMBER')
+                          AND has_table_privilege(current_user,'cane.staff_users','SELECT')
+                          AND has_table_privilege(current_user,'cane.products','SELECT')
+                          AND has_column_privilege(current_user,'cane.products','stock_qty','UPDATE')
+                          AND has_column_privilege(current_user,'cane.products','updated_by','UPDATE')
+                          AND has_column_privilege(current_user,'cane.products','updated_at','UPDATE')
+                          AND has_table_privilege(current_user,'cane.business_events','SELECT')
+                          AND has_table_privilege(current_user,'cane.business_events','INSERT')
+                          AND has_table_privilege(current_user,'cane.stock_movements','INSERT')
+                        """, Map.of("apiRole", apiRole, "workerRole", workerRole), Boolean.class)))
+            throw new IllegalStateException("Separate operational permissions are required");
     }
 }

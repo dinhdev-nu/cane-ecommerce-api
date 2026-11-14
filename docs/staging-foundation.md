@@ -125,6 +125,10 @@ local; phiên bản package trên máy thật còn phải ghi/kiểm trước b�
    password mặc định/argument/env/file. Không nhập catalog/tồn giả vào staging:
    seed/release manifest thật khi đã được xác nhận theo [seed](catalog-seed.md) và
    [nhập tồn](initial-stock.md); WP01 đã kiểm hai cơ chế này bằng fixture local.
+   Khi dùng CLI nhập tồn, đặt `CANE_API_DB_USER`/`CANE_WORKER_DB_USER` bằng đúng
+   tên hai role đã truyền cho `Grant-Runtime.sql`; đây là tên role không bí mật,
+   không cấp credential runtime cho tiến trình vận hành. Thiếu hoặc sai mapping
+   phải sửa cấu hình trước chạy, không đổi tên để né kiểm phân tách credential.
 6. Điền API/worker EnvironmentFile, cùng LINK_SECRETS/LINK_ACTIVE_KID; API origin
    chính xác `https://<hostname>`. Chỉ khi proxy thật ở cùng host mới dùng
    `127.0.0.1/32` trong template; topology khác phải xác định lại peer/network trước
