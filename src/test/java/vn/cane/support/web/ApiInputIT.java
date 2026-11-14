@@ -84,7 +84,7 @@ class ApiInputIT {
         TestInfrastructure.prepareCore(POSTGRES);
         var app = new SpringApplication(CaneApplication.class, ProbeConfiguration.class);
         app.setLogStartupInfo(false);
-        app.setDefaultProperties(Map.of(
+        app.setDefaultProperties(vn.cane.fixture.LinkTestKeys.with(Map.of(
                 "CANE_DB_URL",
                 POSTGRES.getJdbcUrl(),
                 "CANE_DB_USER",
@@ -98,7 +98,7 @@ class ApiInputIT {
                 "CANE_REDIS_USER",
                 "cane_runtime",
                 "CANE_REDIS_PASSWORD",
-                TestInfrastructure.REDIS_PASSWORD));
+                TestInfrastructure.REDIS_PASSWORD)));
         context = app.run("--spring.profiles.active=test,api", "--spring.main.keep-alive=false");
         origin = "http://127.0.0.1:"
                 + ((WebServerApplicationContext) context).getWebServer().getPort();
@@ -226,6 +226,9 @@ class ApiInputIT {
         var mismatch = send("GET", "/mismatch", HttpRequest.BodyPublishers.noBody(), Map.of());
         assertError(mismatch, 409, "IDEMPOTENCY_MISMATCH");
         assertThat(mismatch.headers().firstValue("Retry-After")).isEmpty();
+        var invalidLink = send("GET", "/invalid-link", HttpRequest.BodyPublishers.noBody(), Map.of());
+        assertError(invalidLink, 404, "ORDER_LINK_INVALID");
+        assertThat(invalidLink.headers().firstValue("Retry-After")).isEmpty();
     }
 
     @Test
@@ -427,6 +430,11 @@ class ApiInputIT {
         @GetMapping("/busy")
         void busy() {
             throw new RequestInProgressException();
+        }
+
+        @GetMapping("/invalid-link")
+        void invalidLink() {
+            throw new vn.cane.orders.domain.InvalidOrderLinkException();
         }
 
         @GetMapping("/mismatch")

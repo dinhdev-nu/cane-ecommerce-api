@@ -331,7 +331,7 @@ class RateLimitIT {
     private static ConfigurableApplicationContext start(String trusted) {
         var app = new SpringApplication(CaneApplication.class);
         app.setLogStartupInfo(false);
-        app.setDefaultProperties(Map.of(
+        app.setDefaultProperties(vn.cane.fixture.LinkTestKeys.with(Map.of(
                 "CANE_DB_URL",
                 POSTGRES.getJdbcUrl(),
                 "CANE_DB_USER",
@@ -345,7 +345,7 @@ class RateLimitIT {
                 "CANE_REDIS_USER",
                 "cane_runtime",
                 "CANE_REDIS_PASSWORD",
-                TestInfrastructure.REDIS_PASSWORD));
+                TestInfrastructure.REDIS_PASSWORD)));
         return app.run(
                 "--spring.profiles.active=test,api",
                 "--spring.main.keep-alive=false",

@@ -222,6 +222,7 @@ class BackendSkeletonIT {
         properties.put("CANE_REDIS_PORT", REDIS.getMappedPort(6379).toString());
         properties.put("CANE_REDIS_USER", "cane_runtime");
         properties.put("CANE_REDIS_PASSWORD", TestInfrastructure.REDIS_PASSWORD);
+        properties.putAll(vn.cane.fixture.LinkTestKeys.properties());
         properties.putAll(overrides);
         var application = new SpringApplication(CaneApplication.class);
         application.setDefaultProperties(properties);

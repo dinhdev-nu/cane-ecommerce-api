@@ -5,6 +5,7 @@ public enum ApiErrorCode {
     AUTH_REQUIRED("Không thể xác thực. Vui lòng đăng nhập lại."),
     FORBIDDEN("Bạn không có quyền thực hiện thao tác này."),
     NOT_FOUND("Không tìm thấy tài nguyên."),
+    ORDER_LINK_INVALID("Link xem đơn không hợp lệ hoặc đã hết hạn."),
     REQUEST_IN_PROGRESS("Yêu cầu đang được xử lý. Vui lòng thử lại."),
     IDEMPOTENCY_MISMATCH("Mã thao tác đã được dùng cho yêu cầu khác."),
     RATE_LIMITED("Bạn gửi yêu cầu quá nhanh. Vui lòng chờ rồi thử lại."),

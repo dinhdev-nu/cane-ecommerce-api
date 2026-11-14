@@ -236,10 +236,50 @@ class RuntimeReadinessIT {
         properties.put("CANE_REDIS_USER", "cane_runtime");
         properties.put("CANE_REDIS_PASSWORD", TestInfrastructure.REDIS_PASSWORD);
         properties.put("PUBLIC_ORIGIN", "https://cane.example.test");
+        properties.putAll(vn.cane.fixture.LinkTestKeys.properties());
         var app = new SpringApplication(CaneApplication.class, HeartbeatConfiguration.class);
         app.setDefaultProperties(properties);
         app.setLogStartupInfo(false);
         return app;
+    }
+
+    @Test
+    void apiAndWorkerLoadTheSameKeyRingAndVerifyEachOthersSignatures() {
+        try (var api = application("api")
+                        .run("--spring.profiles.active=test,api", "--server.port=0", "--spring.main.keep-alive=false");
+                var worker = application("worker")
+                        .run("--spring.profiles.active=test,worker", "--spring.main.keep-alive=false")) {
+            var state = new vn.cane.orders.domain.OrderLinkState(
+                    UUID.randomUUID(), 1, java.time.Instant.parse("2026-12-01T00:00:00.123Z"));
+            var apiTokens = api.getBean(vn.cane.orders.application.OrderLinkTokens.class);
+            var workerTokens = worker.getBean(vn.cane.orders.application.OrderLinkTokens.class);
+            assertThat(workerTokens.verifySignature(apiTokens.sign(state).value()))
+                    .isEqualTo(state);
+            assertThat(apiTokens.verifySignature(workerTokens.sign(state).value()))
+                    .isEqualTo(state);
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"api,missing", "worker,missing", "api,unknown", "worker,unknown", "api,malformed", "worker,malformed"})
+    void invalidKeyRingStopsBeforeHttpOrJobsWithoutDisclosingConfiguration(String mode, String fault) {
+        var serverStarted = new AtomicBoolean();
+        Heartbeat.CALLS.set(0);
+        var app = application(mode);
+        app.addListeners((ApplicationListener<WebServerInitializedEvent>) event -> serverStarted.set(true));
+        String setting = switch (fault) {
+            case "missing" -> "--LINK_SECRETS=";
+            case "unknown" -> "--LINK_ACTIVE_KID=missing";
+            default -> "--LINK_SECRETS={PRIVATE-KEY-MARKER";
+        };
+        Throwable failure = org.assertj.core.api.ThrowableAssert.catchThrowable(() -> app.run(
+                "--spring.profiles.active=test," + mode, "--server.port=0", "--spring.main.keep-alive=false", setting));
+        assertThat(failure).isNotNull().hasRootCauseMessage("Order link key configuration is missing or invalid");
+        var trace = new java.io.StringWriter();
+        failure.printStackTrace(new java.io.PrintWriter(trace));
+        assertThat(trace.toString()).doesNotContain("PRIVATE-KEY-MARKER", vn.cane.fixture.LinkTestKeys.JSON);
+        assertThat(serverStarted.get()).isFalse();
+        assertThat(Heartbeat.CALLS.get()).isZero();
     }
 
     private String catalogState() {
