@@ -6,13 +6,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
+import vn.cane.support.ratelimit.ClientIpResolver;
+import vn.cane.support.ratelimit.RateLimiter;
 import vn.cane.support.web.ApiErrors;
 import vn.cane.support.web.JsonBodyFilter;
+import vn.cane.support.web.RateLimitFilter;
 import vn.cane.support.web.RequestTraceFilter;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("api & !worker")
 public class ApiWebConfiguration {
+    @Bean
+    FilterRegistrationBean<RateLimitFilter> rateLimitFilter(
+            RateLimiter limiter, ClientIpResolver addresses, ApiErrors errors, SecurityFilterProperties security) {
+        var registration = new FilterRegistrationBean<>(new RateLimitFilter(limiter, addresses, errors));
+        registration.setOrder(security.getOrder() - 1);
+        return registration;
+    }
+
     @Bean
     FilterRegistrationBean<RequestTraceFilter> requestTraceFilter(ApiErrors errors) {
         var registration = new FilterRegistrationBean<>(new RequestTraceFilter(errors));

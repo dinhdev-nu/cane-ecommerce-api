@@ -11,6 +11,8 @@ WP01-05 bổ sung [transaction/khóa dùng chung](docs/transactions.md), đọc 
 phân loại UNIQUE và hook sau commit; chưa triển khai guard nghiệp vụ thay các WP sau.
 WP01-07 có [lệnh tạo/quản lý nhân viên](docs/staff-commands.md), encoder Argon2id chung,
 prompt mật khẩu kín và bảo vệ Owner active cuối cùng.
+WP01-08 có [Redis/rate limit và process fallback](docs/rate-limits.md), năm nhóm
+đếm và filter login trước Security; proxy thật/HTTPS kiểm khi triển khai staging.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
 API nghiệp vụ, seed, đăng nhập/session,
