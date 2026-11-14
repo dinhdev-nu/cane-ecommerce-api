@@ -1,7 +1,7 @@
 # WP01-08 — Hồ sơ kiểm Redis/rate limit
 
 Khởi đầu **14/11/2026**, branch `feat/wp01-08-rate-limits`.
-Trạng thái: đang kiểm, chưa PR/CI/merge.
+Trạng thái: hoàn thành local/PR/main CI; đã merge [PR #9](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/9).
 
 Phạm vi: năm nhóm đếm, cửa sổ 60 giây/TTL nguyên tử, 429/Retry-After, process fallback,
 IP qua proxy allowlist; filter login trước Security. [Runbook](rate-limits.md).
@@ -24,7 +24,13 @@ format/build JAR đạt, Maven 5 phút 10 giây, kết thúc **10:35:38 GMT+7** 
 Log ngoài Git `.local/wp01-08-release.log`; đã đối chiếu XML. Compose project
 `cane-prep02-check-975ca6b4ea79` không còn container/network/volume, không còn
 Testcontainers CANE và không có image mới so inventory. JAR không chứa fixture/
-probe/lớp thử. V001/grant không đổi, diff/liên kết local đã kiểm. Chờ PR/CI/merge.
+probe/lớp thử. V001/grant không đổi, diff/liên kết local đã kiểm.
+
+Commit branch `f7126f2438278a491ff2d01a122d742dd88df076`; main merge
+`6b7e77810aa9681cadcba7423fa6479f4a42c7fc`. [PR CI](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43552577413)
+và [main CI đúng SHA](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43552851930)
+thành công, tổng thời gian 2 phút 31 giây và 3 phút 11 giây. Cây local khớp main.
+Cane-MVP commit local `4f2e7d20cfaf9e4c98cc4f329ca2a30a07d859b4`, không push.
 
 Giới hạn: chưa có controller login; kiểm HTTP filter qua deny-all/CSRF thật và bộ
 gọi nội bộ cho các nhóm chưa có route. Redis rỗng được mô phỏng bằng DEL đúng key
