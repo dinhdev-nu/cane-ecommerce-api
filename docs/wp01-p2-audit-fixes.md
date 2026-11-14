@@ -1,8 +1,9 @@
 # WP01 — Sửa hai điểm P2 sau audit
 
 Ngày 14/11/2026, chủ dự án yêu cầu sửa P2 vận hành và P2 phân tách credential.
-Thực hiện trên nhánh `feat/wp01-16-staging-verification`, cập nhật PR nháp #17.
-Không gộp P3 smoke clock, không merge hoặc đóng WP01-16 khi chưa có staging/demo.
+Thực hiện trên nhánh `feat/wp01-16-staging-verification`, ban đầu cập nhật PR nháp #17.
+Chỉ dẫn tiếp theo của chủ dự án cho phép merge phần local đã kiểm, đồng bộ main
+và dọn nhánh. Không gộp P3 smoke clock hoặc đóng WP01-16 khi chưa có staging/demo.
 
 ## P2 vận hành — retry sau khi DB phục hồi
 
@@ -77,5 +78,7 @@ ghi SHA nền `195cbe9`/dirty=true đúng thời điểm kiểm trước commit.
 checkout gốc giữ nguyên checksum, không sửa V001/grants/settings/POM.
 
 CI của commit CLI cuối được truy vết tại [Checks PR #17](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/17/checks)
-và RTM Cane-MVP §7. Run `195cbe9` ở trên chỉ xác nhận commit vận hành. Chưa merge,
+và RTM Cane-MVP §7. Run `195cbe9` ở trên chỉ xác nhận commit vận hành; run
+[43586559868](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43586559868)
+tại `a75fa71` đạt toàn bộ CI trong 3 phút 59 giây. Phạm vi merge chỉ là phần local;
 chưa hoàn thành HTTPS/VM/demo, không coi probe systemd CI là nghiệm thu staging.

@@ -3,8 +3,15 @@
 Bắt đầu 14/11/2026 trên `feat/wp01-16-staging-verification`, từ main WP01-15
 `ecf5744de1a5d58a64e685716d5c0f5090f1839c`. **Task/WP01 chưa hoàn thành**:
 phần local đã kiểm, staging HTTPS và demo/chấp nhận thật chưa chạy. Theo chỉ dẫn
-mới nhất, hoàn thiện phần độc lập rồi dừng, chờ chủ dự án tạo cloud/domain và cấp
-cách truy cập; không giả lập tài khoản AWS/domain để đóng task.
+mới khi bàn giao local, hoàn thiện phần độc lập rồi dừng, chờ chủ dự án tạo
+cloud/domain và cấp cách truy cập; không giả lập tài khoản AWS/domain để đóng task.
+
+**Phạm vi merge được chủ dự án chấp thuận sau audit ngày 14/11/2026:** tích hợp
+phần local cùng hai sửa P2 đã kiểm qua [PR #17](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/17),
+đồng bộ `main` và dọn nhánh hoàn tất. Phần HTTPS/VM/demo tiếp tục mở trong backlog;
+không cần giữ nhánh task 16 để lưu trạng thái này. Bằng chứng mới nhất của hai sửa
+P2 tại [hồ sơ audit](wp01-p2-audit-fixes.md); kết quả bên dưới là lịch sử lượt local
+ban đầu, không thay bằng chứng của code mới. SHA merge/CI được truy vết tại RTM.
 
 ## Phần đã bổ sung
 
@@ -107,8 +114,9 @@ Lệnh cấu hình chạy lại trên **chính JAR cuối**, project
 `cane-wp01-16-check-bb0a8bf65caa`, đạt validator secret đúng/placeholder/trùng và
 mọi phase runtime/fault/cleanup; `cleaned=true`, không env secret còn lại. Container/
 network/volume thử đã dọn, image Nginx mới tải và private key fixture đã dọn, không
-prune image có sẵn. Diff/liên kết/PowerShell parse đạt. PR nháp/CI được truy vết ở
-RTM Cane-MVP §7 sau tạo; chưa merge task 16 hoặc nghiệm thu HTTPS thật.
+prune image có sẵn. Diff/liên kết/PowerShell parse đạt. Tại thời điểm lượt kiểm này,
+PR còn nháp, chưa merge; trạng thái tích hợp sau đó được truy vết ở RTM Cane-MVP §7.
+Chưa nghiệm thu HTTPS thật.
 
 ## Phần còn chặn và điều kiện hoàn tất
 
@@ -117,4 +125,5 @@ hoặc quyền SSH. Chưa deploy cloud, smoke hai role qua HTTPS/browser, kiểm
 renewal/restart/fault recovery trên VM, demo/chấp nhận của chủ dự án. Đầu vào theo
 thứ tự tại [runbook §3](staging-foundation.md#3-đầu-vào-cần-cung-cấp-sau-khi-phần-local-hoàn-tất).
 Chưa nghiệm thu NFR tải/email/PITR hoặc mở bán. WP01-16/WP01 giữ chưa hoàn thành;
-Cane-MVP chỉ commit local, không push. Dừng sau bàn giao phần local theo yêu cầu.
+Cane-MVP chỉ commit local, không push. Tiếp tục phần staging khi có đủ đầu vào;
+merge phần local không gỡ các điều kiện hoàn tất này.
