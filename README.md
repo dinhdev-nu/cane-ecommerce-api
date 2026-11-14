@@ -9,6 +9,8 @@ WP01-04 kiểm [runtime/readiness](docs/runtime-readiness.md) trước HTTP/sche
 thêm profile staging/production và diagnostics nội bộ; chưa có hạ tầng staging.
 WP01-05 bổ sung [transaction/khóa dùng chung](docs/transactions.md), đọc snapshot,
 phân loại UNIQUE và hook sau commit; chưa triển khai guard nghiệp vụ thay các WP sau.
+WP01-07 có [lệnh tạo/quản lý nhân viên](docs/staff-commands.md), encoder Argon2id chung,
+prompt mật khẩu kín và bảo vệ Owner active cuối cùng.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
 API nghiệp vụ, seed, đăng nhập/session,

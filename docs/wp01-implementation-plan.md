@@ -414,9 +414,12 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
 - WP01-05 hoàn thành tại [PR #6](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/6),
   main `d29cf87`, CI PR/main đạt: JDBC/transaction/khóa/rollback và
   retry deadlock; [hướng dẫn](transactions.md), [hồ sơ kiểm](wp01-05-verification.md).
-- WP01-06 trên branch `feat/wp01-06-catalog-seed`; ngày 10/11 chủ dự án chốt chín
+- WP01-06 hoàn thành tại [PR #7](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/7),
+  main `5e8809e`, CI PR/main đạt; ngày 10/11 chủ dự án chốt chín
   ID frontend làm SKU ổn định. Template không điền giả giá/quy cách; seed thật
   còn cần manifest được xác nhận. [Hướng dẫn](catalog-seed.md), [kiểm](wp01-06-verification.md).
+- WP01-07 bắt đầu ngày 14/11 trên branch `feat/wp01-07-staff-commands`;
+  [hướng dẫn](staff-commands.md), [hồ sơ kiểm](wp01-07-verification.md).
 - Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
   checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
   hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.
