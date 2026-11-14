@@ -1,5 +1,6 @@
 cane:
   http:
+    public-origin: ${PUBLIC_ORIGIN:}
     trusted-proxies: ${CANE_TRUSTED_PROXIES:}
 spring:
   application:

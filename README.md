@@ -4,7 +4,7 @@ Backend CANE: một dự án Maven, một bản build chạy hai chế độ `ap
 Đang triển khai WP01 trên khung PREP-02. Có V001, lệnh migration lõi và script cấp
 quyền API/worker theo thao tác/cột; trigger giữ nguyên V001 và được kiểm riêng với quyền runtime.
 WP01-03 bổ sung [validation, lỗi HTTP và log/requestId](docs/input-errors.md),
-JSON nghiêm ngặt và giới hạn body 64 KiB; các route hiện vẫn deny-all.
+JSON nghiêm ngặt và giới hạn body 64 KiB.
 WP01-04 kiểm [runtime/readiness](docs/runtime-readiness.md) trước HTTP/scheduler,
 thêm profile staging/production và diagnostics nội bộ; chưa có hạ tầng staging.
 WP01-05 bổ sung [transaction/khóa dùng chung](docs/transactions.md), đọc snapshot,
@@ -13,12 +13,12 @@ WP01-07 có [lệnh tạo/quản lý nhân viên](docs/staff-commands.md), encod
 prompt mật khẩu kín và bảo vệ Owner active cuối cùng.
 WP01-08 có [Redis/rate limit và process fallback](docs/rate-limits.md), năm nhóm
 đếm và filter login trước Security; proxy thật/HTTPS kiểm khi triển khai staging.
-WP01-09 có [session/cookie và kiểm quyền SQL hiện hành](docs/staff-sessions.md),
-chưa có các API me/logout/login của task 10–11.
+WP01-09 có [session/cookie và kiểm quyền SQL hiện hành](docs/staff-sessions.md).
+WP01-10 có [CSRF/origin, me và logout](docs/admin-auth.md); API yêu cầu `PUBLIC_ORIGIN`
+tin cậy. Login tiếp nối ở task 11; các route nghiệp vụ chưa triển khai vẫn deny-all.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
-API nghiệp vụ, seed, đăng nhập/session,
-chống lặp và job được triển khai/kiểm tuần tự theo WP01–WP07.
+API nghiệp vụ, đăng nhập, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
 
 Đặc tả và quyết định nằm trong repo local `../cane-mvp/`: đọc
 [thiết kế kỹ thuật](../cane-mvp/docs/03-technical-design.md),
@@ -84,13 +84,15 @@ không chạy lại init role hoặc sửa checksum để bỏ qua lỗi.
 Mở hai terminal, mỗi terminal chạy một lệnh:
 
 ```powershell
+$env:PUBLIC_ORIGIN = 'http://localhost:3000'
 pwsh -File scripts/Run-Local.ps1 -Mode api
 pwsh -File scripts/Run-Local.ps1 -Mode worker
 ```
 
-API bind `127.0.0.1:8080`, chưa có login hoặc endpoint nghiệp vụ. Route admin cần
-phiên trả 401 khi phiên không hợp lệ; các route vẫn deny-all sau filter phiên.
-CSRF dùng cookie để tránh tạo HttpSession, nhưng bootstrap/login/logout của CANE chưa triển khai.
+API bind `127.0.0.1:8080`, có GET me và POST logout; chưa có login hoặc endpoint
+nghiệp vụ. Me chưa có phiên trả 401 JSON kèm CSRF cookie/header. Admin ghi phải qua
+origin/CSRF; route cần phiên trả 401 khi phiên không hợp lệ. Cookie vẫn Secure ở
+local; HTTP test không thay bằng chứng browser qua HTTPS. Xem [luồng auth](docs/admin-auth.md).
 Worker không có HTTP, chỉ worker bật scheduling; chưa có job nghiệp vụ.
 Worker giữ tiến trình sống và dừng bằng Ctrl+C. Cả hai cùng dùng executable JAR.
 

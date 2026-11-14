@@ -147,6 +147,10 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
   login, tra JOIN hiện hành; `StaffAuthorization` đọc lại trước replay/guard ghi.
   `infrastructure.security` giữ cookie/filter và ánh xạ lỗi quyền; raw token chỉ cho
   cookie sau commit, principal không chứa token thô. Xem `docs/staff-sessions.md`.
+- `AdminAuthController`/`AdminSessionResponse` giữ hợp đồng me/logout và DTO allowlist;
+  `StaffCsrf`/`AdminRequestOrigin` là adapter HTTP ở Admin infrastructure/security.
+  Origin/CSRF trước xác thực cookie; chỉ login chủ động xoay CSRF sau commit, không
+  chạy authentication strategy lại trên mỗi lần lookup cookie. Xem `docs/admin-auth.md`.
 - `TransactionConfiguration`/`support.transaction`: cùng manager/DataSource, write
   READ COMMITTED, snapshot read-only REPEATABLE READ, chỉ outer boundary retry
   deadlock sau rollback; khóa SQL ở module sở hữu. Xem `docs/transactions.md`.

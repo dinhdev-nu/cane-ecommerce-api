@@ -1,7 +1,12 @@
 # WP01-09 — Hồ sơ kiểm session/quyền hiện hành
 
 Khởi đầu **14/11/2026**, branch `feat/wp01-09-staff-sessions` từ main WP01-08
-`6b7e77810aa9681cadcba7423fa6479f4a42c7fc`. Đang kiểm, chưa PR/CI/merge.
+`6b7e77810aa9681cadcba7423fa6479f4a42c7fc`. [PR #10](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/10)
+đã squash merge tại `8b9d69a421ec14456e454ebc5fe1c6106825a1b7`; cây khớp nhánh đã kiểm.
+[CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43554849092) và
+[CI main](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43555306627)
+đều đạt; job verify main 3 phút 13 giây. Cane-MVP ghi bằng chứng tại commit local
+`894bd9e` (không push).
 [Runbook](staff-sessions.md) mô tả caller transaction, cookie và kiểm quyền.
 
 Phạm vi: token 32 byte/canonical/SHA-256, cấp/thay/thu hồi nguyên tử, hạn tuyệt đối
@@ -20,7 +25,7 @@ format/build JAR đạt, Maven 5 phút 16 giây, kết thúc **11:03:48 GMT+7** 
 Log ngoài Git `.local/wp01-09-release.log`; XML đã đối chiếu. Compose project
 `cane-prep02-check-7d310b20bad7` đã dọn container/network/volume; không còn
 Testcontainers CANE hoặc image mới. JAR không có fixture/probe/lớp thử; V001/grant
-không đổi, diff và liên kết local đạt. Chờ PR/CI/merge.
+không đổi, diff và liên kết local đạt. PR/CI/merge xem bằng chứng ở đầu hồ sơ.
 
 Không dùng kết quả nền để xác nhận login/me/logout/CSRF hoặc T58/T60/T75/T99 toàn
 phần. Test có controller và rule riêng trong test classes để kiểm HTTP dùng cơ chế
