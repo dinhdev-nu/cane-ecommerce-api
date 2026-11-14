@@ -22,6 +22,17 @@ public class JdbcStaffCommandRepository implements StaffCommandRepository {
     }
 
     @Override
+    public Optional<Staff> findById(UUID staffId) {
+        return jdbc
+                .query(
+                        "SELECT id,role,is_active,auth_version FROM cane.staff_users WHERE id=:id",
+                        Map.of("id", staffId),
+                        STAFF)
+                .stream()
+                .findFirst();
+    }
+
+    @Override
     public Optional<Staff> lockByUsername(String username) {
         TransactionAccess.requireWrite();
         return jdbc.query("""

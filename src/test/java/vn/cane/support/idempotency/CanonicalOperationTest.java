@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
-class CanonicalAdminPostTest {
+class CanonicalOperationTest {
     private static final String ROUTE = "/api/v1/admin/stock-adjustments";
     private static final String KEY = "fixture-operation-0001";
     private final JsonMapper json = JsonMapper.builder().build();
@@ -26,7 +26,8 @@ class CanonicalAdminPostTest {
         assertThat(HexFormat.of().formatHex(first.hash()))
                 .isEqualTo("92abe5e44c3acc225653979da1ce4da69f49b196f60a88e826cbc3da0ca2e1fd");
         assertThat(second.hash()).isEqualTo(first.hash());
-        assertThat(new CanonicalAdminPost("post", ROUTE, json.readTree("{}"), KEY).hash())
+        assertThat(CanonicalOperation.adminPost("post", ROUTE, json.readTree("{}"), KEY)
+                        .hash())
                 .isEqualTo(post(ROUTE, "{}", KEY).hash());
     }
 
@@ -65,7 +66,7 @@ class CanonicalAdminPostTest {
                 ROUTE + "?token=secret"))
             assertThatThrownBy(() -> post(route, "{}", KEY)).isInstanceOf(IllegalArgumentException.class);
         for (String method : List.of("PATCH", "PUT", "GET"))
-            assertThatThrownBy(() -> new CanonicalAdminPost(method, ROUTE, json.createObjectNode(), KEY))
+            assertThatThrownBy(() -> CanonicalOperation.adminPost(method, ROUTE, json.createObjectNode(), KEY))
                     .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> post(ROUTE, "{\"value\":1.5}", KEY)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -73,7 +74,7 @@ class CanonicalAdminPostTest {
     @Test
     void noMutableRequestOrHashAndNoResultDataEscapesThroughToString() {
         var body = json.createObjectNode().put("reason", "private-text");
-        var command = new CanonicalAdminPost("POST", ROUTE, body, KEY);
+        var command = CanonicalOperation.adminPost("POST", ROUTE, body, KEY);
         byte[] original = command.hash();
         body.put("reason", "changed");
         command.hash()[0] ^= 1;
@@ -87,7 +88,30 @@ class CanonicalAdminPostTest {
         assertThat(receipt.toString()).doesNotContain("confirmed");
     }
 
-    private CanonicalAdminPost post(String route, String body, String key) {
-        return new CanonicalAdminPost("POST", route, json.readTree(body), key);
+    private CanonicalOperation post(String route, String body, String key) {
+        return CanonicalOperation.adminPost("POST", route, json.readTree(body), key);
+    }
+
+    @Test
+    void cliFramingIsSeparateAndIncludesCommandAndEntireNormalizedBody() {
+        var body = json.createObjectNode().put("quantity", 1);
+        var first = CanonicalOperation.commandLine("catalog/initial-stock", body, KEY);
+        assertThat(first.hash())
+                .isNotEqualTo(
+                        CanonicalOperation.adminPost("POST", ROUTE, body, KEY).hash());
+        assertThat(first.hash())
+                .isNotEqualTo(CanonicalOperation.commandLine("catalog/adjust-stock", body, KEY)
+                        .hash());
+        assertThat(first.hash())
+                .isEqualTo(CanonicalOperation.commandLine("catalog/initial-stock", body, "fixture-operation-0002")
+                        .hash());
+        body.put("quantity", 2);
+        assertThat(first.hash())
+                .isNotEqualTo(CanonicalOperation.commandLine("catalog/initial-stock", body, KEY)
+                        .hash());
+        for (String invalid : List.of(
+                "catalog/../stock", "catalog/stock?secret", "/catalog/stock", "catalog//stock", "catalog/stock/"))
+            assertThatThrownBy(() -> CanonicalOperation.commandLine(invalid, body, KEY))
+                    .isInstanceOf(IllegalArgumentException.class);
     }
 }

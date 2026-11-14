@@ -2,6 +2,7 @@ package vn.cane.admin.application;
 
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.cane.admin.application.StaffCommandRepository.Staff;
@@ -39,6 +40,16 @@ public final class StaffCommandService {
             if (existing.isPresent()) return result(existing.get(), false);
             return result(repository.insert(normalized, hash, role), true);
         });
+    }
+
+    /** Trusted operational credential selects an audit actor; this is not HTTP session authentication. */
+    public UUID requireOperationalOwner(UUID staffId) {
+        var staff = repository
+                .findById(Objects.requireNonNull(staffId))
+                .orElseThrow(() -> new AccessDeniedException("Active Owner is required"));
+        if (!staff.active() || staff.role() != StaffRole.OWNER)
+            throw new AccessDeniedException("Active Owner is required");
+        return staff.id();
     }
 
     public Result resetPassword(String username, CharSequence password) {
