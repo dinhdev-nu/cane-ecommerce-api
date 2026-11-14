@@ -397,6 +397,14 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
 
 ## 10. Nhật ký thực hiện
 
+**Snapshot 14/11/2026:** WP01-01–15 đã hoàn thành local/CI, review và merge backend;
+bằng chứng từng task tại `wp01-01-verification.md` đến `wp01-15-verification.md` và
+RTM Cane-MVP §7. Các dòng lịch sử bên dưới giữ mốc bắt đầu/chấp thuận, không phải
+trạng thái task hiện tại. WP01-16 kiểm và bàn giao phần local theo chỉ dẫn mới nhất;
+chưa có account/máy/domain cloud, chưa được ghi hoàn thành WP01. Chủ dự án yêu cầu
+xong phần không cần cloud thì dừng, báo phần còn chặn và đầu vào theo thứ tự tại
+[runbook](staging-foundation.md); [hồ sơ kiểm](wp01-16-verification.md).
+
 - 10/11/2026: chủ dự án yêu cầu bắt đầu WP01. PR hướng dẫn/skill
   [#1](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/1) đã squash merge vào
   `1a97233`; CI PR và CI main đều đạt. Hai diff có sẵn ở checkout ban đầu giữ riêng.

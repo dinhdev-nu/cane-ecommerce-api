@@ -1,0 +1,25 @@
+[Unit]
+Description=CANE staging worker
+After=network-online.target docker.service
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=cane-worker
+Group=cane-worker
+WorkingDirectory=/opt/cane/current
+EnvironmentFile=/etc/cane/staging/worker.env
+ExecStart=/opt/cane/jdk/bin/java -jar /opt/cane/current/cane-api.jar --spring.profiles.active=staging,worker
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

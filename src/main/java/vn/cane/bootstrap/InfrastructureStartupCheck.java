@@ -30,7 +30,7 @@ public final class InfrastructureStartupCheck implements SmartInitializingSingle
         if (status.degraded()) {
             LOG.atWarn()
                     .addKeyValue("component", "redis")
-                    .log("Redis unavailable; rate fallback integration is pending WP01-08");
+                    .log("Redis unavailable; runtime is operating with degraded Redis");
         }
     }
 }

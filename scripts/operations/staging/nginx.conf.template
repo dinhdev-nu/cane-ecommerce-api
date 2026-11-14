@@ -1,0 +1,91 @@
+# Include in the http context. Replace __STAGING_HOST__ with the verified DNS name.
+# nginx version/package and certificate renewal must be recorded on the actual VM.
+limit_req_zone $binary_remote_addr zone=cane_staging_edge:1m rate=20r/s;
+log_format cane_staging escape=json '{"component":"proxy","status":$status,"upstreamStatus":"$upstream_status","requestId":"$upstream_http_x_request_id","edgeRequestId":"$request_id","durationSeconds":$request_time}';
+
+server {
+    listen 80;
+    server_name __STAGING_HOST__;
+    access_log off;
+    error_log /dev/null;
+    location ^~ /.well-known/acme-challenge/ { root /var/www/cane-acme; }
+    location / { return 308 https://__STAGING_HOST__$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    server_name __STAGING_HOST__;
+    ssl_certificate /etc/letsencrypt/live/__STAGING_HOST__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__STAGING_HOST__/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    server_tokens off;
+    # Reject an unexpected Host; never forward it as a trusted origin.
+    if ($host != __STAGING_HOST__) { return 444; }
+    access_log /var/log/nginx/cane-staging-access.log cane_staging;
+    # Native error logs may contain the raw request URL. Use the fixed-field access
+    # log above, systemd status and the application's safe requestId diagnostics.
+    error_log /dev/null;
+
+    location /api/ {
+        include /etc/nginx/snippets/cane-api-security.conf;
+        client_max_body_size 64k;
+        client_body_timeout 10s;
+        # Coarse independent edge guard. Business limits remain in the API (5/min login).
+        limit_req zone=cane_staging_edge burst=20 nodelay;
+        limit_req_status 429;
+        error_page 429 = @cane_rate;
+        error_page 413 = @cane_body;
+        error_page 502 503 504 = @cane_unavailable;
+        proxy_intercept_errors off;
+        proxy_cache off;
+        proxy_buffering off;
+        proxy_request_buffering on;
+        proxy_next_upstream off;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 20s;
+        proxy_send_timeout 10s;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host __STAGING_HOST__;
+        proxy_set_header Forwarded "";
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Host "";
+        proxy_set_header X-Forwarded-Port "";
+        proxy_set_header X-Real-IP "";
+        proxy_hide_header Cache-Control;
+        proxy_hide_header X-Content-Type-Options;
+        proxy_hide_header Referrer-Policy;
+        proxy_hide_header Content-Security-Policy;
+        proxy_hide_header Strict-Transport-Security;
+        proxy_pass http://127.0.0.1:8080;
+    }
+    location @cane_rate {
+        include /etc/nginx/snippets/cane-api-security.conf;
+        default_type application/json;
+        add_header X-Request-ID $request_id always;
+        add_header Retry-After 1 always;
+        return 429 '{"error":{"code":"RATE_LIMITED","message":"Bạn gửi yêu cầu quá nhanh. Vui lòng chờ rồi thử lại.","fieldErrors":{},"itemErrors":[],"requestId":"$request_id"}}';
+    }
+    location @cane_body {
+        include /etc/nginx/snippets/cane-api-security.conf;
+        default_type application/json;
+        add_header X-Request-ID $request_id always;
+        return 413 '{"error":{"code":"INVALID_INPUT","message":"Dữ liệu gửi lên không hợp lệ.","fieldErrors":{},"itemErrors":[],"requestId":"$request_id"}}';
+    }
+    location @cane_unavailable {
+        include /etc/nginx/snippets/cane-api-security.conf;
+        default_type application/json;
+        add_header X-Request-ID $request_id always;
+        return 503 '{"error":{"code":"SERVICE_UNAVAILABLE","message":"Hệ thống tạm thời không sẵn sàng. Vui lòng thử lại.","fieldErrors":{},"itemErrors":[],"requestId":"$request_id"}}';
+    }
+    # Same-origin FE upstream reserved for its deployment; WP01 smoke uses /api only.
+    location / {
+        add_header Strict-Transport-Security "max-age=31536000" always;
+        proxy_set_header Host __STAGING_HOST__;
+        proxy_set_header Forwarded "";
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_next_upstream off;
+        proxy_pass http://127.0.0.1:3000;
+    }
+}

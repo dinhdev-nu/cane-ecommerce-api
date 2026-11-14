@@ -1,7 +1,11 @@
 # WP01-15 — Hồ sơ kiểm link HMAC
 
 Bắt đầu **14/11/2026**, branch `feat/wp01-15-order-links` từ main WP01-14
-`385e3026bc932a547192868140734a2b5b1d7d84`. Đang kiểm, chưa PR/CI/merge.
+`385e3026bc932a547192868140734a2b5b1d7d84`. Đã hoàn thành: [PR #16](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/16)
+squash merge tại `ecf5744de1a5d58a64e685716d5c0f5090f1839c`, tree trùng branch đã
+kiểm `1de4c0f6e9f5b003772cc9045d0f803006418e92`. [CI PR](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43570963794)
+đạt 3 phút 34 giây; [CI main](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43571346560)
+Success 3 phút 46 giây, job 3 phút 43 giây. Cane-MVP commit local `c195617`, không push.
 [Runbook](order-links.md) ghi key ring, token, quyền, thời gian và quy trình xoay.
 Nguồn hợp đồng §8, security §4, database link fields, test cases §3.9/3.16 và
 kế hoạch WP01-15. Giữ V001/settings/grants/toolchain và ranh giới mô-đun.
@@ -47,7 +51,7 @@ Maven 6 phút 20 giây, kết thúc **14:22:15 GMT+7** ngày 14/11. Log ngoài G
 JAR đạt, không fixture/probe/test. Compose `cane-prep02-check-15ee25838319` đã dọn
 container/network/volume, không còn Testcontainers CANE hoặc image mới. Marker
 config/token thử không xuất hiện trong log cuối. Diff/liên kết đạt; V001/settings/
-grants/POM và hai file có sẵn ở checkout gốc giữ nguyên SHA-256. Chờ PR/CI/merge.
+grants/POM và hai file có sẵn ở checkout gốc giữ nguyên SHA-256. PR/CI/merge xác nhận ở trên.
 
 Chưa dùng secret/đơn thật; không xóa/đổi key đã có.
 Đây là nền UC-C08/C09/A09, BR-013, NFR-006 và phần T50–T57; chưa Verified toàn yêu
