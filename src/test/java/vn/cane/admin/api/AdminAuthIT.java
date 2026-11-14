@@ -253,7 +253,7 @@ class AdminAuthIT {
         }
         assertError(send("POST", "/api/v1/admin/auth/login", "{}", Map.of()), 403, "FORBIDDEN");
         var bootstrap = bootstrap();
-        assertError(send("POST", "/api/v1/admin/auth/login", "{}", valid(bootstrap, null)), 403, "FORBIDDEN");
+        assertError(send("POST", "/api/v1/admin/auth/login", "{}", valid(bootstrap, null)), 400, "INVALID_INPUT");
         assertError(send("GET", "/api/v1/admin/unknown", null, Map.of()), 401, "AUTH_REQUIRED");
         assertError(send("POST", "/api/v1/checkout/place", "{}", Map.of()), 403, "FORBIDDEN");
         var response = send("GET", "/api/v1/shop", null, Map.of("Origin", "https://evil.test"));

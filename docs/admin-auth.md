@@ -1,7 +1,8 @@
-# CSRF, thông tin phiên và đăng xuất
+# Đăng nhập, CSRF, thông tin phiên và đăng xuất
 
-Nguồn: Cane-MVP API §5.2–5.3, bảo mật §3 và nhóm kiểm §3.6/3.8. WP01-10 mở đúng
-GET `/api/v1/admin/me` và POST `/api/v1/admin/auth/logout`; login thuộc WP01-11.
+Nguồn: Cane-MVP API §5.1–5.3, bảo mật §2–3 và nhóm kiểm §3.6–3.8. WP01-10 mở
+GET `/api/v1/admin/me` và POST `/api/v1/admin/auth/logout`; WP01-11 mở POST
+`/api/v1/admin/auth/login`.
 Không có endpoint bootstrap riêng, redirect HTML hoặc bảng/grant/settings mới.
 
 ## Cấu hình và nguồn request
@@ -38,9 +39,40 @@ Cookie lookup mỗi request không chạy authentication strategy ngầm. Login 
 phải commit cấp/thay session rồi gọi `StaffCsrf.afterLogin` cùng thao tác cookie
 session; hook gọi rõ `CsrfAuthenticationStrategy`, cấp cookie/header CSRF mới.
 Hook từ chối chạy trong transaction. WP01-10 kiểm hook bằng request/filter fixture;
-login HTTP thật sẽ kiểm tại task 11. Token header cũ không khớp cookie mới sau xoay.
+WP01-11 kiểm login HTTP thật. Token header cũ không khớp cookie mới sau xoay.
 Double-submit cookie không phải danh sách thu hồi token phía server: không tuyên bố
 thu hồi toàn cục mọi cặp cookie/header cũ đã sao chép.
+
+## Đăng nhập và khóa tạm
+
+POST login nhận đúng JSON `{username,password}`, không query. Username trim/lowercase,
+1–100 codepoint; password giữ nguyên khoảng trắng/Unicode, tối đa 128 codepoint.
+Quy tắc tối thiểu 15 ký tự áp dụng tạo/reset, không dùng để chặn login tài khoản cũ.
+Rate IP 5/phút chạy trước hash; CSRF/origin sai trả 403 trước controller.
+
+Login dùng cùng Argon2id encoder với script staff. Đọc credential rồi hash ngoài
+transaction/khóa staff; user không tồn tại vẫn verify dummy hash cùng tham số. Chuỗi
+rỗng cũng chạy dummy work qua đầu vào không rỗng vì encoder framework bỏ qua hash
+chuỗi rỗng; kết quả không bao giờ được coi là password hợp lệ. Không có mật khẩu
+mặc định. Diagnostic riêng của encoder bị tắt vì exception hash hỏng có thể chứa
+mảnh hash; log request vẫn có mã lỗi/status/requestId cố định, không log credential.
+
+Trong transaction READ COMMITTED, khóa staff rồi kiểm lại hash/auth_version/active.
+Dữ kiện đổi thì rollback và đọc/hash lại ngoài transaction, tối đa ba lượt; tiếp
+tục đổi trả 503 chung, không tạo phiên hoặc tăng sai từ kết quả verify cũ. Đọc thời
+gian DB sau khi lấy khóa. Sai lần thứ năm đặt khóa đúng 15 phút và commit trước
+trả 401. Trong khóa không tăng/kéo dài, kể cả password đúng. Bằng/sau hạn được xét
+lại từ đếm 0; sai mới thành 1, đúng xóa đếm/khóa. Khóa tạm không tăng auth_version,
+không xóa phiên đang hợp lệ. Vô hiệu tài khoản bởi script vẫn có hiệu lực hiện hành.
+
+Không tồn tại/inactive/sai/đang khóa cùng 401 `AUTH_REQUIRED` và message chung, không
+lộ đếm/hạn khóa. Login thất bại giữ cookie/phiên cũ. Thành công tạo session mới,
+thay đúng phiên cookie hiện tại trong cùng transaction; giữ phiên trình duyệt khác.
+Commit xong mới phát cookie session và xoay cookie/header CSRF. JSON 200 chỉ gồm
+`user:{id,username,role}`, `permissions:{canConfirmBank}`, `sessionExpiresAt`;
+không có token session/hash hoặc csrfToken trong JSON login. FE đọc `X-CSRF-Token`
+mới, hoặc gọi me lại. Lỗi DB rollback cả reset đếm/cấp-thay phiên, trả 503 và chưa
+đổi cookie. Login không dùng Idempotency-Key hoặc ghi event/biên nhận/outbox.
 
 ## Logout
 
@@ -64,4 +96,6 @@ xoay CSRF và từ chối đổi cookie trong transaction.
 
 Test HTTP gửi cookie tường minh; chưa xác nhận browser lưu/gửi Secure/host-prefix
 trên origin triển khai. HTTPS/proxy/browser thật vẫn thuộc WP01-16. Không coi hook
-fixture là login HTTP, hoặc CI là nghiệm thu staging. [Hồ sơ kiểm](wp01-10-verification.md).
+fixture là login HTTP, hoặc CI là nghiệm thu staging. `AdminLoginIT` bổ sung login
+production chain, khóa/counter, đổi credential và sai đồng thời trên DB thật.
+[Hồ sơ WP01-10](wp01-10-verification.md), [hồ sơ WP01-11](wp01-11-verification.md).
