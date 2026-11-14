@@ -1,10 +1,17 @@
 param([switch]$AllowCurrentLocalDocker)
 $ErrorActionPreference = 'Stop'
+$verificationStarted = [DateTimeOffset]::UtcNow
 $serverRoot = Split-Path -Parent $PSScriptRoot
 $project = 'cane-prep02-check-' + [Guid]::NewGuid().ToString('N').Substring(0, 12)
 $composeArgs = @('compose', '--env-file', '.local/dev.env', '--project-name', $project)
 Push-Location -LiteralPath $serverRoot
 try {
+    foreach ($script in Get-ChildItem -LiteralPath (Join-Path $serverRoot 'scripts') -Filter '*.ps1' -Recurse -File) {
+        $syntaxErrors = $null
+        $syntaxTokens = $null
+        $null = [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$syntaxTokens, [ref]$syntaxErrors)
+        if ($syntaxErrors.Count -ne 0) { throw ('PowerShell syntax check failed: ' + $script.Name) }
+    }
     & ./scripts/Test-Toolchain.ps1 -AllowCurrentLocalDocker:$AllowCurrentLocalDocker
     if (-not (Test-Path -LiteralPath '.local/dev.env')) { & ./scripts/New-LocalEnvironment.ps1 }
     $beforeImages = @(& docker image ls --no-trunc --quiet | Sort-Object -Unique)
@@ -19,6 +26,7 @@ try {
         $wrapper = if ($IsWindows) { '.\mvnw.cmd' } else { './mvnw' }
         & $wrapper '-B' '-ntp' 'clean' 'verify'
         if ($LASTEXITCODE -ne 0) { throw 'Backend verify failed; inspect target test reports.' }
+        & ./scripts/operations/Export-Verification.ps1 -StartedAt $verificationStarted
     } finally {
         & docker @composeArgs down --volumes --remove-orphans
         if ($LASTEXITCODE -ne 0) { throw "Cleanup failed for owned project $project; manual cleanup is required." }

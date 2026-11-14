@@ -4,7 +4,8 @@ Một executable JAR chạy đúng một môi trường `local`, `test`, `stagin
 `production` và đúng một vai trò `api` hoặc `worker`. Profile môi trường chỉ định
 `cane.environment`; vai trò quyết định HTTP/scheduling/pool. Không trộn môi trường,
 không bật Flyway auto hoặc SQL init. Chỉ credential DB/Redis hiện cần dùng là bắt
-buộc; chưa đòi HMAC/email/Telegram/provider khi tính năng chưa được triển khai.
+buộc. Từ WP01-15, cả API/worker phải có LINK_SECRETS/LINK_ACTIVE_KID hợp lệ theo
+[runbook HMAC](order-links.md); chưa đòi email/Telegram/provider khi chưa triển khai.
 
 ## Thứ tự chạy
 
@@ -48,8 +49,8 @@ DB không READY làm startup thất bại **trước HTTP nhận request hoặc 
 Log chỉ mã trạng thái cố định; không đưa SQL, URL kết nối, mật khẩu hoặc stack của
 Flyway vào log runtime. Lệnh Flyway vận hành vẫn giữ chẩn đoán riêng. Redis PING
 lỗi/timeout chỉ `redis=DEGRADED` nếu DB vẫn READY; không giả thành DB sẵn sàng.
-Chưa tuyên bố bộ đếm fallback hoạt động trước WP01-08. Session/audit/neo sau này
-vẫn nằm ở PostgreSQL, không phụ thuộc Redis để giữ dữ kiện.
+WP01-08 đã có [bộ đếm process fallback](rate-limits.md) ở API. Session/audit/neo
+nằm ở PostgreSQL, không phụ thuộc Redis để giữ dữ kiện.
 
 Giới hạn JDBC connect 3s/socket read 6s/cancel connect 1s bổ sung SQL 5s/lock 2s,
 pool wait 3s. Redis connect/command 1s. Đây là trị số khởi điểm local/test và profile,
@@ -59,7 +60,9 @@ chưa phải số đo NFR hoặc xác nhận cấu hình phát hành trên máy 
 
 Ngày **10/11/2026**, chủ dự án xác nhận **chưa có máy chủ/nền tảng và domain**.
 Profile staging/production chỉ kiểm bằng DB/Redis fixture local; không có triển
-khai hoặc smoke HTTPS. Chưa chọn provider, địa chỉ proxy hay CIDR tin cậy.
+khai hoặc smoke HTTPS thật. Ngày 14/11 đã chọn AWS Lightsail 4 GB nhưng chưa có
+tài khoản/máy/domain hoặc quyền truy cập; [runbook WP01-16](staging-foundation.md)
+ghi cấu hình đề xuất, kiểm local và đầu vào cần cấp. Chưa xác nhận peer/CIDR thực tế.
 
 Hiện HTTP bind loopback, `forward-headers-strategy=none`. Khi có hạ tầng, chốt
 network/bind, proxy và IP tin cậy, origin/domain/TLS, secret riêng, DB/Redis riêng

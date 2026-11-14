@@ -112,6 +112,11 @@ Orders advice ánh xạ qua ApiErrors. Không dùng kết quả đọc để c�
 kiểm lại dưới khóa trong TX caller. Không làm tròn hạn DB lúc authorize hoặc lưu token
 vào audit/outbox/neo. Xem [HMAC link](../../../../docs/order-links.md).
 
+Script dựng/kiểm/vận hành thuộc `scripts/operations`; template staging và secret
+placeholder tách khỏi dev/test. API/worker cùng JAR, credential riêng; mã nghiệp vụ
+không chuyển vào script. Báo cáo chỉ số/SHA không chứa body/token; syntax/local/CI
+không thay nghiệm thu HTTPS thật. Xem [runbook nền](../../../../docs/staging-foundation.md).
+
 ## Ví dụ phân chia file theo trách nhiệm
 
 | Việc | Chủ quản / nơi đặt |

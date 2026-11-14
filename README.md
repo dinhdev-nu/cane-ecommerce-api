@@ -25,6 +25,10 @@ WP01-14 có [lệnh nhập tồn đầu](docs/initial-stock.md) qua service/CLI,
 hành và key cố định; tồn/event/ledger/neo cùng transaction, lượng 0 chỉ neo no-op.
 WP01-15 có [HMAC link một đơn](docs/order-links.md), kiểm version/hạn SQL và kiểm
 lại dưới khóa. API/worker cần cùng LINK_SECRETS/LINK_ACTIVE_KID; xem runbook trước chạy.
+WP01-16 có [kiểm local và chuẩn bị staging](docs/staging-foundation.md),
+[hồ sơ kiểm](docs/wp01-16-verification.md). Phạm vi tích hợp vào `main` qua PR #17
+chỉ gồm phần local và hai sửa P2 đã kiểm; HTTPS/VM/demo còn chờ cloud/domain thật.
+Merge phần local không hoàn tất task 16, WP01 hoặc nghiệm thu staging.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
 API nghiệp vụ, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
