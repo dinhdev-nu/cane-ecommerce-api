@@ -13,6 +13,8 @@ WP01-07 có [lệnh tạo/quản lý nhân viên](docs/staff-commands.md), encod
 prompt mật khẩu kín và bảo vệ Owner active cuối cùng.
 WP01-08 có [Redis/rate limit và process fallback](docs/rate-limits.md), năm nhóm
 đếm và filter login trước Security; proxy thật/HTTPS kiểm khi triển khai staging.
+WP01-09 có [session/cookie và kiểm quyền SQL hiện hành](docs/staff-sessions.md),
+chưa có các API me/logout/login của task 10–11.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
 API nghiệp vụ, seed, đăng nhập/session,
@@ -86,7 +88,8 @@ pwsh -File scripts/Run-Local.ps1 -Mode api
 pwsh -File scripts/Run-Local.ps1 -Mode worker
 ```
 
-API bind `127.0.0.1:8080`, chặn mọi route bằng 403; chưa có login hoặc endpoint nghiệp vụ.
+API bind `127.0.0.1:8080`, chưa có login hoặc endpoint nghiệp vụ. Route admin cần
+phiên trả 401 khi phiên không hợp lệ; các route vẫn deny-all sau filter phiên.
 CSRF dùng cookie để tránh tạo HttpSession, nhưng bootstrap/login/logout của CANE chưa triển khai.
 Worker không có HTTP, chỉ worker bật scheduling; chưa có job nghiệp vụ.
 Worker giữ tiến trình sống và dừng bằng Ctrl+C. Cả hai cùng dùng executable JAR.

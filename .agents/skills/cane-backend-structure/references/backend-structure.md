@@ -143,6 +143,10 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
 - `support.ratelimit`: Redis Lua counter và process fallback dùng chung; bootstrap
   ghép bean ở API, `RateLimitFilter` gắn login một lần trước Security. Chỉ tin proxy
   allowlist; không đưa session/key nghiệp vụ vào Redis. Xem `docs/rate-limits.md`.
+- Admin `StaffSessionService`/`JdbcStaffSessionRepository` cấp/thay phiên trong TX
+  login, tra JOIN hiện hành; `StaffAuthorization` đọc lại trước replay/guard ghi.
+  `infrastructure.security` giữ cookie/filter và ánh xạ lỗi quyền; raw token chỉ cho
+  cookie sau commit, principal không chứa token thô. Xem `docs/staff-sessions.md`.
 - `TransactionConfiguration`/`support.transaction`: cùng manager/DataSource, write
   READ COMMITTED, snapshot read-only REPEATABLE READ, chỉ outer boundary retry
   deadlock sau rollback; khóa SQL ở module sở hữu. Xem `docs/transactions.md`.
