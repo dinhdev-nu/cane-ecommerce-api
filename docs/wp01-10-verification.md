@@ -1,7 +1,10 @@
 # WP01-10 — Hồ sơ kiểm CSRF/me/logout
 
 Khởi đầu **14/11/2026**, branch `feat/wp01-10-csrf-me-logout` từ main WP01-09
-`8b9d69a421ec14456e454ebc5fe1c6106825a1b7`. Đang kiểm, chưa PR/CI/merge.
+`8b9d69a421ec14456e454ebc5fe1c6106825a1b7`. Đã merge
+[PR #11](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/11) tại main
+`1e52bb3f0b77e1ac0bcc44799ae3ebb7090e029d`; branch commit
+`9d001889506f22b5cea7427b24abb2d83a65c3eb`.
 [Runbook](admin-auth.md) mô tả hợp đồng, cấu hình và giới hạn.
 
 Phạm vi: origin/CSRF trước session, me 401/200 có token, logout transaction và clear
@@ -26,7 +29,12 @@ Log ngoài Git `.local/wp01-10-release.log`; XML đã đối chiếu (13 unit su
 suite). Compose `cane-prep02-check-c4e9ec325fcd` đã dọn container/network/volume;
 không còn Testcontainers CANE hoặc image mới. JAR không có fixture/probe/lớp thử.
 V001/16 settings/grant và hai diff có sẵn ở checkout backend gốc giữ nguyên.
-Diff và liên kết local đạt. Chờ PR/CI/merge.
+Diff và liên kết local đạt. Job verify
+[PR CI](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43557531280)
+đạt 3 phút 35 giây; job verify
+[main CI](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/43557909173)
+đạt 3 phút 22 giây. Git fetch xác nhận SHA và tree trùng branch đã kiểm. Cane-MVP
+commit local `10fc391`, không push. Hồ sơ này được cập nhật trong task kế tiếp.
 
 HTTP thật dùng session fixture, không mở controller/chain thay thế; login HTTP,
 browser/proxy/HTTPS vẫn tiếp nối task 11/16. Không Verified toàn UC-A01/BR-016/

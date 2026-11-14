@@ -15,10 +15,11 @@ WP01-08 có [Redis/rate limit và process fallback](docs/rate-limits.md), năm n
 đếm và filter login trước Security; proxy thật/HTTPS kiểm khi triển khai staging.
 WP01-09 có [session/cookie và kiểm quyền SQL hiện hành](docs/staff-sessions.md).
 WP01-10 có [CSRF/origin, me và logout](docs/admin-auth.md); API yêu cầu `PUBLIC_ORIGIN`
-tin cậy. Login tiếp nối ở task 11; các route nghiệp vụ chưa triển khai vẫn deny-all.
+tin cậy. WP01-11 thêm login/khóa tài khoản 5 lần/15 phút và xoay phiên/CSRF sau
+commit; các route nghiệp vụ chưa triển khai vẫn deny-all.
 WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
 vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
-API nghiệp vụ, đăng nhập, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
+API nghiệp vụ, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
 
 Đặc tả và quyết định nằm trong repo local `../cane-mvp/`: đọc
 [thiết kế kỹ thuật](../cane-mvp/docs/03-technical-design.md),

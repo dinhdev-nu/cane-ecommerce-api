@@ -20,7 +20,7 @@ import vn.cane.admin.infrastructure.security.StaffSessionFilter;
 import vn.cane.support.web.ApiErrorCode;
 import vn.cane.support.web.ApiErrors;
 
-/** Opens only me/logout; login is introduced by WP01-11. */
+/** Opens the three staff auth routes; other product routes remain closed. */
 @Configuration(proxyBeanMethods = false)
 @Profile("api & !worker")
 public class SecurityConfiguration {
@@ -49,6 +49,8 @@ public class SecurityConfiguration {
                                 org.springframework.http.HttpMethod.GET, "/api/v1/admin/me")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/logout")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/login")
                         .permitAll()
                         .anyRequest()
                         .denyAll())
