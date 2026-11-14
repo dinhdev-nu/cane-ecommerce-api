@@ -1,0 +1,18 @@
+{
+  "store": null,
+  "accepting_orders": true,
+  "enabled_payment_methods": [],
+  "shipping_fee_vnd": null,
+  "free_ship_threshold_vnd": null,
+  "delivery_zones": [],
+  "bank_details": null,
+  "bank_auto_confirm": false,
+  "operator_can_confirm_bank": false,
+  "support": null,
+  "owner_notify": null,
+  "low_stock_threshold": 5,
+  "max_qty_per_sku": 99,
+  "bank_hold_min": 60,
+  "link_ttl_days": 90,
+  "stale_alert_hours": 24
+}

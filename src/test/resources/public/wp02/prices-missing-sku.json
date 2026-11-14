@@ -1,0 +1,53 @@
+{
+  "serverTime": "2026-11-14T00:00:00Z",
+  "items": [
+    {
+      "sku": "cane-juice-bottle",
+      "priceVnd": 25001,
+      "availability": "in_stock",
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-juice-cup",
+      "priceVnd": 19000,
+      "availability": "low",
+      "deliveryScope": "near"
+    },
+    {
+      "sku": "cane-tea",
+      "priceVnd": 33000,
+      "availability": "low",
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-candy",
+      "priceVnd": 1,
+      "availability": "in_stock",
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-syrup",
+      "priceVnd": 125000,
+      "availability": "paused",
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-molasses",
+      "priceVnd": 87000,
+      "availability": "out",
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "raw-cane-sugar",
+      "priceVnd": 47000,
+      "availability": "paused",
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "whole-cane-sugar",
+      "priceVnd": 9007199254740991,
+      "availability": "in_stock",
+      "deliveryScope": "city"
+    }
+  ]
+}

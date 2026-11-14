@@ -4,17 +4,22 @@ Nguồn: thiết kế dữ liệu §9.1, backlog WP01-06 và nhóm kiểm §3.4.
 chủ dự án chốt chín ID frontend làm SKU ổn định: `cane-juice-bottle`,
 `cane-juice-cup`, `cane-tea`, `cane-candy`, `cane-syrup`, `cane-molasses`,
 `raw-cane-sugar`, `whole-cane-sugar`, `cane-vinegar`. Đối chiếu ở
-`cane-mvp/docs/02-storefront-design.md#sf-products`; chưa chốt giá/quy cách thật.
+`cane-mvp/docs/02-storefront-design.md#sf-products`. Ngày 14/11/2026 chủ dự án xác
+nhận tên tiếng Anh hiện có và quy cách bán tại `scripts/catalog/catalog-template.json`:
+chai nước mía 300 ml; ly dung tích danh nghĩa 500 ml gồm đá, không phải 500 ml nước
+mía tịnh; trà 100 g; kẹo 150 g; syrup/giấm chai 330 ml; mật hũ 450 g; hai loại đường
+túi 500 g. Giá/trạng thái bán/phạm vi chưa xác nhận đầy đủ.
 
 ## Chuẩn bị và chạy
 
 1. Build JAR bằng Maven Wrapper; migrate/validate core bằng lệnh vận hành riêng.
    Seed chỉ validate schema/checksum, không migrate/repair/baseline hoặc tạo schema.
 2. Sao chép `scripts/catalog/catalog-template.json` vào nơi quản lý dữ liệu vận
-   hành. Điền đủ tên ngắn, đơn vị/quy cách, giá VND nguyên dương, `isActive` boolean
-   và `deliveryScope` city/near cho từng SKU; nước mía ly dùng near. Giữ `dataKind`
-   là release cho dữ liệu đã được xác nhận. Mẫu cố ý để null: chưa điền thì lệnh dừng
-   trước kết nối DB. Không lấy giá/đơn vị fixture hoặc hình mẫu làm dữ liệu thật.
+   hành. Mẫu đã có tên và `unitLabel` được xác nhận; giữ nguyên ý nghĩa ly 500 ml gồm
+   đá. Điền giá VND nguyên dương, `isActive` boolean và `deliveryScope` city/near cho
+   từng SKU theo dữ liệu mở bán được xác nhận; nước mía ly dùng near. Giữ `dataKind`
+   là release. Các giá trị thương mại chưa chốt vẫn null: chưa điền thì lệnh dừng
+   trước kết nối DB. Không lấy giá/tồn hoặc settings fixture làm dữ liệu mở bán.
 3. Cấp `CANE_OPERATIONS_DB_URL`, `CANE_OPERATIONS_DB_USER`,
    `CANE_OPERATIONS_DB_PASSWORD` qua môi trường tiến trình bằng cơ chế quản lý secret
    của môi trường. URL JDBC PostgreSQL, credential vận hành riêng; không thêm quyền
@@ -71,6 +76,6 @@ transaction/repository/service và script PowerShell/JAR thật. Kiểm tạo/ch
 giữ mọi cột/settings, rollback, seed dở, tranh khóa, runtime bị từ chối và schema
 sai/chưa migrate. [Hồ sơ](wp01-06-verification.md) ghi kết quả đúng build.
 
-Chưa có manifest giá/quy cách/trạng thái bán/phạm vi của dữ liệu thật đầy đủ. Chưa
+Tên/quy cách đã được xác nhận; chưa có manifest giá/trạng thái bán/phạm vi thật đầy đủ. Chưa
 seed production hoặc mở bán. CI đồng bộ catalog/asset đầy đủ thuộc WP02; seed không
 tự tạo `catalog.ts` hay đổi thông tin hiển thị frontend trong task nền.

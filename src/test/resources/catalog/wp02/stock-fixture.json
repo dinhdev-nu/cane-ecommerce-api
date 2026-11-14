@@ -1,0 +1,42 @@
+{
+  "dataKind": "fixture",
+  "lowStockThreshold": 5,
+  "items": [
+    {
+      "sku": "cane-juice-bottle",
+      "stockQty": 6
+    },
+    {
+      "sku": "cane-juice-cup",
+      "stockQty": 1
+    },
+    {
+      "sku": "cane-tea",
+      "stockQty": 4
+    },
+    {
+      "sku": "cane-candy",
+      "stockQty": 5
+    },
+    {
+      "sku": "cane-syrup",
+      "stockQty": 0
+    },
+    {
+      "sku": "cane-molasses",
+      "stockQty": 0
+    },
+    {
+      "sku": "raw-cane-sugar",
+      "stockQty": 6
+    },
+    {
+      "sku": "whole-cane-sugar",
+      "stockQty": 5
+    },
+    {
+      "sku": "cane-vinegar",
+      "stockQty": 6
+    }
+  ]
+}

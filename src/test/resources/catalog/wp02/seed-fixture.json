@@ -1,0 +1,77 @@
+{
+  "dataKind": "fixture",
+  "products": [
+    {
+      "sku": "cane-juice-bottle",
+      "name": "Cane Juice · Bottle",
+      "unitLabel": "Bottle 300 ml",
+      "priceVnd": 25001,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-juice-cup",
+      "name": "Cane Juice · Cup",
+      "unitLabel": "Cup 500 ml (with ice)",
+      "priceVnd": 19000,
+      "isActive": true,
+      "deliveryScope": "near"
+    },
+    {
+      "sku": "cane-tea",
+      "name": "Cane Tea",
+      "unitLabel": "Pouch 100 g",
+      "priceVnd": 33000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-candy",
+      "name": "Cane Candy",
+      "unitLabel": "Pouch 150 g",
+      "priceVnd": 1,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-syrup",
+      "name": "Cane Syrup",
+      "unitLabel": "Bottle 330 ml",
+      "priceVnd": 125000,
+      "isActive": false,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-molasses",
+      "name": "Cane Molasses",
+      "unitLabel": "Jar 450 g",
+      "priceVnd": 87000,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "raw-cane-sugar",
+      "name": "Raw Cane Sugar",
+      "unitLabel": "Pouch 500 g",
+      "priceVnd": 47000,
+      "isActive": false,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "whole-cane-sugar",
+      "name": "Whole Cane Sugar",
+      "unitLabel": "Pouch 500 g",
+      "priceVnd": 9007199254740991,
+      "isActive": true,
+      "deliveryScope": "city"
+    },
+    {
+      "sku": "cane-vinegar",
+      "name": "Cane Vinegar",
+      "unitLabel": "Bottle 330 ml",
+      "priceVnd": 63000,
+      "isActive": true,
+      "deliveryScope": "city"
+    }
+  ]
+}

@@ -1,9 +1,11 @@
-param([switch]$AllowCurrentLocalDocker)
+param(
+    [switch]$AllowCurrentLocalDocker,
+    [string]$EnvFile = '.local/dev.env'
+)
 $ErrorActionPreference = 'Stop'
 $verificationStarted = [DateTimeOffset]::UtcNow
 $serverRoot = Split-Path -Parent $PSScriptRoot
 $project = 'cane-prep02-check-' + [Guid]::NewGuid().ToString('N').Substring(0, 12)
-$composeArgs = @('compose', '--env-file', '.local/dev.env', '--project-name', $project)
 Push-Location -LiteralPath $serverRoot
 try {
     foreach ($script in Get-ChildItem -LiteralPath (Join-Path $serverRoot 'scripts') -Filter '*.ps1' -Recurse -File) {
@@ -13,7 +15,11 @@ try {
         if ($syntaxErrors.Count -ne 0) { throw ('PowerShell syntax check failed: ' + $script.Name) }
     }
     & ./scripts/Test-Toolchain.ps1 -AllowCurrentLocalDocker:$AllowCurrentLocalDocker
-    if (-not (Test-Path -LiteralPath '.local/dev.env')) { & ./scripts/New-LocalEnvironment.ps1 }
+    if (-not (Test-Path -LiteralPath $EnvFile)) {
+        if ($EnvFile -ne '.local/dev.env') { throw 'Selected test environment file does not exist.' }
+        & ./scripts/New-LocalEnvironment.ps1
+    }
+    $composeArgs = @('compose', '--env-file', $EnvFile, '--project-name', $project)
     $beforeImages = @(& docker image ls --no-trunc --quiet | Sort-Object -Unique)
     if ($LASTEXITCODE -ne 0) { throw 'Cannot record Docker image inventory.' }
     @{ project = $project; imageIdsBefore = $beforeImages; startedAt = [DateTime]::UtcNow.ToString('o') } |

@@ -1,0 +1,32 @@
+{
+  "storeName": "WP02 fixture shop",
+  "address": "Fixture address - not a pickup location",
+  "openingHours": "Fixture 08:00-17:00",
+  "pickupGuidance": "Fixture only - do not travel",
+  "acceptingOrders": true,
+  "enabledPaymentMethods": [
+    "cod",
+    "bank_transfer"
+  ],
+  "bankConfirmationMode": "manual",
+  "deliveryEnabled": true,
+  "shippingFeeVnd": 0,
+  "freeShipThresholdVnd": 0,
+  "maxQtyPerSku": 99,
+  "deliveryZones": [
+    {
+      "wardCode": "FIXTURE-NEAR",
+      "name": "Fixture near zone",
+      "allowNear": true
+    },
+    {
+      "wardCode": "FIXTURE-CITY",
+      "name": "Fixture city zone",
+      "allowNear": false
+    }
+  ],
+  "support": {
+    "phone": "0000000000",
+    "zaloUrl": "https://example.invalid/wp02-support"
+  }
+}
