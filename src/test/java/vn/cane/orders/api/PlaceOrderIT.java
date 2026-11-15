@@ -173,13 +173,11 @@ class PlaceOrderIT {
     void allFourCombinationsSnapshotAndOutboxAreCommittedWithoutPaymentReceipts() throws Exception {
         var config = JSON.readTree(
                 sql.queryForObject("SELECT jsonb_object_agg(key,value)::text FROM cane.settings", String.class));
-        var itemSnapshot = sql.queryForMap(
-                """
+        var itemSnapshot = sql.queryForMap("""
                 SELECT sku,name AS name_snapshot,unit_label AS unit_label_snapshot,
                   price_vnd AS unit_price_vnd,1 AS quantity,delivery_scope AS delivery_scope_snapshot
                 FROM cane.products WHERE sku=?
-                """,
-                sku());
+                """, sku());
         for (String fulfillment : List.of("delivery", "pickup"))
             for (String method : List.of("cod", "bank_transfer")) {
                 var command = order(fulfillment, method);
@@ -203,38 +201,39 @@ class PlaceOrderIT {
                         "SELECT id FROM cane.orders WHERE order_number=?",
                         UUID.class,
                         result.get("order").get("orderNumber").asString());
-                assertThat(sql.queryForMap(
-                                """
+                assertThat(sql.queryForMap("""
                                 SELECT sku,name_snapshot,unit_label_snapshot,unit_price_vnd,quantity,delivery_scope_snapshot
                                 FROM cane.order_items WHERE order_id=?
-                                """,
-                                orderId))
-                        .isEqualTo(itemSnapshot);
-                var snapshots = JSON.readTree(sql.queryForObject(
-                        """
+                                """, orderId)).isEqualTo(itemSnapshot);
+                var snapshots = JSON.readTree(sql.queryForObject("""
                         SELECT jsonb_build_object('address',address,'store',store_snapshot,'bank',bank_snapshot)::text
                         FROM cane.orders WHERE id=?
-                        """,
-                        String.class,
-                        orderId));
+                        """, String.class, orderId));
                 var expectedAddress = fulfillment.equals("delivery")
                         ? JSON.createObjectNode()
-                                .put("wardCode", command.get("address").get("wardCode").asString())
-                                .put("wardName", config.get("delivery_zones").get(0).get("name").asString())
-                                .put("line1", command.get("address").get("line1").asString())
+                                .put(
+                                        "wardCode",
+                                        command.get("address").get("wardCode").asString())
+                                .put(
+                                        "wardName",
+                                        config.get("delivery_zones")
+                                                .get(0)
+                                                .get("name")
+                                                .asString())
+                                .put(
+                                        "line1",
+                                        command.get("address").get("line1").asString())
                         : JSON.nullNode();
                 assertThat(snapshots.get("address")).isEqualTo(expectedAddress);
                 assertThat(snapshots.get("store"))
                         .isEqualTo(fulfillment.equals("pickup") ? config.get("store") : JSON.nullNode());
                 assertThat(snapshots.get("bank"))
                         .isEqualTo(method.equals("bank_transfer") ? config.get("bank_details") : JSON.nullNode());
-                assertThat(sql.queryForList(
-                                """
+                assertThat(sql.queryForList("""
                                 SELECT n.kind,n.channel,n.recipient FROM cane.notification_outbox n
                                 JOIN cane.business_events e ON e.id=n.event_id AND e.order_id=n.order_id
                                 WHERE n.order_id=? AND e.kind='order_placed'
-                                """,
-                                orderId))
+                                """, orderId))
                         .containsExactlyInAnyOrder(
                                 Map.of("kind", "order_placed", "channel", "email", "recipient", "wp03@example.invalid"),
                                 Map.of(
