@@ -47,7 +47,7 @@ class Wp02FixturesTest {
             "support");
 
     @Test
-    void approvedSaleUnitsMatchThePreparationFixtureWhileReleaseCommercialValuesRemainUnfilled() throws Exception {
+    void approvedUnitsAndResearchedPricesKeepUnconfirmedReleaseFlagsExplicit() throws Exception {
         JsonNode release = JSON.readTree(Files.readAllBytes(Path.of("scripts/catalog/catalog-template.json")));
         var fixture = CatalogManifestReader.read(RESOURCES.resolve("catalog/wp02/seed-fixture.json"), "test");
         var products =
@@ -75,7 +75,7 @@ class Wp02FixturesTest {
             assertThat(row.get("name").asString())
                     .isNotBlank()
                     .isEqualTo(products.get(sku).name());
-            assertThat(row.get("priceVnd").isNull()).isTrue();
+            assertThat(row.get("priceVnd").asLong()).isPositive().isLessThanOrEqualTo(NumericInputs.MAX_VND);
             assertThat(row.get("isActive").isNull()).isTrue();
             if (sku.equals(CatalogSkus.JUICE_CUP))
                 assertThat(row.get("deliveryScope").asString()).isEqualTo("near");

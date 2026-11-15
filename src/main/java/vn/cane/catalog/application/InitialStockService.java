@@ -17,18 +17,21 @@ public final class InitialStockService {
     private final IdempotentOperations operations;
     private final BusinessEventWriter events;
     private final JsonMapper json;
+    private final PricesInvalidation prices;
 
     public InitialStockService(
             InitialStockRepository repository,
             StaffCommandService staff,
             IdempotentOperations operations,
             BusinessEventWriter events,
-            JsonMapper json) {
+            JsonMapper json,
+            PricesInvalidation prices) {
         this.repository = repository;
         this.staff = staff;
         this.operations = operations;
         this.events = events;
         this.json = json;
+        this.prices = prices;
     }
 
     public OperationReceipt initialize(InitialStockCommand command) {
@@ -52,7 +55,10 @@ public final class InitialStockService {
                     .put("delta", command.quantity());
             if (movementId == null) result.putNull("movementId");
             else result.put("movementId", movementId.toString());
-            if (command.quantity() > 0) repository.setStock(command.sku(), command.quantity(), scope.actor());
+            if (command.quantity() > 0) {
+                repository.setStock(command.sku(), command.quantity(), scope.actor());
+                prices.afterCommit();
+            }
             events.append(
                     new BusinessEvent(
                             eventId,

@@ -5,7 +5,7 @@
       "sku": "cane-juice-bottle",
       "name": "Cane Juice · Bottle",
       "unitLabel": "Bottle 300 ml",
-      "priceVnd": null,
+      "priceVnd": 12000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -13,7 +13,7 @@
       "sku": "cane-juice-cup",
       "name": "Cane Juice · Cup",
       "unitLabel": "Cup 500 ml (with ice)",
-      "priceVnd": null,
+      "priceVnd": 15000,
       "isActive": null,
       "deliveryScope": "near"
     },
@@ -21,7 +21,7 @@
       "sku": "cane-tea",
       "name": "Cane Tea",
       "unitLabel": "Pouch 100 g",
-      "priceVnd": null,
+      "priceVnd": 35000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -29,7 +29,7 @@
       "sku": "cane-candy",
       "name": "Cane Candy",
       "unitLabel": "Pouch 150 g",
-      "priceVnd": null,
+      "priceVnd": 45000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -37,7 +37,7 @@
       "sku": "cane-syrup",
       "name": "Cane Syrup",
       "unitLabel": "Bottle 330 ml",
-      "priceVnd": null,
+      "priceVnd": 20000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -45,7 +45,7 @@
       "sku": "cane-molasses",
       "name": "Cane Molasses",
       "unitLabel": "Jar 450 g",
-      "priceVnd": null,
+      "priceVnd": 35000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -53,7 +53,7 @@
       "sku": "raw-cane-sugar",
       "name": "Raw Cane Sugar",
       "unitLabel": "Pouch 500 g",
-      "priceVnd": null,
+      "priceVnd": 70000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -61,7 +61,7 @@
       "sku": "whole-cane-sugar",
       "name": "Whole Cane Sugar",
       "unitLabel": "Pouch 500 g",
-      "priceVnd": null,
+      "priceVnd": 75000,
       "isActive": null,
       "deliveryScope": null
     },
@@ -69,7 +69,7 @@
       "sku": "cane-vinegar",
       "name": "Cane Vinegar",
       "unitLabel": "Bottle 330 ml",
-      "priceVnd": null,
+      "priceVnd": 25000,
       "isActive": null,
       "deliveryScope": null
     }

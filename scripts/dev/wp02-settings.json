@@ -1,0 +1,36 @@
+{
+  "dataKind": "fixture",
+  "values": {
+    "store": {
+      "name": "Cane Shop",
+      "address": "Xóm Kênh, Thôn Hạ Lang, Xã Đan Điền, Thành phố Huế",
+      "openingHours": "08:00–20:00",
+      "pickupGuidance": "Đến lấy tại cửa hàng khi đơn ở trạng thái Sẵn sàng lấy. Nếu chọn COD, thanh toán tiền mặt khi bàn giao hàng."
+    },
+    "accepting_orders": true,
+    "enabled_payment_methods": ["cod", "bank_transfer"],
+    "shipping_fee_vnd": 15000,
+    "free_ship_threshold_vnd": 100000,
+    "delivery_zones": [
+      {"wardCode": "19885", "name": "Xã Đan Điền", "allowNear": true},
+      {"wardCode": "19867", "name": "Xã Quảng Điền", "allowNear": true},
+      {"wardCode": "19753", "name": "Phường Phú Xuân", "allowNear": false},
+      {"wardCode": "19789", "name": "Phường Thuận Hóa", "allowNear": false}
+    ],
+    "bank_details": {
+      "bankCode": "VietinBank",
+      "bankName": "VietinBank - MOCK DEV",
+      "accountNo": "0338825982",
+      "accountName": "MOCK DEV - KHONG CHUYEN TIEN"
+    },
+    "bank_auto_confirm": false,
+    "operator_can_confirm_bank": false,
+    "support": {"phone": "0338825982", "zaloUrl": "https://zalo.me/0338825982"},
+    "owner_notify": {"email": "wp02-owner@example.invalid", "telegramChatId": null},
+    "low_stock_threshold": 5,
+    "max_qty_per_sku": 99,
+    "bank_hold_min": 60,
+    "link_ttl_days": 90,
+    "stale_alert_hours": 24
+  }
+}

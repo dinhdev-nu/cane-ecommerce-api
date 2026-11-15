@@ -20,7 +20,7 @@ import vn.cane.admin.infrastructure.security.StaffSessionFilter;
 import vn.cane.support.web.ApiErrorCode;
 import vn.cane.support.web.ApiErrors;
 
-/** Opens the three staff auth routes; other product routes remain closed. */
+/** Exact public and staff-auth routes; everything else remains denied by default. */
 @Configuration(proxyBeanMethods = false)
 @Profile("api & !worker")
 public class SecurityConfiguration {
@@ -46,7 +46,10 @@ public class SecurityConfiguration {
             AdminRequestOrigin origin)
             throws Exception {
         return http.authorizeHttpRequests(requests -> requests.requestMatchers(
-                                org.springframework.http.HttpMethod.GET, "/api/v1/admin/me")
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/v1/admin/me",
+                                "/api/v1/shop",
+                                "/api/v1/prices")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/logout")
                         .permitAll()

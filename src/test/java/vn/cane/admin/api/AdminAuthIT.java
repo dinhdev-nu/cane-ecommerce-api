@@ -257,7 +257,7 @@ class AdminAuthIT {
         assertError(send("GET", "/api/v1/admin/unknown", null, Map.of()), 401, "AUTH_REQUIRED");
         assertError(send("POST", "/api/v1/checkout/place", "{}", Map.of()), 403, "FORBIDDEN");
         var response = send("GET", "/api/v1/shop", null, Map.of("Origin", "https://evil.test"));
-        assertError(response, 403, "FORBIDDEN");
+        assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().allValues("Set-Cookie")).isEmpty();
         assertThat(response.headers().firstValue("Access-Control-Allow-Origin")).isEmpty();
         assertNoBusinessWrites();

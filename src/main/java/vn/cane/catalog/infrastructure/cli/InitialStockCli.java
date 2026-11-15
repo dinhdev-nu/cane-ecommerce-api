@@ -15,7 +15,9 @@ import vn.cane.admin.infrastructure.JdbcStaffCommandRepository;
 import vn.cane.bootstrap.PasswordConfiguration;
 import vn.cane.bootstrap.TransactionConfiguration;
 import vn.cane.bootstrap.cli.OperationalDatabase;
+import vn.cane.bootstrap.cli.OperationalPricesInvalidation;
 import vn.cane.catalog.application.InitialStockService;
+import vn.cane.catalog.application.PricesInvalidation;
 import vn.cane.catalog.infrastructure.JdbcInitialStockRepository;
 import vn.cane.support.audit.BusinessEventWriter;
 import vn.cane.support.idempotency.IdempotentOperations;
@@ -23,7 +25,7 @@ import vn.cane.support.idempotency.OperationReceipts;
 import vn.cane.support.transaction.AdvisoryLocks;
 import vn.cane.support.transaction.Transactions;
 
-/** One-shot operational process; never starts HTTP, Redis or worker jobs. */
+/** One-shot operational process, with bounded post-commit cache DEL; no HTTP or worker jobs. */
 public final class InitialStockCli {
     private InitialStockCli() {}
 
@@ -43,6 +45,11 @@ public final class InitialStockCli {
                 requireOperationalPermissions(source, environment);
                 context.registerBean(DataSource.class, () -> source);
                 context.registerBean(NamedParameterJdbcTemplate.class, () -> new NamedParameterJdbcTemplate(source));
+                context.registerBean(
+                        PricesInvalidation.class,
+                        () -> new PricesInvalidation(
+                                context.getBean(Transactions.class),
+                                () -> OperationalPricesInvalidation.evict(environment, arguments[3])));
                 context.registerBean(
                         JsonMapper.class, () -> JsonMapper.builder().build());
                 context.register(

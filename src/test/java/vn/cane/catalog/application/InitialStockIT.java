@@ -451,7 +451,13 @@ class InitialStockIT {
 
     private InitialStockService build(
             InitialStockRepository repo, BusinessEventWriter writer, StaffCommandService auth) {
-        return new InitialStockService(repo, auth, operations, writer, json);
+        return new InitialStockService(
+                repo,
+                auth,
+                operations,
+                writer,
+                json,
+                new PricesInvalidation(context.getBean(Transactions.class), () -> {}));
     }
 
     private InitialStockCommand command(int quantity, String key) {

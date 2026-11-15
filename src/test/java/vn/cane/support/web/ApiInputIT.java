@@ -210,7 +210,7 @@ class ApiInputIT {
                 400,
                 "INVALID_INPUT");
         for (String method : List.of("GET", "POST")) {
-            var request = HttpRequest.newBuilder(URI.create(origin + "/api/v1/shop"))
+            var request = HttpRequest.newBuilder(URI.create(origin + "/api/v1/not-open"))
                     .timeout(Duration.ofSeconds(5))
                     .method(method, HttpRequest.BodyPublishers.noBody())
                     .build();

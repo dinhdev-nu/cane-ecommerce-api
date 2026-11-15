@@ -81,6 +81,8 @@ class CatalogSeedIT {
         context = new AnnotationConfigApplicationContext();
         context.registerBean(DataSource.class, () -> source);
         context.registerBean(NamedParameterJdbcTemplate.class, () -> new NamedParameterJdbcTemplate(source));
+        context.registerBean(
+                PricesInvalidation.class, () -> new PricesInvalidation(context.getBean(Transactions.class), () -> {}));
         context.register(
                 TransactionConfiguration.class,
                 Transactions.class,
@@ -138,7 +140,8 @@ class CatalogSeedIT {
                     if (calls.incrementAndGet() == 4) throw new IllegalStateException("Injected seed interruption");
                 }),
                 transactions,
-                context.getBean(AdvisoryLocks.class));
+                context.getBean(AdvisoryLocks.class),
+                context.getBean(PricesInvalidation.class));
         assertThatThrownBy(() -> fault.seed(manifest)).isInstanceOf(IllegalStateException.class);
         assertThat(snapshot("products")).isEqualTo(before);
         assertThat(service.seed(manifest)).isEqualTo(new CatalogSeedService.Result(9 - initialRows, initialRows));
@@ -175,7 +178,8 @@ class CatalogSeedIT {
                     }
                 }),
                 context.getBean(Transactions.class),
-                context.getBean(AdvisoryLocks.class));
+                context.getBean(AdvisoryLocks.class),
+                context.getBean(PricesInvalidation.class));
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var first = executor.submit(() -> holding.seed(manifest));
             try {
