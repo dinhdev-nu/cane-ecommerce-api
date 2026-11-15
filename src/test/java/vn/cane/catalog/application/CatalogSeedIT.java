@@ -234,15 +234,16 @@ class CatalogSeedIT {
     }
 
     @Test
-    void realWrapperAndPackagedEntryPointNeedNoApiWorkerOrRedisAndCanRunAgain() throws Exception {
+    void realWrapperWarnsWithoutRedisAndRerunPreservesCommittedSeed() throws Exception {
         Path path = directory.resolve("fixture with spaces.json");
         Files.copy(fixture(), path);
         var first = wrapper(path);
         assertThat(first)
                 .contains("inserted=9 preserved=0")
-                .doesNotContain("Tomcat", "Redis", "PRIVATE", TestInfrastructure.MIGRATION_PASSWORD);
+                .contains("WARNING: Database changes committed, but prices cache invalidation failed.")
+                .doesNotContain("Tomcat", "PRIVATE", "Exception", "jdbc:", TestInfrastructure.MIGRATION_PASSWORD);
         String before = snapshot("products");
-        assertThat(wrapper(path)).contains("inserted=0 preserved=9");
+        assertThat(wrapper(path)).contains("inserted=0 preserved=9").doesNotContain("WARNING:");
         assertThat(snapshot("products")).isEqualTo(before);
         assertThat(owner.queryForObject("SELECT count(*) FROM cane.staff_users", Integer.class))
                 .isZero();
@@ -291,6 +292,7 @@ class CatalogSeedIT {
                 .redirectErrorStream(true);
         process.environment().putAll(environment);
         process.environment().put("CANE_DB_URL", "invalid-runtime-must-not-start");
+        process.environment().remove("CANE_REDIS_HOST");
         var child = process.start();
         if (!child.waitFor(25, TimeUnit.SECONDS)) {
             child.destroyForcibly();
