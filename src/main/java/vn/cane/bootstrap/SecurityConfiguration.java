@@ -51,6 +51,9 @@ public class SecurityConfiguration {
                                 "/api/v1/shop",
                                 "/api/v1/prices")
                         .permitAll()
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.POST, "/api/v1/checkout/quote", "/api/v1/orders")
+                        .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/logout")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/login")

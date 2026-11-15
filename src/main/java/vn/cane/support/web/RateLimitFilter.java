@@ -25,7 +25,17 @@ public final class RateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !"POST".equals(request.getMethod()) || !"/api/v1/admin/auth/login".equals(request.getServletPath());
+        return group(request) == null;
+    }
+
+    private static RateGroup group(HttpServletRequest request) {
+        if (!"POST".equals(request.getMethod())) return null;
+        return switch (request.getServletPath()) {
+            case "/api/v1/admin/auth/login" -> RateGroup.LOGIN;
+            case "/api/v1/checkout/quote" -> RateGroup.QUOTE;
+            case "/api/v1/orders" -> RateGroup.PLACE_ORDER;
+            default -> null;
+        };
     }
 
     @Override
@@ -34,7 +44,7 @@ public final class RateLimitFilter extends OncePerRequestFilter {
         RateLimiter.Decision decision;
         try {
             String forwarded = String.join(",", Collections.list(request.getHeaders("X-Forwarded-For")));
-            decision = limiter.check(RateGroup.LOGIN, addresses.resolve(request.getRemoteAddr(), forwarded));
+            decision = limiter.check(group(request), addresses.resolve(request.getRemoteAddr(), forwarded));
         } catch (RuntimeException unavailable) {
             errors.write(request, response, 503, ApiErrorCode.SERVICE_UNAVAILABLE);
             return;
