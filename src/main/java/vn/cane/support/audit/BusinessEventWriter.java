@@ -14,6 +14,7 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 import vn.cane.support.idempotency.OperationStamp;
 import vn.cane.support.transaction.TransactionAccess;
+import vn.cane.support.validation.BankReceiptKey;
 
 /** Append only, using the caller connection/transaction. No retries, independent commits or external IO. */
 @Repository
@@ -52,8 +53,11 @@ public class BusinessEventWriter {
                         checkFact(
                                 facts,
                                 "reference",
-                                row.getString(
-                                        event.kind().equals("payment_refunded") ? "refund_reference" : "provider_ref"));
+                                event.kind().equals("payment_refunded")
+                                        ? row.getString("refund_reference")
+                                        : row.getString("method").equals("bank")
+                                                ? BankReceiptKey.reference(row.getString("provider_ref"))
+                                                : null);
                         checkFact(facts, "isPrincipal", row.getBoolean("applied_to_order"));
                         checkFact(facts, "orderLinkVerified", row.getBoolean("order_link_verified"));
                         return new PaymentSource(row.getObject("order_id", UUID.class));

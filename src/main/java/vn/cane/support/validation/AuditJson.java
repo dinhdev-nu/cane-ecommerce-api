@@ -38,6 +38,13 @@ public final class AuditJson {
             "date",
             "failedOutboxId");
     private static final Set<String> RESULTS = Set.of(
+            "method",
+            "amountVnd",
+            "appliedToOrder",
+            "orderLinkVerified",
+            "needsReview",
+            "refundReference",
+            "refundedAt",
             "orderId",
             "status",
             "paymentStatus",

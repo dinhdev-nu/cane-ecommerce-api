@@ -35,9 +35,25 @@ public final class ApiErrors {
             Map<String, String> fieldErrors,
             List<ItemError> items,
             JsonNode quote) {
+        return body(request, code, fieldErrors, items, quote, null);
+    }
+
+    public ErrorBody body(
+            HttpServletRequest request,
+            ApiErrorCode code,
+            Map<String, String> fieldErrors,
+            List<ItemError> items,
+            JsonNode quote,
+            JsonNode current) {
         request.setAttribute(ERROR_CODE, code.name());
         return new ErrorBody(new ErrorDetail(
-                code.name(), code.message(), Map.copyOf(fieldErrors), List.copyOf(items), requestId(request), quote));
+                code.name(),
+                code.message(),
+                Map.copyOf(fieldErrors),
+                List.copyOf(items),
+                requestId(request),
+                quote,
+                current));
     }
 
     public void write(HttpServletRequest request, HttpServletResponse response, int status, ApiErrorCode code)
@@ -68,7 +84,8 @@ public final class ApiErrors {
             Map<String, String> fieldErrors,
             List<ItemError> itemErrors,
             String requestId,
-            @JsonInclude(JsonInclude.Include.NON_NULL) JsonNode quote) {}
+            @JsonInclude(JsonInclude.Include.NON_NULL) JsonNode quote,
+            @JsonInclude(JsonInclude.Include.NON_NULL) JsonNode current) {}
 
     public record ItemError(String sku, String code, String message, Integer available) {}
 }

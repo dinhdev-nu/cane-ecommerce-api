@@ -58,6 +58,15 @@ public class SecurityConfiguration {
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/login")
                         .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/admin/payments")
+                        .authenticated()
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.POST,
+                                "/api/v1/admin/payments",
+                                "/api/v1/admin/payments/*/resolve",
+                                "/api/v1/admin/payments/*/confirm-refund",
+                                "/api/v1/admin/orders/*/confirm-payment")
+                        .authenticated()
                         .anyRequest()
                         .denyAll())
                 .addFilterBefore(new AdminOriginFilter(origin, apiErrors), CsrfFilter.class)
