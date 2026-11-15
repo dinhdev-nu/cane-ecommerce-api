@@ -51,7 +51,8 @@ public final class CatalogSeedCommand {
                         PricesInvalidation.class,
                         () -> new PricesInvalidation(
                                 context.getBean(Transactions.class),
-                                () -> OperationalPricesInvalidation.evict(environment, arguments[3])));
+                                () -> OperationalPricesInvalidation.evictWithWarning(
+                                        environment, arguments[3], output)));
                 context.register(
                         TransactionConfiguration.class,
                         Transactions.class,

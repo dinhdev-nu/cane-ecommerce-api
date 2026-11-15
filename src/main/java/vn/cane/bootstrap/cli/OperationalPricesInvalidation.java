@@ -2,6 +2,7 @@ package vn.cane.bootstrap.cli;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +14,18 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 /** Best-effort, bounded post-commit DEL. No Boot context, HTTP, scheduler or cache read. */
 public final class OperationalPricesInvalidation {
     private OperationalPricesInvalidation() {}
+
+    /** CLI callback only: database work has committed, so cache failure is a warning. */
+    public static void evictWithWarning(
+            Map<String, String> environment, String expectedEnvironment, PrintWriter output) {
+        try {
+            evict(environment, expectedEnvironment);
+        } catch (RuntimeException failure) {
+            output.println(
+                    "WARNING: Database changes committed, but prices cache invalidation failed. Check environment and Redis configuration; do not repeat the committed operation.");
+            output.flush();
+        }
+    }
 
     public static void evict(Map<String, String> environment, String expectedEnvironment) {
         String target = required(environment, "CANE_ENVIRONMENT");

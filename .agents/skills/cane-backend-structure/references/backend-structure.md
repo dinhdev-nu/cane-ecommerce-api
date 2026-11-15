@@ -162,7 +162,8 @@ chọn triển khai nội bộ. Không tự thêm endpoint quản trị nhân vi
   `scripts/staff/Manage-Staff.ps1`. Xem `docs/staff-commands.md`.
 - `CatalogSeedService` và `JdbcCatalogSeedRepository`: seed chỉ thêm SKU thiếu;
   `CatalogSeedCommand` ghép context tối thiểu qua `bootstrap/cli/OperationalDatabase`,
-  không khởi động Boot/HTTP/worker/Redis. `scripts/catalog/Seed-Catalog.ps1` gọi JAR;
+  không khởi động Boot/HTTP/worker; WP02 mở Redis client hữu hạn sau commit có thay
+  đổi để DEL cache giá, lỗi chỉ cảnh báo qua output CLI. `scripts/catalog/Seed-Catalog.ps1` gọi JAR;
   fixture chỉ ở test, template release chưa có dữ liệu thật. Xem `docs/catalog-seed.md`.
 - `support.ratelimit`: Redis Lua counter và process fallback dùng chung; bootstrap
   ghép bean ở API, `RateLimitFilter` gắn login một lần trước Security. Chỉ tin proxy

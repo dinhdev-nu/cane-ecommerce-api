@@ -49,7 +49,8 @@ public final class InitialStockCli {
                         PricesInvalidation.class,
                         () -> new PricesInvalidation(
                                 context.getBean(Transactions.class),
-                                () -> OperationalPricesInvalidation.evict(environment, arguments[3])));
+                                () -> OperationalPricesInvalidation.evictWithWarning(
+                                        environment, arguments[3], output)));
                 context.registerBean(
                         JsonMapper.class, () -> JsonMapper.builder().build());
                 context.register(

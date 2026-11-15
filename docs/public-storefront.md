@@ -45,6 +45,10 @@ a bounded Redis client only after commit. Provide `CANE_ENVIRONMENT` matching th
 explicit `--environment`, plus the existing `CANE_REDIS_HOST/PORT/USER/PASSWORD`.
 Missing/failed Redis is best effort, with at most the original fifteen-second cache
 age; never retry a committed database operation with a replacement idempotency key.
+Both CLI entry points print a fixed warning through their own output if DEL fails,
+even with library logging disabled. The warning discloses no exception or connection
+details; the database operation remains successful with exit code zero. Check Redis
+and environment configuration rather than repeating the committed operation.
 
 WP03/WP06/worker must use this hook for price, active flag, delivery scope, stock and
 `low_stock_threshold` changes, including place/reserve, cancellation/return, delivery

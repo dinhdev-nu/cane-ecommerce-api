@@ -8,7 +8,9 @@ chủ dự án chốt chín ID frontend làm SKU ổn định: `cane-juice-bottl
 nhận tên tiếng Anh hiện có và quy cách bán tại `scripts/catalog/catalog-template.json`:
 chai nước mía 300 ml; ly dung tích danh nghĩa 500 ml gồm đá, không phải 500 ml nước
 mía tịnh; trà 100 g; kẹo 150 g; syrup/giấm chai 330 ml; mật hũ 450 g; hai loại đường
-túi 500 g. Giá/trạng thái bán/phạm vi chưa xác nhận đầy đủ.
+túi 500 g. WP02 đã bổ sung giá khởi tạo theo nguồn thị trường; trạng thái bán/phạm
+vi release vẫn chưa xác nhận đầy đủ. Xem [public storefront](public-storefront.md)
+và [dữ liệu vận hành](operator-data.md) để phân biệt cấu hình dev/mock và mở bán thật.
 
 ## Chuẩn bị và chạy
 
@@ -18,14 +20,20 @@ túi 500 g. Giá/trạng thái bán/phạm vi chưa xác nhận đầy đủ.
    hành. Mẫu đã có tên và `unitLabel` được xác nhận; giữ nguyên ý nghĩa ly 500 ml gồm
    đá. Điền giá VND nguyên dương, `isActive` boolean và `deliveryScope` city/near cho
    từng SKU theo dữ liệu mở bán được xác nhận; nước mía ly dùng near. Giữ `dataKind`
-   là release. Các giá trị thương mại chưa chốt vẫn null: chưa điền thì lệnh dừng
-   trước kết nối DB. Không lấy giá/tồn hoặc settings fixture làm dữ liệu mở bán.
+   là release. Các trường release chưa chốt vẫn null: chưa điền thì lệnh dừng
+   trước kết nối DB. Giá khởi tạo cần được duyệt trước mở bán; không lấy tồn,
+   trạng thái/phạm vi hoặc settings fixture làm dữ liệu mở bán.
 3. Cấp `CANE_OPERATIONS_DB_URL`, `CANE_OPERATIONS_DB_USER`,
    `CANE_OPERATIONS_DB_PASSWORD` qua môi trường tiến trình bằng cơ chế quản lý secret
    của môi trường. URL JDBC PostgreSQL, credential vận hành riêng; không thêm quyền
    INSERT sản phẩm cho API/worker. Có thể dùng credential vận hành/migration hiện
    có theo quyền được cấp, chỉ cho tiến trình một lần; không dùng để chạy dịch vụ.
-4. Xác minh đúng database đích rồi chạy từ repo backend:
+4. Cấp `CANE_ENVIRONMENT` trùng với `-Environment`, cùng `CANE_REDIS_HOST`,
+   `CANE_REDIS_PORT` (số nguyên), `CANE_REDIS_USER`, `CANE_REDIS_PASSWORD` của đúng
+   môi trường qua cấu hình tiến trình. Redis credential cần quyền DEL khóa
+   `cane:<environment>:cache:prices:v1` theo ACL hiện hành. Không ghi secret vào
+   manifest hoặc tham số lệnh.
+5. Xác minh đúng database đích rồi chạy từ repo backend:
 
 ```powershell
 pwsh -NoProfile -File scripts/catalog/Seed-Catalog.ps1 `
@@ -38,9 +46,10 @@ cơ chế tự nhận biết môi trường từ database. Không đặt passwor
 PowerShell hoặc file manifest. Không commit manifest thật nếu chứa dữ liệu chưa công bố.
 
 Script gọi main riêng qua PropertiesLauncher trong cùng JAR, không khởi động Spring
-Boot/API/worker/Redis. CLI chỉ ghép DataSource, transaction và các thành phần Catalog
-cần thiết; log thư viện bị tắt trong tiến trình CLI, kết quả/lỗi dùng thông báo cố
-định không in ngoại lệ, SQL, password hoặc URL DB. API/worker không chạy seed startup.
+Boot/API/worker. CLI ghép DataSource, transaction và các thành phần Catalog cần
+thiết; sau commit có thêm SKU mới mới mở Redis client hữu hạn để DEL cache giá.
+Log thư viện bị tắt trong tiến trình CLI; kết quả/lỗi/cảnh báo dùng thông báo cố
+định không in ngoại lệ, SQL, password hoặc URL kết nối. API/worker không chạy seed startup.
 
 ## Hành vi chạy lại và lỗi
 
@@ -63,6 +72,12 @@ cần thiết; log thư viện bị tắt trong tiến trình CLI, kết quả/l
   khi bên đầu kết thúc. Không tự dùng bộ SKU khác hoặc xóa dữ liệu để chữa lỗi.
 - Kết quả `inserted=N preserved=M`, N+M=9; lỗi trả exit code khác 0. Khi không rõ
   commit, kiểm database hoặc chạy lại manifest; seed không ghi đè dòng đã tồn tại.
+- WP02: DEL chỉ sau commit có dòng mới; rollback hoặc chạy lại không thêm SKU
+  không DEL. Thiếu/sai cấu hình môi trường, credential hoặc lỗi Redis chỉ in
+  `WARNING: Database changes committed, but prices cache invalidation failed.`
+  kèm hướng kiểm cấu hình; DB đã thành công và exit code vẫn 0. Kiểm lại cấu hình
+  Redis/environment, không coi cảnh báo là rollback hoặc chạy lại thao tác để
+  chữa cache. Snapshot cache vẫn có deadline gốc tối đa 15 giây, không gia hạn khi đọc.
 
 Fixture nằm riêng `src/test/resources/catalog/nine-skus-fixture.json`, ghi rõ
 `dataKind=fixture`, chỉ chạy với local/test. Không được đóng gói vào JAR runtime;
@@ -77,5 +92,6 @@ giữ mọi cột/settings, rollback, seed dở, tranh khóa, runtime bị từ 
 sai/chưa migrate. [Hồ sơ](wp01-06-verification.md) ghi kết quả đúng build.
 
 Tên/quy cách đã được xác nhận; chưa có manifest giá/trạng thái bán/phạm vi thật đầy đủ. Chưa
-seed production hoặc mở bán. CI đồng bộ catalog/asset đầy đủ thuộc WP02; seed không
-tự tạo `catalog.ts` hay đổi thông tin hiển thị frontend trong task nền.
+seed production hoặc mở bán. WP02 đã bổ sung exporter và CI đồng bộ catalog/asset;
+seed không tự tạo `catalog.ts` hay đổi thông tin hiển thị frontend. Bằng chứng kiểm
+WP01 ở trên là hồ sơ lịch sử, không xác nhận bản sửa cảnh báo WP02 đã chạy lại test.
