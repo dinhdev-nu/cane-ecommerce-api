@@ -171,9 +171,20 @@ class PlaceOrderIT {
 
     @Test
     void allFourCombinationsSnapshotAndOutboxAreCommittedWithoutPaymentReceipts() throws Exception {
+        var config = JSON.readTree(
+                sql.queryForObject("SELECT jsonb_object_agg(key,value)::text FROM cane.settings", String.class));
+        var itemSnapshot = sql.queryForMap(
+                """
+                SELECT sku,name AS name_snapshot,unit_label AS unit_label_snapshot,
+                  price_vnd AS unit_price_vnd,1 AS quantity,delivery_scope AS delivery_scope_snapshot
+                FROM cane.products WHERE sku=?
+                """,
+                sku());
         for (String fulfillment : List.of("delivery", "pickup"))
             for (String method : List.of("cod", "bank_transfer")) {
-                var response = post("orders", order(fulfillment, method), key());
+                var command = order(fulfillment, method);
+                String key = key();
+                var response = post("orders", command, key);
                 assertThat(response.statusCode()).isEqualTo(201);
                 var result = body(response);
                 assertThat(result.get("order").get("status").asString())
@@ -188,12 +199,60 @@ class PlaceOrderIT {
                 context.getBean(OrderLinkService.class).authorizeRead(token);
                 assertThat(response.headers().firstValue("Cache-Control")).contains("no-store");
                 assertThat(result.toString()).doesNotContain("recipient", "requestHash", "stockQty", "bank_snapshot");
+                UUID orderId = sql.queryForObject(
+                        "SELECT id FROM cane.orders WHERE order_number=?",
+                        UUID.class,
+                        result.get("order").get("orderNumber").asString());
+                assertThat(sql.queryForMap(
+                                """
+                                SELECT sku,name_snapshot,unit_label_snapshot,unit_price_vnd,quantity,delivery_scope_snapshot
+                                FROM cane.order_items WHERE order_id=?
+                                """,
+                                orderId))
+                        .isEqualTo(itemSnapshot);
+                var snapshots = JSON.readTree(sql.queryForObject(
+                        """
+                        SELECT jsonb_build_object('address',address,'store',store_snapshot,'bank',bank_snapshot)::text
+                        FROM cane.orders WHERE id=?
+                        """,
+                        String.class,
+                        orderId));
+                var expectedAddress = fulfillment.equals("delivery")
+                        ? JSON.createObjectNode()
+                                .put("wardCode", command.get("address").get("wardCode").asString())
+                                .put("wardName", config.get("delivery_zones").get(0).get("name").asString())
+                                .put("line1", command.get("address").get("line1").asString())
+                        : JSON.nullNode();
+                assertThat(snapshots.get("address")).isEqualTo(expectedAddress);
+                assertThat(snapshots.get("store"))
+                        .isEqualTo(fulfillment.equals("pickup") ? config.get("store") : JSON.nullNode());
+                assertThat(snapshots.get("bank"))
+                        .isEqualTo(method.equals("bank_transfer") ? config.get("bank_details") : JSON.nullNode());
+                assertThat(sql.queryForList(
+                                """
+                                SELECT n.kind,n.channel,n.recipient FROM cane.notification_outbox n
+                                JOIN cane.business_events e ON e.id=n.event_id AND e.order_id=n.order_id
+                                WHERE n.order_id=? AND e.kind='order_placed'
+                                """,
+                                orderId))
+                        .containsExactlyInAnyOrder(
+                                Map.of("kind", "order_placed", "channel", "email", "recipient", "wp03@example.invalid"),
+                                Map.of(
+                                        "kind",
+                                        "owner_new_order",
+                                        "channel",
+                                        "email",
+                                        "recipient",
+                                        config.get("owner_notify").get("email").asString()));
+                var replay = post("orders", command, key);
+                assertThat(replay.statusCode()).isEqualTo(200);
+                assertThat(body(replay)).isEqualTo(result);
             }
         assertThat(count("orders")).isEqualTo(4);
         assertThat(count("order_items")).isEqualTo(4);
         assertThat(count("stock_movements")).isEqualTo(4);
         assertThat(count("business_events")).isEqualTo(4);
-        assertThat(count("notification_outbox")).isGreaterThanOrEqualTo(4);
+        assertThat(count("notification_outbox")).isEqualTo(8);
         assertThat(count("payments")).isZero();
         assertThat(sql.queryForObject("SELECT stock_qty FROM cane.products WHERE sku=?", Integer.class, sku()))
                 .isEqualTo(96);
