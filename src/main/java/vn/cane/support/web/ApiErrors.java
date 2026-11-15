@@ -1,5 +1,6 @@
 package vn.cane.support.web;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /** One allowlisted error representation for filters, Security and MVC. */
@@ -24,9 +26,18 @@ public final class ApiErrors {
     }
 
     public ErrorBody body(HttpServletRequest request, ApiErrorCode code, Map<String, String> fieldErrors) {
+        return body(request, code, fieldErrors, List.of(), null);
+    }
+
+    public ErrorBody body(
+            HttpServletRequest request,
+            ApiErrorCode code,
+            Map<String, String> fieldErrors,
+            List<ItemError> items,
+            JsonNode quote) {
         request.setAttribute(ERROR_CODE, code.name());
-        return new ErrorBody(
-                new ErrorDetail(code.name(), code.message(), Map.copyOf(fieldErrors), List.of(), requestId(request)));
+        return new ErrorBody(new ErrorDetail(
+                code.name(), code.message(), Map.copyOf(fieldErrors), List.copyOf(items), requestId(request), quote));
     }
 
     public void write(HttpServletRequest request, HttpServletResponse response, int status, ApiErrorCode code)
@@ -56,7 +67,8 @@ public final class ApiErrors {
             String message,
             Map<String, String> fieldErrors,
             List<ItemError> itemErrors,
-            String requestId) {}
+            String requestId,
+            @JsonInclude(JsonInclude.Include.NON_NULL) JsonNode quote) {}
 
     public record ItemError(String sku, String code, String message, Integer available) {}
 }
