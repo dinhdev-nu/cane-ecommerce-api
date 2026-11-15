@@ -81,6 +81,8 @@ class CatalogSeedIT {
         context = new AnnotationConfigApplicationContext();
         context.registerBean(DataSource.class, () -> source);
         context.registerBean(NamedParameterJdbcTemplate.class, () -> new NamedParameterJdbcTemplate(source));
+        context.registerBean(
+                PricesInvalidation.class, () -> new PricesInvalidation(context.getBean(Transactions.class), () -> {}));
         context.register(
                 TransactionConfiguration.class,
                 Transactions.class,
@@ -138,7 +140,8 @@ class CatalogSeedIT {
                     if (calls.incrementAndGet() == 4) throw new IllegalStateException("Injected seed interruption");
                 }),
                 transactions,
-                context.getBean(AdvisoryLocks.class));
+                context.getBean(AdvisoryLocks.class),
+                context.getBean(PricesInvalidation.class));
         assertThatThrownBy(() -> fault.seed(manifest)).isInstanceOf(IllegalStateException.class);
         assertThat(snapshot("products")).isEqualTo(before);
         assertThat(service.seed(manifest)).isEqualTo(new CatalogSeedService.Result(9 - initialRows, initialRows));
@@ -175,7 +178,8 @@ class CatalogSeedIT {
                     }
                 }),
                 context.getBean(Transactions.class),
-                context.getBean(AdvisoryLocks.class));
+                context.getBean(AdvisoryLocks.class),
+                context.getBean(PricesInvalidation.class));
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var first = executor.submit(() -> holding.seed(manifest));
             try {
@@ -230,15 +234,16 @@ class CatalogSeedIT {
     }
 
     @Test
-    void realWrapperAndPackagedEntryPointNeedNoApiWorkerOrRedisAndCanRunAgain() throws Exception {
+    void realWrapperWarnsWithoutRedisAndRerunPreservesCommittedSeed() throws Exception {
         Path path = directory.resolve("fixture with spaces.json");
         Files.copy(fixture(), path);
         var first = wrapper(path);
         assertThat(first)
                 .contains("inserted=9 preserved=0")
-                .doesNotContain("Tomcat", "Redis", "PRIVATE", TestInfrastructure.MIGRATION_PASSWORD);
+                .contains("WARNING: Database changes committed, but prices cache invalidation failed.")
+                .doesNotContain("Tomcat", "PRIVATE", "Exception", "jdbc:", TestInfrastructure.MIGRATION_PASSWORD);
         String before = snapshot("products");
-        assertThat(wrapper(path)).contains("inserted=0 preserved=9");
+        assertThat(wrapper(path)).contains("inserted=0 preserved=9").doesNotContain("WARNING:");
         assertThat(snapshot("products")).isEqualTo(before);
         assertThat(owner.queryForObject("SELECT count(*) FROM cane.staff_users", Integer.class))
                 .isZero();
@@ -287,6 +292,7 @@ class CatalogSeedIT {
                 .redirectErrorStream(true);
         process.environment().putAll(environment);
         process.environment().put("CANE_DB_URL", "invalid-runtime-must-not-start");
+        process.environment().remove("CANE_REDIS_HOST");
         var child = process.start();
         if (!child.waitFor(25, TimeUnit.SECONDS)) {
             child.destroyForcibly();

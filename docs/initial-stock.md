@@ -8,7 +8,7 @@ cho Catalog đã seed, chưa phải API/UI điều chỉnh kho WP06.
 Build JAR và migrate/validate schema trước; seed SKU tồn 0 rồi tạo Owner qua script
 nhân viên. Dùng credential vận hành riêng qua `CANE_OPERATIONS_DB_URL`,
 `CANE_OPERATIONS_DB_USER`, `CANE_OPERATIONS_DB_PASSWORD`. Lệnh không tự migrate,
-không mở HTTP/worker/Redis, không dùng credential runtime `cane_api`/`cane_worker`.
+không mở HTTP/worker, không dùng credential runtime `cane_api`/`cane_worker`.
 Đặt thêm hai biến **tên role, không phải mật khẩu** `CANE_API_DB_USER` và
 `CANE_WORKER_DB_USER` đúng theo `cane_api_role`/`cane_worker_role` đã cấp bằng
 `Grant-Runtime.sql` trên DB đích. Không mặc định tên role: thiếu/rỗng, role không
@@ -24,6 +24,13 @@ USAGE schema. Không cần ghi staff/settings/outbox hoặc quyền DDL; không 
 runtime. Credential vận hành là quyền truy cập lệnh, giống seed/script staff;
 ownerId chọn actor audit đang active/role owner trong SQL, không phải đăng nhập HTTP
 bằng UUID. Không dùng service này từ controller để thay session/CSRF/RBAC.
+
+WP02 bổ sung DEL cache giá sau commit có tăng tồn. Cấp `CANE_ENVIRONMENT` trùng
+`-Environment`, `CANE_REDIS_HOST`, `CANE_REDIS_PORT` (số nguyên), `CANE_REDIS_USER`,
+`CANE_REDIS_PASSWORD` của môi trường qua cấu hình tiến trình, không qua manifest
+hay tham số secret. Redis credential cần quyền DEL khóa
+`cane:<environment>:cache:prices:v1` theo ACL hiện hành. Redis client hữu hạn chỉ
+mở sau commit; replay/no-op/rollback không DEL. Xem [public storefront](public-storefront.md).
 
 Mỗi file là một thao tác cho một SKU; nhập chín SKU bằng các file/key riêng được
 giữ ổn định. Lưu file ngoài Git, ví dụ `.local/initial-stock-cane-tea.json`:
@@ -72,7 +79,15 @@ từ tồn 0, không thay giá/trạng thái bán hoặc nhập thêm lên tồn
 cập nhật tồn/updated_by/updated_at, một event stock_adjusted có neo, một ledger
 restock có actor/lý do và event_id, cùng transaction. Lượng 0 giữ nguyên row sản
 phẩm, ghi một operation_noop có neo/movementId null, không tạo ledger delta 0.
-Không có outbox, cache hoặc provider.
+Không có outbox hoặc gọi provider; lượng dương đăng ký xóa cache giá sau commit,
+không gọi Redis trong transaction giữ khóa.
+
+Nếu thiếu/sai cấu hình môi trường, credential hoặc Redis lỗi sau commit, CLI in
+`WARNING: Database changes committed, but prices cache invalidation failed.`
+kèm hướng kiểm cấu hình. Kết quả nhập tồn vẫn thành công, exit code 0; snapshot
+cache vẫn bị giới hạn deadline gốc tối đa 15 giây. Kiểm cấu hình Redis/environment,
+không nhập lại bằng key mới để chữa cache. Cảnh báo cố định không chứa exception,
+URL hoặc credential, kể cả khi log thư viện bị tắt.
 
 Lỗi trước commit rollback tất cả. Nếu mất phản hồi/không biết commit, giữ nguyên
 Owner/key/dữ kiện đã chuẩn hóa để chạy lại: thành công cũ chỉ replay, không cộng tồn

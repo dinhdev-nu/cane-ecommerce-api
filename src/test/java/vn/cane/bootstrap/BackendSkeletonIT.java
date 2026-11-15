@@ -49,7 +49,7 @@ class BackendSkeletonIT {
     }
 
     @Test
-    void apiStartsHttpWithoutSchedulersAuthenticationOrBusinessEndpoints() throws Exception {
+    void apiStartsHttpWithoutSchedulersOrDefaultAuthentication() throws Exception {
         try (var context = start("api", Map.of())) {
             assertThat(context).isInstanceOf(WebServerApplicationContext.class);
             assertThat(context.getBeansOfType(ScheduledAnnotationBeanPostProcessor.class))
@@ -65,7 +65,7 @@ class BackendSkeletonIT {
                             .method(method, HttpRequest.BodyPublishers.noBody())
                             .build();
                     var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    assertThat(response.statusCode()).isEqualTo(403);
+                    assertThat(response.statusCode()).isEqualTo(method.equals("GET") ? 200 : 403);
                     assertThat(response.headers().firstValue("Cache-Control").orElse(""))
                             .contains("no-store");
                     assertThat(response.headers().allValues("Set-Cookie").toString())

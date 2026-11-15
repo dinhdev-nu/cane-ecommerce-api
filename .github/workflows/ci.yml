@@ -57,6 +57,9 @@ jobs:
       - name: Verify staging configuration locally
         shell: pwsh
         run: ./scripts/operations/Test-StagingConfiguration.ps1
+      - name: Export compiled catalog contract
+        shell: pwsh
+        run: ./scripts/catalog/Export-CatalogContract.ps1 -Jar target/cane-ecommerce-api-0.1.0-SNAPSHOT.jar -Output target/catalog-contract.json
       - name: Record resolved dependencies
         shell: bash
         run: |
@@ -74,4 +77,5 @@ jobs:
             target/effective-pom.xml
             target/dependency-tree.txt
             target/foundation-verification.json
+            target/catalog-contract.json
             .local/cane-wp01-16-check-*/result.json

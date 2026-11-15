@@ -12,12 +12,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import vn.cane.bootstrap.TransactionConfiguration;
 import vn.cane.bootstrap.cli.OperationalDatabase;
+import vn.cane.bootstrap.cli.OperationalPricesInvalidation;
 import vn.cane.catalog.application.CatalogSeedService;
+import vn.cane.catalog.application.PricesInvalidation;
 import vn.cane.catalog.infrastructure.JdbcCatalogSeedRepository;
 import vn.cane.support.transaction.AdvisoryLocks;
 import vn.cane.support.transaction.Transactions;
 
-/** Explicit entry point: no Spring Boot startup, HTTP, Redis, scheduler or component scan. */
+/** Explicit entry point: database work and a bounded post-commit cache DEL; no Boot/HTTP/jobs. */
 public final class CatalogSeedCommand {
     private CatalogSeedCommand() {}
 
@@ -45,6 +47,12 @@ public final class CatalogSeedCommand {
                 context.registerBean(DataSource.class, () -> dataSource);
                 context.registerBean(
                         NamedParameterJdbcTemplate.class, () -> new NamedParameterJdbcTemplate(dataSource));
+                context.registerBean(
+                        PricesInvalidation.class,
+                        () -> new PricesInvalidation(
+                                context.getBean(Transactions.class),
+                                () -> OperationalPricesInvalidation.evictWithWarning(
+                                        environment, arguments[3], output)));
                 context.register(
                         TransactionConfiguration.class,
                         Transactions.class,

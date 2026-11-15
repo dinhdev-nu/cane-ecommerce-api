@@ -1,0 +1,307 @@
+{
+  "dataKind": "fixture",
+  "scenarios": [
+    {
+      "name": "default",
+      "validSettings": true,
+      "patch": {}
+    },
+    {
+      "name": "complete",
+      "validSettings": true,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [
+          "cod",
+          "bank_transfer"
+        ],
+        "shipping_fee_vnd": 17001,
+        "free_ship_threshold_vnd": 100001,
+        "delivery_zones": [
+          {
+            "wardCode": "FIXTURE-NEAR",
+            "name": "Fixture near zone",
+            "allowNear": true
+          },
+          {
+            "wardCode": "FIXTURE-CITY",
+            "name": "Fixture city zone",
+            "allowNear": false
+          }
+        ],
+        "bank_details": {
+          "bankCode": "FIXTURE",
+          "bankName": "Fixture bank - not live",
+          "accountNo": "0000000000",
+          "accountName": "FIXTURE ONLY"
+        },
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true
+      }
+    },
+    {
+      "name": "closed",
+      "validSettings": true,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [
+          "cod",
+          "bank_transfer"
+        ],
+        "shipping_fee_vnd": 17001,
+        "free_ship_threshold_vnd": 100001,
+        "delivery_zones": [
+          {
+            "wardCode": "FIXTURE-NEAR",
+            "name": "Fixture near zone",
+            "allowNear": true
+          },
+          {
+            "wardCode": "FIXTURE-CITY",
+            "name": "Fixture city zone",
+            "allowNear": false
+          }
+        ],
+        "bank_details": {
+          "bankCode": "FIXTURE",
+          "bankName": "Fixture bank - not live",
+          "accountNo": "0000000000",
+          "accountName": "FIXTURE ONLY"
+        },
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true,
+        "accepting_orders": false
+      }
+    },
+    {
+      "name": "null-fee",
+      "validSettings": true,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [
+          "cod",
+          "bank_transfer"
+        ],
+        "shipping_fee_vnd": null,
+        "free_ship_threshold_vnd": 100001,
+        "delivery_zones": [
+          {
+            "wardCode": "FIXTURE-NEAR",
+            "name": "Fixture near zone",
+            "allowNear": true
+          },
+          {
+            "wardCode": "FIXTURE-CITY",
+            "name": "Fixture city zone",
+            "allowNear": false
+          }
+        ],
+        "bank_details": {
+          "bankCode": "FIXTURE",
+          "bankName": "Fixture bank - not live",
+          "accountNo": "0000000000",
+          "accountName": "FIXTURE ONLY"
+        },
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true
+      }
+    },
+    {
+      "name": "no-zones",
+      "validSettings": true,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [
+          "cod",
+          "bank_transfer"
+        ],
+        "shipping_fee_vnd": 17001,
+        "free_ship_threshold_vnd": 100001,
+        "delivery_zones": [],
+        "bank_details": {
+          "bankCode": "FIXTURE",
+          "bankName": "Fixture bank - not live",
+          "accountNo": "0000000000",
+          "accountName": "FIXTURE ONLY"
+        },
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true
+      }
+    },
+    {
+      "name": "zero-fee",
+      "validSettings": true,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [
+          "cod",
+          "bank_transfer"
+        ],
+        "shipping_fee_vnd": 0,
+        "free_ship_threshold_vnd": 0,
+        "delivery_zones": [
+          {
+            "wardCode": "FIXTURE-NEAR",
+            "name": "Fixture near zone",
+            "allowNear": true
+          },
+          {
+            "wardCode": "FIXTURE-CITY",
+            "name": "Fixture city zone",
+            "allowNear": false
+          }
+        ],
+        "bank_details": {
+          "bankCode": "FIXTURE",
+          "bankName": "Fixture bank - not live",
+          "accountNo": "0000000000",
+          "accountName": "FIXTURE ONLY"
+        },
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true
+      }
+    },
+    {
+      "name": "bank-incomplete",
+      "validSettings": false,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [
+          "cod",
+          "bank_transfer"
+        ],
+        "shipping_fee_vnd": 17001,
+        "free_ship_threshold_vnd": 100001,
+        "delivery_zones": [
+          {
+            "wardCode": "FIXTURE-NEAR",
+            "name": "Fixture near zone",
+            "allowNear": true
+          },
+          {
+            "wardCode": "FIXTURE-CITY",
+            "name": "Fixture city zone",
+            "allowNear": false
+          }
+        ],
+        "bank_details": null,
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true
+      }
+    },
+    {
+      "name": "methods-disabled",
+      "validSettings": true,
+      "patch": {
+        "store": {
+          "name": "WP02 fixture shop",
+          "address": "Fixture address - not a pickup location",
+          "openingHours": "Fixture 08:00-17:00",
+          "pickupGuidance": "Fixture only - do not travel"
+        },
+        "enabled_payment_methods": [],
+        "shipping_fee_vnd": 17001,
+        "free_ship_threshold_vnd": 100001,
+        "delivery_zones": [
+          {
+            "wardCode": "FIXTURE-NEAR",
+            "name": "Fixture near zone",
+            "allowNear": true
+          },
+          {
+            "wardCode": "FIXTURE-CITY",
+            "name": "Fixture city zone",
+            "allowNear": false
+          }
+        ],
+        "bank_details": {
+          "bankCode": "FIXTURE",
+          "bankName": "Fixture bank - not live",
+          "accountNo": "0000000000",
+          "accountName": "FIXTURE ONLY"
+        },
+        "support": {
+          "phone": "0000000000",
+          "zaloUrl": "https://example.invalid/wp02-support"
+        },
+        "owner_notify": {
+          "email": "wp02-owner@example.invalid",
+          "telegramChatId": null
+        },
+        "operator_can_confirm_bank": true
+      }
+    }
+  ]
+}

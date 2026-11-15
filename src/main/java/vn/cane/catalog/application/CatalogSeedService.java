@@ -15,11 +15,17 @@ public final class CatalogSeedService {
     private final CatalogSeedRepository repository;
     private final Transactions transactions;
     private final AdvisoryLocks locks;
+    private final PricesInvalidation prices;
 
-    public CatalogSeedService(CatalogSeedRepository repository, Transactions transactions, AdvisoryLocks locks) {
+    public CatalogSeedService(
+            CatalogSeedRepository repository,
+            Transactions transactions,
+            AdvisoryLocks locks,
+            PricesInvalidation prices) {
         this.repository = repository;
         this.transactions = transactions;
         this.locks = locks;
+        this.prices = prices;
     }
 
     public Result seed(CatalogSeedManifest manifest) {
@@ -35,6 +41,7 @@ public final class CatalogSeedService {
             if (!validateExisting(repository.lockExisting()).equals(CatalogSkus.ALL)) {
                 throw new IllegalStateException("Catalog seed is incomplete");
             }
+            if (inserted > 0) prices.afterCommit();
             return new Result(inserted, CatalogSkus.ALL.size() - inserted);
         });
     }

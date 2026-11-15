@@ -1,0 +1,15 @@
+{
+  "storeName": null,
+  "address": null,
+  "openingHours": null,
+  "pickupGuidance": null,
+  "acceptingOrders": true,
+  "enabledPaymentMethods": [],
+  "bankConfirmationMode": "manual",
+  "deliveryEnabled": false,
+  "shippingFeeVnd": null,
+  "freeShipThresholdVnd": null,
+  "maxQtyPerSku": 99,
+  "deliveryZones": [],
+  "support": null
+}
