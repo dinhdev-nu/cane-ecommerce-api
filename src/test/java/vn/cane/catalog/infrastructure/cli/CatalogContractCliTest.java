@@ -23,6 +23,7 @@ class CatalogContractCliTest {
         CatalogContractCli.main(
                 new String[] {"scripts/catalog/catalog-template.json", "a".repeat(40), output.toString()});
         var contract = json.readTree(Files.readString(output));
+        assertThat(Files.readString(output)).doesNotContain("\r").endsWith("\n");
         assertThat(contract.get("backendRevision").asString()).isEqualTo("a".repeat(40));
         assertThat(contract.get("items")
                         .valueStream()

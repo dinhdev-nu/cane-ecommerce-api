@@ -33,7 +33,7 @@ public final class CatalogContractCli {
         if (!Set.copyOf(seen).equals(CatalogSkus.ALL)) throw new IllegalArgumentException("Missing seed SKU");
         var result = json.createObjectNode().put("schemaVersion", 1).put("backendRevision", args[1]);
         result.set("items", items);
-        Files.writeString(
-                Path.of(args[2]), json.writerWithDefaultPrettyPrinter().writeValueAsString(result) + "\n");
+        // Machine artifact must have identical bytes on Windows and Linux CI.
+        Files.writeString(Path.of(args[2]), json.writeValueAsString(result) + "\n");
     }
 }
