@@ -117,7 +117,113 @@ class PlaceOrderIT {
                         .digest("127.0.0.1".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         // Runtime ACL deliberately forbids KEYS/FLUSH. Delete only keys this fixture owns.
         redis.delete(List.of(
-                "cane:test:cache:prices:v1", "cane:test:limit:quote:" + ipDigest, "cane:test:limit:place:" + ipDigest));
+                "cane:test:cache:prices:v1",
+                "cane:test:limit:quote:" + ipDigest,
+                "cane:test:limit:place:" + ipDigest,
+                "cane:test:limit:guest-read:" + ipDigest,
+                "cane:test:limit:cancel-request:" + ipDigest));
+    }
+
+    @Test
+    void guestViewUsesSnapshotsMasksPiiAndAllowsOnlyPublicTimelineKinds() throws Exception {
+        var placed = body(post("orders", order("delivery", "bank_transfer"), key()));
+        String token = placed.get("viewUrl").asString().split("#t=", 2)[1];
+        UUID id = sql.queryForObject(
+                "SELECT id FROM cane.orders WHERE order_number=?",
+                UUID.class,
+                placed.path("order").path("orderNumber").asString());
+        sql.update("UPDATE cane.products SET name='CHANGED',unit_label='CHANGED',price_vnd=price_vnd+1");
+        setting("bank_details", JSON.createObjectNode().put("bankName", "CHANGED"));
+        setting("support", JSON.createObjectNode().put("phone", "0999999999").putNull("zaloUrl"));
+        sql.update(
+                "INSERT INTO cane.business_events(order_id,kind,actor,public_label,note) VALUES (?,'settings_updated','system','SECRET LABEL','SECRET NOTE')",
+                id);
+        var response = guest("GET", "guest/order", null, token);
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Cache-Control")).contains("no-store");
+        var view = body(response);
+        assertThat(view.path("order").path("recipient").path("phoneMasked").asString())
+                .endsWith("5982");
+        assertThat(view.path("order").path("totals").path("totalVnd").asLong())
+                .isEqualTo(placed.path("order").path("totalVnd").asLong());
+        assertThat(view.path("bankInstructions")).isEqualTo(placed.get("bankInstructions"));
+        assertThat(view.path("support").path("phone").asString()).isEqualTo("0999999999");
+        assertThat(response.body())
+                .doesNotContain(
+                        "0338825982",
+                        "wp03@example.invalid",
+                        "MOCK TEST address",
+                        "SECRET",
+                        "CHANGED",
+                        "request_hash",
+                        "linkVersion");
+        sql.update("UPDATE cane.orders SET link_version=link_version+1 WHERE id=?", id);
+        var revoked = guest("GET", "guest/order", null, token);
+        var missing = guest("GET", "guest/order", null, null);
+        assertThat(revoked.statusCode()).isEqualTo(404);
+        assertThat(missing.statusCode()).isEqualTo(404);
+        assertThat(body(revoked).path("error").path("code").asString()).isEqualTo("ORDER_LINK_INVALID");
+        assertThat(body(missing).path("error").path("code").asString()).isEqualTo("ORDER_LINK_INVALID");
+    }
+
+    @Test
+    void cancelRequestIsIdempotentWithoutCancellingOrChangingMoneyOrStock() throws Exception {
+        var placed = body(post("orders", order("pickup", "cod"), key()));
+        String token = placed.get("viewUrl").asString().split("#t=", 2)[1];
+        long beforeEvents = count("business_events"), beforeOutbox = count("notification_outbox");
+        String stock = sql.queryForObject(
+                "SELECT jsonb_agg(jsonb_build_array(sku,stock_qty) ORDER BY sku)::text FROM cane.products",
+                String.class);
+        var first = guest(
+                "POST", "guest/order/cancel-request", JSON.createObjectNode().put("reason", "original reason"), token);
+        var again = guest(
+                "POST", "guest/order/cancel-request", JSON.createObjectNode().put("reason", "replacement"), token);
+        assertThat(first.statusCode()).isEqualTo(200);
+        assertThat(body(again)).isEqualTo(body(first));
+        assertThat(count("business_events")).isEqualTo(beforeEvents + 1);
+        assertThat(count("notification_outbox")).isGreaterThan(beforeOutbox);
+        assertThat(sql.queryForObject("SELECT cancel_request_note FROM cane.orders", String.class))
+                .isEqualTo("original reason");
+        assertThat(sql.queryForObject("SELECT status||'/'||payment_status FROM cane.orders", String.class))
+                .isEqualTo("confirmed/unpaid");
+        assertThat(sql.queryForObject(
+                        "SELECT jsonb_agg(jsonb_build_array(sku,stock_qty) ORDER BY sku)::text FROM cane.products",
+                        String.class))
+                .isEqualTo(stock);
+        sql.update(
+                "UPDATE cane.orders SET status='completed',payment_status='paid',cancel_requested_at=NULL,cancel_request_note=NULL");
+        assertThat(guest("POST", "guest/order/cancel-request", JSON.createObjectNode(), token)
+                        .statusCode())
+                .isEqualTo(409);
+    }
+
+    @Test
+    void cancelRequestRollsBackFlagAndEventWhenOutboxCannotBeWritten() throws Exception {
+        var placed = body(post("orders", order("pickup", "cod"), key()));
+        String token = placed.get("viewUrl").asString().split("#t=", 2)[1];
+        long before = count("business_events");
+        sql.execute(
+                "CREATE FUNCTION cane.fixture_reject_outbox() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture rollback'; END $$");
+        sql.execute(
+                "CREATE TRIGGER fixture_reject_outbox BEFORE INSERT ON cane.notification_outbox FOR EACH ROW EXECUTE FUNCTION cane.fixture_reject_outbox()");
+        assertThat(guest("POST", "guest/order/cancel-request", JSON.createObjectNode(), token)
+                        .statusCode())
+                .isEqualTo(503);
+        assertThat(sql.queryForObject("SELECT cancel_requested_at IS NULL FROM cane.orders", Boolean.class))
+                .isTrue();
+        assertThat(count("business_events")).isEqualTo(before);
+    }
+
+    private HttpResponse<String> guest(String method, String route, JsonNode body, String token) throws Exception {
+        var request = HttpRequest.newBuilder(URI.create(base + route)).timeout(Duration.ofSeconds(10));
+        if (token != null) request.header("Authorization", "Bearer " + token);
+        if (body != null) request.header("Content-Type", "application/json");
+        request.method(
+                method,
+                body == null
+                        ? HttpRequest.BodyPublishers.noBody()
+                        : HttpRequest.BodyPublishers.ofString(body.toString()));
+        return http.send(request.build(), HttpResponse.BodyHandlers.ofString());
     }
 
     @Test

@@ -1,6 +1,19 @@
 cane:
   runtime:
     mode: worker
+  notifications:
+    enabled: ${NOTIFICATIONS_ENABLED:false}
+    smtp-mode: ${SMTP_MODE:capture}
+    smtp-host: ${SMTP_HOST:127.0.0.1}
+    smtp-port: ${SMTP_PORT:1025}
+    smtp-username: ${SMTP_USERNAME:}
+    smtp-password: ${SMTP_PASSWORD:}
+    from: ${EMAIL_FROM:dev@cane.invalid}
+    from-name: ${EMAIL_FROM_NAME:CANE dev}
+    language: ${EMAIL_LANGUAGE:vi}
+    telegram-mode: ${TELEGRAM_MODE:mock}
+    telegram-token: ${TELEGRAM_BOT_TOKEN:}
+    capture-directory: ${NOTIFICATION_CAPTURE_DIRECTORY:}
 spring:
   main:
     web-application-type: none

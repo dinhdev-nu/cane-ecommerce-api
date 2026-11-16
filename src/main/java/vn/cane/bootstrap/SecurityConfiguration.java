@@ -49,10 +49,14 @@ public class SecurityConfiguration {
                                 org.springframework.http.HttpMethod.GET,
                                 "/api/v1/admin/me",
                                 "/api/v1/shop",
-                                "/api/v1/prices")
+                                "/api/v1/prices",
+                                "/api/v1/guest/order")
                         .permitAll()
                         .requestMatchers(
-                                org.springframework.http.HttpMethod.POST, "/api/v1/checkout/quote", "/api/v1/orders")
+                                org.springframework.http.HttpMethod.POST,
+                                "/api/v1/checkout/quote",
+                                "/api/v1/orders",
+                                "/api/v1/guest/order/cancel-request")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/logout")
                         .permitAll()
@@ -65,7 +69,8 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/payments",
                                 "/api/v1/admin/payments/*/resolve",
                                 "/api/v1/admin/payments/*/confirm-refund",
-                                "/api/v1/admin/orders/*/confirm-payment")
+                                "/api/v1/admin/orders/*/confirm-payment",
+                                "/api/v1/admin/orders/*/resend-link")
                         .authenticated()
                         .anyRequest()
                         .denyAll())

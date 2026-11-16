@@ -809,6 +809,87 @@ class ManualPaymentsIT {
                 .write(() -> context.getBean(StaffSessionService.class).issue(id, 1, null));
     }
 
+    @Test
+    void ownerResendKeepsExpiryRotateRevokesAndReplayDoesNotQueueAgain() throws Exception {
+        var order = place("delivery", "cod");
+        String route = "admin/orders/" + order.id() + "/resend-link";
+        var links = context.getBean(vn.cane.orders.application.OrderLinkService.class);
+        String old = links.mintCurrent(order.id()).value();
+        long before = sql.queryForObject("SELECT count(*) FROM cane.notification_outbox", Long.class);
+        String key = key();
+        var command = JSON.createObjectNode().put("rotate", false);
+        var sent = ok(post(route, command, key, owner));
+        assertThat(sent.path("result").path("linkVersion").asLong()).isEqualTo(1);
+        assertThat(sent.toString()).doesNotContain(old, "viewUrl", "#t=");
+        assertThat(links.mintCurrent(order.id()).value()).isEqualTo(old);
+        var rotated = ok(post(route, JSON.createObjectNode().put("rotate", true), key(), owner));
+        assertThat(rotated.path("result").path("linkVersion").asLong()).isEqualTo(2);
+        assertThatThrownBy(() -> links.authorizeRead(old))
+                .isInstanceOf(vn.cane.orders.domain.InvalidOrderLinkException.class);
+        var replay = ok(post(route, command, key, owner));
+        assertThat(replay.path("replayed").asBoolean()).isTrue();
+        assertThat(replay.get("result")).isEqualTo(sent.get("result"));
+        assertThat(sql.queryForObject("SELECT count(*) FROM cane.notification_outbox", Long.class))
+                .isEqualTo(before + 2);
+        error(post(route, JSON.createObjectNode().put("rotate", true), key, owner), 409, "IDEMPOTENCY_MISMATCH");
+        error(post(route, command, key, operator), 403, "FORBIDDEN");
+        error(send("POST", route, command, key(), owner, false), 403, "FORBIDDEN");
+    }
+
+    @Test
+    void expiredResendConflictsButRotateIsAllowedAndOverflowRollsBack() throws Exception {
+        var order = place("pickup", "cod");
+        String route = "admin/orders/" + order.id() + "/resend-link";
+        sql.update(
+                "UPDATE cane.orders SET created_at=now()-interval '2 days',link_expires_at=date_trunc('milliseconds',now()-interval '1 day') WHERE id=?",
+                order.id());
+        error(post(route, JSON.createObjectNode().put("rotate", false), key(), owner), 409, "STATE_CONFLICT");
+        assertThat(ok(post(route, JSON.createObjectNode().put("rotate", true), key(), owner))
+                        .path("result")
+                        .path("queued")
+                        .asBoolean())
+                .isTrue();
+        sql.update("UPDATE cane.orders SET link_version=? WHERE id=?", Long.MAX_VALUE, order.id());
+        long before = sql.queryForObject("SELECT count(*) FROM cane.business_events", Long.class);
+        error(post(route, JSON.createObjectNode().put("rotate", true), key(), owner), 409, "STATE_CONFLICT");
+        assertThat(sql.queryForObject("SELECT count(*) FROM cane.business_events", Long.class))
+                .isEqualTo(before);
+    }
+
+    @Test
+    void cancelRequestAndRotateSerializeOnTheSameOrderWithoutPartialHistory() throws Exception {
+        var order = place("pickup", "cod");
+        String token = context.getBean(vn.cane.orders.application.OrderLinkService.class)
+                .mintCurrent(order.id())
+                .value();
+        var request = HttpRequest.newBuilder(URI.create(base + "guest/order/cancel-request"))
+                .timeout(Duration.ofSeconds(15))
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                .build();
+        var results = race(
+                () -> http.send(request, HttpResponse.BodyHandlers.ofString()),
+                () -> post(
+                        "admin/orders/" + order.id() + "/resend-link",
+                        JSON.createObjectNode().put("rotate", true),
+                        key(),
+                        owner));
+        assertThat(results.get(1).statusCode()).isEqualTo(200);
+        assertThat(results.get(0).statusCode()).isIn(200, 404);
+        long events = sql.queryForObject(
+                "SELECT count(*) FROM cane.business_events WHERE order_id=? AND kind='cancel_requested'",
+                Long.class,
+                order.id());
+        boolean requested = Boolean.TRUE.equals(sql.queryForObject(
+                "SELECT cancel_requested_at IS NOT NULL FROM cane.orders WHERE id=?", Boolean.class, order.id()));
+        assertThat(events).isEqualTo(requested ? 1 : 0);
+        assertThat(requested).isEqualTo(results.get(0).statusCode() == 200);
+        assertThat(sql.queryForObject(
+                        "SELECT status||'/'||payment_status FROM cane.orders WHERE id=?", String.class, order.id()))
+                .isEqualTo("confirmed/unpaid");
+    }
+
     private UUID staff(StaffSessionService.IssuedSession session) {
         return context.getBean(StaffSessionService.class)
                 .authenticate(session.token().value())

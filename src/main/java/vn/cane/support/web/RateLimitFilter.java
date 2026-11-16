@@ -29,11 +29,14 @@ public final class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private static RateGroup group(HttpServletRequest request) {
+        if ("GET".equals(request.getMethod()) && "/api/v1/guest/order".equals(request.getServletPath()))
+            return RateGroup.GUEST_READ;
         if (!"POST".equals(request.getMethod())) return null;
         return switch (request.getServletPath()) {
             case "/api/v1/admin/auth/login" -> RateGroup.LOGIN;
             case "/api/v1/checkout/quote" -> RateGroup.QUOTE;
             case "/api/v1/orders" -> RateGroup.PLACE_ORDER;
+            case "/api/v1/guest/order/cancel-request" -> RateGroup.CANCEL_REQUEST;
             default -> null;
         };
     }
