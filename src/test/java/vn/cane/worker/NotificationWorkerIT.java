@@ -227,16 +227,18 @@ class NotificationWorkerIT {
 
     @Test
     void sourceIsHistoricalAndNeverSubstitutesAReceiptAfterRelink() {
+        Instant confirmedAt = clock.instant().minusSeconds(3600);
         UUID original = order(),
                 other = order(),
                 receipt = UUID.randomUUID(),
                 event = UUID.randomUUID(),
                 out = UUID.randomUUID();
         owner.update(
-                "INSERT INTO cane.payments(id,order_id,method,amount_vnd,provider_ref,bank_receipt,confirmed_by,order_link_verified) VALUES (?,?,'bank',10000,?,'{}','system',true)",
+                "INSERT INTO cane.payments(id,order_id,method,amount_vnd,provider_ref,bank_receipt,confirmed_by,order_link_verified,confirmed_at) VALUES (?,?,'bank',10000,?,'{}','system',true,?)",
                 receipt,
                 other,
-                vn.cane.support.validation.BankReceiptKey.encode("ICB", "0338825982", "MOCK reference"));
+                vn.cane.support.validation.BankReceiptKey.encode("ICB", "0338825982", "MOCK reference"),
+                at(confirmedAt));
         String facts = JSON.createObjectNode()
                 .put("orderId", original.toString())
                 .put("paymentId", receipt.toString())
@@ -260,7 +262,9 @@ class NotificationWorkerIT {
                 event,
                 at(clock.instant()));
         var lease = service.claim().getFirst();
-        assertThat(loader().load(lease).order().order().id()).isEqualTo(original);
+        var source = loader().load(lease);
+        assertThat(source.order().order().id()).isEqualTo(original);
+        assertThat(source.receiptConfirmedAt()).isEqualTo(confirmedAt);
         owner.update("UPDATE cane.notification_outbox SET attempts=8 WHERE id=?", out);
         var last = new OutboxLease(
                 lease.id(),

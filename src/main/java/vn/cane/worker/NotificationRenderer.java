@@ -36,15 +36,19 @@ public final class NotificationRenderer {
         boolean owner = lease.kind().startsWith("owner_");
         var event = source.event();
         var facts = event.facts();
+        boolean reviewedReceipt = lease.kind().equals("payment_received")
+                && "close_review".equals(facts.path("action").asString(""));
         String number = source.order() == null ? "" : source.order().order().number();
         String title = title(lease.kind());
         var text = new StringBuilder(title)
                 .append(" — ")
                 .append(number)
                 .append('\n')
-                .append(copy(
-                        "Cane Shop is sending you this update.\nRecorded at: ",
-                        "Cane Shop gửi bạn thông tin cập nhật.\nThời điểm ghi nhận: "))
+                .append(copy("Cane Shop is sending you this update.\n", "Cane Shop gửi bạn thông tin cập nhật.\n"))
+                .append(
+                        reviewedReceipt
+                                ? copy("Link verified at: ", "Liên kết được xác minh lúc: ")
+                                : copy("Recorded at: ", "Thời điểm ghi nhận: "))
                 .append(event.at())
                 .append('\n');
         if (facts.path("paymentStatus").isString())
@@ -95,11 +99,14 @@ public final class NotificationRenderer {
                             facts.path("isPrincipal").asBoolean()
                                     ? copy("Principal receipt\n", "Khoản thu chính\n")
                                     : copy("Additional receipt\n", "Khoản thu bổ sung\n"));
-            if ("close_review".equals(facts.path("action").asString("")))
-                text.append(
-                        copy(
-                                "The shop verified a previously recorded receipt; this is not a new payment.\n",
-                                "Cane Shop đã xác minh khoản thu được ghi nhận trước đó; đây không phải một lần thanh toán mới.\n"));
+            if (reviewedReceipt)
+                text.append(copy("Original receipt recorded at: ", "Khoản thu gốc được ghi nhận lúc: "))
+                        .append(source.receiptConfirmedAt())
+                        .append('\n')
+                        .append(
+                                copy(
+                                        "The shop verified a previously recorded receipt; this is not a new payment.\n",
+                                        "Cane Shop đã xác minh khoản thu được ghi nhận trước đó; đây không phải một lần thanh toán mới.\n"));
             if (lease.kind().equals("refunded"))
                 text.append(copy("Refund recorded at: ", "Hoàn tiền được ghi nhận lúc: "))
                         .append(facts.path("refundedAt").asString())

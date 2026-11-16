@@ -49,12 +49,31 @@ class NotificationRendererTest {
         }
     }
 
-    @Test
-    void eventTimeAndReceiptAmountsStayHistoricalWhileLinkUsesCurrentVersionAndExpiry() {
+    @ParameterizedTest
+    @ValueSource(strings = {"vi", "en"})
+    void eventTimeAndReceiptAmountsStayHistoricalWhileLinkUsesCurrentVersionAndExpiry(String language) {
         var lease = lease("payment_received");
         var source = source(lease, false);
-        var message = renderer.render(lease, source);
-        assertThat(message.text()).contains("12345 VND", "Khoản thu bổ sung", "trước đó", "Chưa thanh toán");
+        var localized = new NotificationRenderer(
+                tokens, Clock.fixed(NOW, ZoneOffset.UTC), "https://cane.example.test", language);
+        var message = localized.render(lease, source);
+        assertThat(message.text()).contains("12345 VND");
+        if (language.equals("vi"))
+            assertThat(message.text())
+                    .contains(
+                            "Khoản thu bổ sung",
+                            "trước đó",
+                            "Chưa thanh toán",
+                            "Khoản thu gốc được ghi nhận lúc: " + NOW.minusSeconds(90),
+                            "Liên kết được xác minh lúc: " + NOW.minusSeconds(50));
+        else
+            assertThat(message.text())
+                    .contains(
+                            "Additional receipt",
+                            "not a new payment",
+                            "Payment at this event: unpaid",
+                            "Original receipt recorded at: " + NOW.minusSeconds(90),
+                            "Link verified at: " + NOW.minusSeconds(50));
         assertThat(message.text()).doesNotContain("Đã thanh toán");
         String token = message.text().split("#t=", 2)[1].split("\n", 2)[0];
         assertThat(tokens.verifySignature(token).version()).isEqualTo(7);
@@ -124,6 +143,7 @@ class NotificationRendererTest {
                         lease.orderId(), lease.paymentId(), "payment_resolved", null, facts, NOW.minusSeconds(50)),
                 new NotificationOrderReader.Data(
                         row, List.of(new GuestOrderView.Item("MOCK <script>", "1 box", 1, 10000, 10000))),
+                NOW.minusSeconds(90),
                 Map.of(
                         "support",
                         JSON.createObjectNode()

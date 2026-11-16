@@ -1,6 +1,7 @@
 package vn.cane.worker;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -131,7 +132,7 @@ public final class NotificationSourceLoader {
         boolean skip = false;
         if (lease.kind().equals("owner_payment_due")) skip = !manualDue(order);
         if (lease.kind().equals("owner_alert")) skip = !alertNeeded(event, order, receipt);
-        return new Source(event, order, settings.read(), skip);
+        return new Source(event, order, receipt == null ? null : receipt.confirmedAt(), settings.read(), skip);
     }
 
     private boolean alertNeeded(
@@ -202,6 +203,7 @@ public final class NotificationSourceLoader {
     public record Source(
             JdbcOutboxQueue.Event event,
             NotificationOrderReader.Data order,
+            Instant receiptConfirmedAt,
             Map<String, JsonNode> settings,
             boolean skip) {
         @Override
