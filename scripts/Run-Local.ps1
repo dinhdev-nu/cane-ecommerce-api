@@ -1,4 +1,4 @@
-param([Parameter(Mandatory)][ValidateSet('api', 'worker')][string]$Mode)
+param([Parameter(Mandatory)][ValidateSet('api', 'worker')][string]$Mode, [string]$NotificationEnvFile)
 $ErrorActionPreference = 'Stop'
 $serverRoot = Split-Path -Parent $PSScriptRoot
 $envPath = Join-Path $serverRoot '.local/dev.env'
@@ -21,6 +21,15 @@ $runtimeEnvironment = @{
     CANE_API_PORT = $values['CANE_API_PORT']
 }
 $previous = @{}
+if ($NotificationEnvFile) {
+    if ($Mode -ne 'worker') { throw 'Notification env is worker-only.' }
+    $notificationNames = @('NOTIFICATIONS_ENABLED','SMTP_MODE','SMTP_HOST','SMTP_PORT','SMTP_USERNAME','SMTP_PASSWORD','EMAIL_FROM','EMAIL_FROM_NAME','EMAIL_LANGUAGE','TELEGRAM_MODE','TELEGRAM_BOT_TOKEN','NOTIFICATION_CAPTURE_DIRECTORY','PUBLIC_ORIGIN')
+    foreach ($line in [IO.File]::ReadAllLines([IO.Path]::GetFullPath($NotificationEnvFile))) {
+        if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith('#')) { continue }
+        if ($line -notmatch '^([A-Z_]+)=(.*)$' -or $notificationNames -notcontains $Matches[1]) { throw 'Invalid notification env field.' }
+        $runtimeEnvironment[$Matches[1]] = $Matches[2]
+    }
+}
 try {
     foreach ($name in $runtimeEnvironment.Keys) {
         $previous[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')

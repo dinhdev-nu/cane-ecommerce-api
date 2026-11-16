@@ -1,0 +1,10 @@
+# DEV MOCK ONLY: capture never forwards mail to real recipients. No relay configured.
+name: cane-wp05-notifications
+services:
+  mailpit:
+    image: axllent/mailpit:v1.27.4@sha256:df6c2541907e1be6fac21f509927cf6ed771617a1f4b361ef66d97bd05593d2d
+    ports:
+      - "127.0.0.1:${SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    labels:
+      vn.cane.scope: wp05-local

@@ -62,8 +62,10 @@ public class BusinessEventWriter {
                         checkFact(facts, "orderLinkVerified", row.getBoolean("order_link_verified"));
                         return new PaymentSource(row.getObject("order_id", UUID.class));
                     });
-            if (sources.size() != 1 || !Objects.equals(sources.getFirst().orderId(), event.orderId()))
-                throw invalidSource();
+            if (sources.size() != 1
+                    || !(event.kind().equals("notification_exhausted")
+                            ? matchesFailedOutbox(event)
+                            : Objects.equals(sources.getFirst().orderId(), event.orderId()))) throw invalidSource();
         }
         var parameters = new MapSqlParameterSource()
                 .addValue("id", event.id())
@@ -100,6 +102,25 @@ public class BusinessEventWriter {
 
     private static IllegalStateException invalidSource() {
         return new IllegalStateException("Business event source is inconsistent");
+    }
+
+    private boolean matchesFailedOutbox(BusinessEvent event) {
+        UUID failed;
+        try {
+            failed = UUID.fromString(event.data().path("failedOutboxId").asString(""));
+        } catch (IllegalArgumentException failure) {
+            throw invalidSource();
+        }
+        return Boolean.TRUE.equals(jdbc.queryForObject(
+                """
+            SELECT EXISTS(SELECT 1 FROM cane.notification_outbox
+                WHERE id=:id AND status='exhausted' AND order_id IS NOT DISTINCT FROM :order
+                  AND payment_id IS NOT DISTINCT FROM :payment)
+            """,
+                new MapSqlParameterSource("id", failed)
+                        .addValue("order", event.orderId())
+                        .addValue("payment", event.paymentId()),
+                Boolean.class));
     }
 
     private void checkFact(ObjectNode facts, String name, Object expected) {

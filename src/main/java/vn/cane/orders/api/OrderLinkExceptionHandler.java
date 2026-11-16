@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import vn.cane.orders.domain.InvalidOrderLinkException;
+import vn.cane.orders.domain.OrderActionRejected;
 import vn.cane.support.web.ApiErrorCode;
 import vn.cane.support.web.ApiErrors;
 
@@ -21,6 +22,14 @@ public final class OrderLinkExceptionHandler {
 
     public OrderLinkExceptionHandler(ApiErrors errors) {
         this.errors = errors;
+    }
+
+    @ExceptionHandler(OrderActionRejected.class)
+    ResponseEntity<Object> rejected(OrderActionRejected failure, HttpServletRequest request) {
+        return ResponseEntity.status(failure.missing() ? 404 : 409)
+                .header("Cache-Control", "no-store")
+                .body(errors.body(
+                        request, failure.missing() ? ApiErrorCode.NOT_FOUND : ApiErrorCode.STATE_CONFLICT, Map.of()));
     }
 
     @ExceptionHandler(InvalidOrderLinkException.class)
