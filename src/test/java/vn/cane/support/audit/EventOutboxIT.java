@@ -601,10 +601,16 @@ class EventOutboxIT {
 
     private UUID insertBank(UUID order, boolean verified) {
         UUID id = UUID.randomUUID();
-        owner.update("""
+        owner.update(
+                """
                 INSERT INTO cane.payments(id,order_id,method,amount_vnd,provider_ref,bank_receipt,order_link_verified,confirmed_by)
                 VALUES (?,?,'bank',40000,?,'{"bankCode":"TEST","accountNo":"TEST","transferContent":"fixture","transactionAt":"2026-11-14T00:00:00Z"}',?,?)
-                """, id, order, "fixture-bank-" + id, verified, ACTOR.toString());
+                """,
+                id,
+                order,
+                vn.cane.support.validation.BankReceiptKey.encode("TEST", "TEST", "fixture-bank-" + id),
+                verified,
+                ACTOR.toString());
         return id;
     }
 
