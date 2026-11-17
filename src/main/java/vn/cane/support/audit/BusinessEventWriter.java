@@ -63,7 +63,12 @@ public class BusinessEventWriter {
                         return new PaymentSource(row.getObject("order_id", UUID.class));
                     });
             if (sources.size() != 1
-                    || !(event.kind().equals("notification_exhausted")
+                    || !((event.kind().equals("notification_exhausted")
+                                    || (event.kind().equals("owner_alert")
+                                            && event.data()
+                                                    .path("alertType")
+                                                    .asString("")
+                                                    .equals("notification_exhausted")))
                             ? matchesFailedOutbox(event)
                             : Objects.equals(sources.getFirst().orderId(), event.orderId()))) throw invalidSource();
         }
@@ -88,9 +93,9 @@ public class BusinessEventWriter {
         return jdbc.query(
                         """
                 INSERT INTO cane.business_events(id,order_id,payment_id,kind,from_status,to_status,actor,
-                    public_label,note,data,source_key,operation_key,request_hash,operation_result)
+                    public_label,note,data,source_key,operation_key,request_hash,operation_result,created_at)
                 VALUES (:id,:order,:payment,:kind,:from,:to,:actor,:label,:note,CAST(:data AS jsonb),:source,
-                    :key,:hash,CAST(:result AS jsonb)) RETURNING created_at
+                    :key,:hash,CAST(:result AS jsonb),statement_timestamp()) RETURNING created_at
                 """,
                         parameters,
                         (row, number) -> new Recorded(

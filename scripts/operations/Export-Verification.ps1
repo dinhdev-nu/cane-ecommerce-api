@@ -1,4 +1,7 @@
-param([Parameter(Mandatory)][DateTimeOffset]$StartedAt)
+param(
+    [Parameter(Mandatory)][DateTimeOffset]$StartedAt,
+    [string]$OutputFile = 'target/foundation-verification.json'
+)
 $ErrorActionPreference = 'Stop'
 $serverRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
@@ -50,6 +53,6 @@ try {
         integration = $integration
         scope = 'WP01 automated foundations; staging HTTPS and product acceptance are separate evidence'
     }
-    $summary | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath 'target/foundation-verification.json' -Encoding utf8
-    Write-Output 'Redacted foundation verification summary written to target/foundation-verification.json.'
+    $summary | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $OutputFile -Encoding utf8
+    Write-Output 'Redacted foundation verification summary written.'
 } finally { Pop-Location }

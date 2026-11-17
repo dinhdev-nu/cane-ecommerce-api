@@ -24,4 +24,6 @@ public interface ReceiptRepository {
     List<PaymentReceipt> page(PaymentQuery query);
 
     long count(PaymentQuery query);
+
+    List<PaymentReceipt> extras(UUID orderId);
 }

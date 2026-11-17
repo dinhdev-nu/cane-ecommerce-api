@@ -39,6 +39,12 @@ public final class PaymentReadService {
 
     public record Page(List<Payment> items, int page, int pageSize, long total, Instant serverTime) {}
 
+    /** Used inside the admin order reader's repeatable-read snapshot; never exposes extras to Operator. */
+    public List<Payment> extras(StaffPrincipal principal, UUID orderId) {
+        authorization.requireOwner(principal);
+        return receipts.extras(orderId).stream().map(Payment::from).toList();
+    }
+
     public record BankReceipt(String bankCode, String accountNo, String transferContent, Instant transactionAt) {
         @Override
         public String toString() {

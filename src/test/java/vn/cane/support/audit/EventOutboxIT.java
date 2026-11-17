@@ -122,6 +122,18 @@ class EventOutboxIT {
     }
 
     @Test
+    void eventTimestampReflectsAppendAfterWaitingRatherThanTransactionStart() {
+        transactions.write(() -> {
+            var started = jdbc.queryForObject("SELECT now()", java.time.OffsetDateTime.class)
+                    .toInstant();
+            jdbc.execute("SELECT pg_sleep(0.05)");
+            var recorded = events.append(event("delivery_issue_set", ORDER, null, json.createObjectNode(), null));
+            assertThat(recorded.createdAt()).isAfter(started.plusMillis(30));
+            return null;
+        });
+    }
+
+    @Test
     void writersRequireTheCallersWriteTransaction() {
         var event = event("order_placed", ORDER, null, json.createObjectNode(), null);
         assertThatThrownBy(() -> events.append(event)).isInstanceOf(IllegalStateException.class);
@@ -163,7 +175,7 @@ class EventOutboxIT {
                 .containsEntry("sent_at", null)
                 .containsEntry("recipient", CUSTOMER);
         assertThat(owner.queryForObject(
-                        "SELECT e.created_at=q.created_at FROM cane.business_events e JOIN cane.notification_outbox q ON q.event_id=e.id",
+                        "SELECT e.created_at<=q.created_at AND q.created_at<=statement_timestamp() FROM cane.business_events e JOIN cane.notification_outbox q ON q.event_id=e.id",
                         Boolean.class))
                 .isTrue();
     }

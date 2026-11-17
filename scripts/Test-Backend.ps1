@@ -1,6 +1,7 @@
 param(
     [switch]$AllowCurrentLocalDocker,
-    [string]$EnvFile = '.local/dev.env'
+    [string]$EnvFile = '.local/dev.env',
+    [string]$EvidenceDirectory
 )
 $ErrorActionPreference = 'Stop'
 $verificationStarted = [DateTimeOffset]::UtcNow
@@ -8,6 +9,12 @@ $serverRoot = Split-Path -Parent $PSScriptRoot
 $project = 'cane-prep02-check-' + [Guid]::NewGuid().ToString('N').Substring(0, 12)
 Push-Location -LiteralPath $serverRoot
 try {
+    $inventoryPath = '.local/last-docker-check.json'
+    if ($EvidenceDirectory) {
+        $evidencePath = [IO.Path]::GetFullPath($EvidenceDirectory, $serverRoot)
+        $null = New-Item -ItemType Directory -Path $evidencePath -Force
+        $inventoryPath = Join-Path $evidencePath 'last-docker-check.json'
+    }
     foreach ($script in Get-ChildItem -LiteralPath (Join-Path $serverRoot 'scripts') -Filter '*.ps1' -Recurse -File) {
         $syntaxErrors = $null
         $syntaxTokens = $null
@@ -23,7 +30,7 @@ try {
     $beforeImages = @(& docker image ls --no-trunc --quiet | Sort-Object -Unique)
     if ($LASTEXITCODE -ne 0) { throw 'Cannot record Docker image inventory.' }
     @{ project = $project; imageIdsBefore = $beforeImages; startedAt = [DateTime]::UtcNow.ToString('o') } |
-        ConvertTo-Json | Set-Content -LiteralPath '.local/last-docker-check.json' -Encoding utf8
+        ConvertTo-Json | Set-Content -LiteralPath $inventoryPath -Encoding utf8
     try {
         & docker @composeArgs config --quiet
         if ($LASTEXITCODE -ne 0) { throw 'Compose validation failed.' }
@@ -32,11 +39,15 @@ try {
         $wrapper = if ($IsWindows) { '.\mvnw.cmd' } else { './mvnw' }
         & $wrapper '-B' '-ntp' 'clean' 'verify'
         if ($LASTEXITCODE -ne 0) { throw 'Backend verify failed; inspect target test reports.' }
-        & ./scripts/operations/Export-Verification.ps1 -StartedAt $verificationStarted
+        if ($EvidenceDirectory) {
+            & ./scripts/operations/Export-Verification.ps1 -StartedAt $verificationStarted -OutputFile (Join-Path $evidencePath 'foundation-verification.json')
+        } else {
+            & ./scripts/operations/Export-Verification.ps1 -StartedAt $verificationStarted
+        }
     } finally {
         & docker @composeArgs down --volumes --remove-orphans
         if ($LASTEXITCODE -ne 0) { throw "Cleanup failed for owned project $project; manual cleanup is required." }
     }
     Write-Output "Verified backend and removed containers/network/volume of $project."
-    Write-Output 'Testcontainers closes its own containers. Review new image IDs against .local/last-docker-check.json before removing newly pulled test-only images.'
+    Write-Output "Testcontainers closes its own containers. Review new image IDs against $inventoryPath before removing newly pulled test-only images."
 } finally { Pop-Location }

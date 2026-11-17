@@ -15,6 +15,7 @@ public enum ApiErrorCode {
     REQUEST_IN_PROGRESS("Yêu cầu đang được xử lý. Vui lòng thử lại."),
     IDEMPOTENCY_MISMATCH("Mã thao tác đã được dùng cho yêu cầu khác."),
     STATE_CONFLICT("Đơn đã thay đổi. Vui lòng tải lại."),
+    STOCK_CONFLICT("Số còn bán được đã thay đổi. Vui lòng kiểm tra lại."),
     PAYMENT_CONFLICT("Dữ kiện khoản thu không khớp. Vui lòng đối soát lại."),
     PAYMENT_METHOD_MISMATCH("Khoản thu không đúng phương thức của đơn."),
     RATE_LIMITED("Bạn gửi yêu cầu quá nhanh. Vui lòng chờ rồi thử lại."),
