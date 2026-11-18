@@ -62,15 +62,35 @@ public class SecurityConfiguration {
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/admin/auth/login")
                         .permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/admin/payments")
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/v1/admin/payments",
+                                "/api/v1/admin/orders",
+                                "/api/v1/admin/orders/*",
+                                "/api/v1/admin/skus",
+                                "/api/v1/admin/settings",
+                                "/api/v1/admin/stock-movements")
                         .authenticated()
                         .requestMatchers(
                                 org.springframework.http.HttpMethod.POST,
                                 "/api/v1/admin/payments",
+                                "/api/v1/admin/stock-adjustments",
                                 "/api/v1/admin/payments/*/resolve",
                                 "/api/v1/admin/payments/*/confirm-refund",
                                 "/api/v1/admin/orders/*/confirm-payment",
+                                "/api/v1/admin/orders/*/prepare",
+                                "/api/v1/admin/orders/*/ship",
+                                "/api/v1/admin/orders/*/ready-for-pickup",
+                                "/api/v1/admin/orders/*/hand-over",
+                                "/api/v1/admin/orders/*/deliver",
+                                "/api/v1/admin/orders/*/delivery-issue",
+                                "/api/v1/admin/orders/*/close-delivery-issue",
+                                "/api/v1/admin/orders/*/cancel",
                                 "/api/v1/admin/orders/*/resend-link")
+                        .authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/v1/admin/skus/*")
+                        .authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/v1/admin/settings")
                         .authenticated()
                         .anyRequest()
                         .denyAll())

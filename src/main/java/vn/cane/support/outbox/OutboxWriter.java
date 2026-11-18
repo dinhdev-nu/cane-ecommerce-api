@@ -61,8 +61,8 @@ public class OutboxWriter {
                     .addValue("channel", notification.channel().databaseValue())
                     .addValue("recipient", prepared.recipient());
             inserted.addAll(jdbc.query("""
-                    INSERT INTO cane.notification_outbox(id,kind,order_id,event_id,payment_id,channel,recipient)
-                    VALUES (:id,:kind,:order,:event,:payment,:channel,:recipient)
+                    INSERT INTO cane.notification_outbox(id,kind,order_id,event_id,payment_id,channel,recipient,created_at,next_attempt_at)
+                    VALUES (:id,:kind,:order,:event,:payment,:channel,:recipient,statement_timestamp(),statement_timestamp())
                     ON CONFLICT (event_id,channel,recipient) DO NOTHING RETURNING id
                     """, parameters, (row, number) -> row.getObject("id", UUID.class)));
         }

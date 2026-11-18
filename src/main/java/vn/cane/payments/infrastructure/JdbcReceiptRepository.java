@@ -147,6 +147,14 @@ public class JdbcReceiptRepository implements ReceiptRepository {
                 .addValue("offset", query.offset());
     }
 
+    @Override
+    public List<PaymentReceipt> extras(UUID orderId) {
+        return jdbc.query(
+                "SELECT * FROM cane.payments WHERE order_id=:id AND applied_to_order=false ORDER BY confirmed_at DESC,id DESC",
+                Map.of("id", orderId),
+                this::map);
+    }
+
     private PaymentReceipt one(String sql, MapSqlParameterSource parameters) {
         var rows = jdbc.query(sql, parameters, this::map);
         if (rows.size() != 1) throw new IllegalStateException("Locked receipt changed unexpectedly");

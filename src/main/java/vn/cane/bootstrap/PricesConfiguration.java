@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import tools.jackson.databind.json.JsonMapper;
+import vn.cane.admin.application.SettingsEffects;
 import vn.cane.catalog.application.PricesCache;
 import vn.cane.catalog.application.PricesInvalidation;
 import vn.cane.catalog.infrastructure.RedisPricesCache;
@@ -21,5 +22,10 @@ public class PricesConfiguration {
     @Bean
     PricesInvalidation pricesInvalidation(Transactions transactions, PricesCache cache) {
         return new PricesInvalidation(transactions, cache::evict);
+    }
+
+    @Bean
+    SettingsEffects settingsEffects(PricesInvalidation prices) {
+        return prices::afterCommit;
     }
 }

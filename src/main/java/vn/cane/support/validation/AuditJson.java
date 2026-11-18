@@ -10,6 +10,7 @@ public final class AuditJson {
             "orderId",
             "orderNumber",
             "status",
+            "deliveryIssue",
             "paymentStatus",
             "paymentId",
             "amountVnd",
@@ -25,6 +26,10 @@ public final class AuditJson {
             "goodsResolved",
             "restockItems",
             "sku",
+            "priceBeforeVnd",
+            "priceAfterVnd",
+            "isActiveBefore",
+            "isActiveAfter",
             "kind",
             "stockBefore",
             "stockAfter",
@@ -38,6 +43,7 @@ public final class AuditJson {
             "date",
             "failedOutboxId");
     private static final Set<String> RESULTS = Set.of(
+            "deliveryIssue",
             "method",
             "amountVnd",
             "appliedToOrder",
