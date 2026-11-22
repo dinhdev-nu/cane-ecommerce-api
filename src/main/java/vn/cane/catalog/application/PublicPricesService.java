@@ -24,6 +24,7 @@ public final class PublicPricesService {
     }
 
     public Prices read() {
+        boolean cacheReadSucceeded = true;
         try {
             var entry = cache.get();
             Instant now = clock.instant();
@@ -35,14 +36,15 @@ public final class PublicPricesService {
             }
             signal("miss");
         } catch (RuntimeException failure) {
+            cacheReadSucceeded = false;
             signal("read_fallback");
         }
         Instant startedAt = clock.instant();
         var items = List.copyOf(database.read());
-        var entry = new PricesCache.Entry(startedAt.plus(MAX_AGE), items);
-        if (clock.instant().isBefore(entry.expiresAt())) {
+        Instant expiresAt = startedAt.plus(MAX_AGE);
+        if (cacheReadSucceeded && clock.instant().isBefore(expiresAt)) {
             try {
-                cache.put(entry);
+                cache.put(new PricesCache.Entry(expiresAt, items));
             } catch (RuntimeException failure) {
                 signal("write_failed");
             }

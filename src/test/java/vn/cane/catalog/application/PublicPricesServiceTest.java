@@ -57,13 +57,22 @@ class PublicPricesServiceTest {
     }
 
     @Test
-    void sqlFallbackSurvivesBothCacheFailuresButNeverMasksSqlFailure() {
+    void failedCacheReadUsesSqlAndSkipsTheWriteUntilNextRequest() {
         var cache = new MemoryCache();
         cache.fail = true;
-        assertThat(new PublicPricesService(() -> ITEMS, cache, new TestClock())
-                        .read()
-                        .items())
-                .isEqualTo(ITEMS);
+        var service = new PublicPricesService(() -> ITEMS, cache, new TestClock());
+        assertThat(service.read().items()).isEqualTo(ITEMS);
+        assertThat(cache.writes).isZero();
+
+        cache.fail = false;
+        assertThat(service.read().items()).isEqualTo(ITEMS);
+        assertThat(cache.writes).isOne();
+    }
+
+    @Test
+    void failedCacheReadDoesNotMaskSqlFailure() {
+        var cache = new MemoryCache();
+        cache.fail = true;
         var service = new PublicPricesService(
                 () -> {
                     throw new IllegalStateException("SQL unavailable");
@@ -73,6 +82,7 @@ class PublicPricesServiceTest {
         assertThatThrownBy(service::read)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("SQL unavailable");
+        assertThat(cache.writes).isZero();
     }
 
     @Test
@@ -124,9 +134,9 @@ class PublicPricesServiceTest {
 
         @Override
         public void put(Entry value) {
+            writes++;
             if (fail) throw new IllegalStateException();
             entry = value;
-            writes++;
         }
 
         @Override
