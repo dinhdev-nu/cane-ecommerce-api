@@ -1,5 +1,8 @@
 # WP01-16 — Kiểm local, smoke HTTPS và triển khai nền
 
+Ngày 22/11/2026: **phép đo tải NFR-001 đã đạt trên Lightsail Singapore**. Hai mẫu
+env staging ghi lại timeout Redis đã kiểm cho API và worker. Xem kết quả tại §4.
+
 Ngày 14/11/2026: **chỉ hoàn thiện/kiểm phần độc lập ở local** theo yêu cầu mới nhất
 của chủ dự án. Chưa có tài khoản cloud, máy chủ hoặc domain thật. Đã chọn hướng
 AWS Lightsail Linux 4 GB; chưa tạo tài nguyên hay phát sinh phí. Không coi file
@@ -84,7 +87,7 @@ template/fixture không phải domain đã được cấp hoặc mua.
 
 ## 4. Trình tự triển khai khi đã có quyền/máy/domain
 
-Đây là lệnh/quy trình chuẩn bị, **chưa thực thi trên cloud**. Ghi OS, JDK 25.0.5+8,
+Khi dựng staging, ghi OS, JDK 25.0.5+8,
 Docker 29.9.2/Compose 5.6.1 và package Nginx/chứng chỉ thực tế. Lấy JDK theo URL và
 SHA-256 đã khóa trong [CI](../.github/workflows/ci.yml), đặt `/opt/cane/jdk`; không
 build Maven trên VM nhỏ hoặc đổi Java để chạy artifact. Nginx được kiểm syntax
@@ -158,7 +161,13 @@ local; phiên bản package trên máy thật còn phải ghi/kiểm trước b�
 Tham chiếu kỹ thuật: [Nginx proxy](https://nginx.org/en/docs/http/ngx_http_proxy_module.html),
 [limit_req](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html),
 [systemd execution](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html).
-Pool/timeout hiện là trị số hữu hạn đã kiểm, chưa có đo tải trên Lightsail hoặc SLA.
+
+Lượt WP07 trên Lightsail Singapore đạt ngưỡng p95 cho lấy giá, quote và tạo đơn ở
+cả ba kịch bản cache hit, cache miss và Redis ngắt. Hai mẫu EnvironmentFile staging
+đặt `SPRING_DATA_REDIS_CONNECT_TIMEOUT=250ms` cho kết nối và
+`SPRING_DATA_REDIS_TIMEOUT=250ms` cho lệnh Redis. Cả hai giá trị đã được xác minh
+trên tiến trình API và worker chính của staging sau phép đo. Xem
+[báo cáo đo NFR-001 trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-nfr-001-staging).
 
 ## 5. Smoke/demo và ghi nhận sau deploy
 
