@@ -1,5 +1,8 @@
 # WP01-16 — Kiểm local, smoke HTTPS và triển khai nền
 
+Ngày 22/11/2026: **phép đo tải NFR-001 đã đạt trên Lightsail Singapore**. Hai mẫu
+env staging ghi lại timeout Redis đã kiểm cho API và worker. Xem kết quả tại §4.
+
 Ngày 14/11/2026: **chỉ hoàn thiện/kiểm phần độc lập ở local** theo yêu cầu mới nhất
 của chủ dự án. Chưa có tài khoản cloud, máy chủ hoặc domain thật. Đã chọn hướng
 AWS Lightsail Linux 4 GB; chưa tạo tài nguyên hay phát sinh phí. Không coi file
@@ -84,7 +87,7 @@ template/fixture không phải domain đã được cấp hoặc mua.
 
 ## 4. Trình tự triển khai khi đã có quyền/máy/domain
 
-Đây là lệnh/quy trình chuẩn bị, **chưa thực thi trên cloud**. Ghi OS, JDK 25.0.5+8,
+Khi dựng staging, ghi OS, JDK 25.0.5+8,
 Docker 29.9.2/Compose 5.6.1 và package Nginx/chứng chỉ thực tế. Lấy JDK theo URL và
 SHA-256 đã khóa trong [CI](../.github/workflows/ci.yml), đặt `/opt/cane/jdk`; không
 build Maven trên VM nhỏ hoặc đổi Java để chạy artifact. Nginx được kiểm syntax
@@ -158,7 +161,13 @@ local; phiên bản package trên máy thật còn phải ghi/kiểm trước b�
 Tham chiếu kỹ thuật: [Nginx proxy](https://nginx.org/en/docs/http/ngx_http_proxy_module.html),
 [limit_req](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html),
 [systemd execution](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html).
-Pool/timeout hiện là trị số hữu hạn đã kiểm, chưa có đo tải trên Lightsail hoặc SLA.
+
+Lượt WP07 trên Lightsail Singapore đạt ngưỡng p95 cho lấy giá, quote và tạo đơn ở
+cả ba kịch bản cache hit, cache miss và Redis ngắt. Hai mẫu EnvironmentFile staging
+đặt `SPRING_DATA_REDIS_CONNECT_TIMEOUT=250ms` cho kết nối và
+`SPRING_DATA_REDIS_TIMEOUT=250ms` cho lệnh Redis. Cả hai giá trị đã được xác minh
+trên tiến trình API và worker chính của staging sau phép đo. Xem
+[báo cáo đo NFR-001 trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-nfr-001-staging).
 
 ## 5. Smoke/demo và ghi nhận sau deploy
 
@@ -191,6 +200,12 @@ bindings/roles, kết quả từng nhánh/requestId và cleanup; kiểm log prox
 marker nhạy cảm. Mới có CI/local hoặc script thì các dòng staging để Not run.
 Đặt/thu/hoàn/gửi email/UI/tải và PITR đủ RPO/RTO tiếp tục WP02–WP07.
 
+Lượt kiểm trình duyệt và thiết bị WP07 ngày 24/11/2026 dùng API từ revision
+`b042816`, PostgreSQL và Redis riêng với dữ liệu giả. Lượt tạo đơn trên thiết bị
+thật đối chiếu hai đơn, bốn dòng hàng và bốn giao dịch giảm tồn. Số thông báo
+đã gửi là 0. Các bản vá trình duyệt thuộc FE; hợp đồng API và schema đã kiểm
+giữ nguyên. Xem [mốc bàn giao QA trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-browser-device-closeout).
+
 ## 6. Quay lui và điều kiện dừng
 
 Lỗi schema/readiness/role/TLS/smoke: dừng phát hành, không nhận ghi; giữ bằng chứng
@@ -199,6 +214,14 @@ key ring, đổi `/opt/cane/current`, start rồi chạy lại smoke. Không s�
 rollback bằng drop/clean, xóa volume/DB staging hoặc bỏ kid còn link hợp lệ.
 WP01-15 yêu cầu key ring; quay lui xa hơn chỉ sau rà tương thích, không suy từ JAR
 vẫn khởi động. Hai service phải cùng release sau đổi pointer/restart.
+
+Ngày 22/11/2026 đã diễn tập `b042816 → 3a6717c → b042816` trên staging Singapore.
+Hai lượt từ lệnh dừng đến readiness API/worker và hoàn tất probe HTTPS mất 22,76
+và 23,03 giây. Đã kiểm Dashboard/Settings cho hai vai và đối chiếu snapshot chỉ đọc
+của 10 bảng. Giãn các lượt đăng nhập cùng IP để tuân thủ giới hạn 5 lần/phút.
+Nếu gặp `429 RATE_LIMITED` ở bước login, xác nhận readiness và trạng thái release,
+chờ theo `Retry-After` rồi chạy lại smoke vai. Xem
+[kết quả và phạm vi kiểm trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-rollback-drill).
 
 Backup/restore DB/HMAC theo phương án đã chốt và kiểm riêng trước mở bán; snapshot
 VM hay local fixture không chứng minh PITR/RPO≤5 phút/RTO≤4 giờ. Chỉ xóa project

@@ -90,13 +90,26 @@ function Invoke-Api([string]$Step, [string]$Method, [string]$Path, [int]$Status,
 
 function Require-Cookie($Reply, [string]$Name, [bool]$HttpOnly) {
     $values = @($Reply.setCookies | Where-Object { $_.StartsWith($Name + '=', [StringComparison]::Ordinal) })
-    Require ($values.Count -eq 1)
-    $line = $values[0]
-    Require ($line -match ';\s*Secure(;|$)')
-    Require ($line -match ';\s*Path=/(;|$)')
-    Require ($line -match ';\s*SameSite=Lax(;|$)')
-    Require ($line -notmatch ';\s*Domain=')
-    Require (($line -match ';\s*HttpOnly(;|$)') -eq $HttpOnly)
+    if ($state.step -eq 'login' -and $Name -ceq '__Host-cane-csrf' -and $values.Count -eq 2) {
+        # Spring Security can clear the previous CSRF cookie before issuing the replacement.
+        Require ($values[0] -cmatch '^__Host-cane-csrf=(?:"")?;')
+        if ($values[0] -notmatch ';\s*Max-Age=0(;|$)') {
+            $expiry = [regex]::Match($values[0], '(?i);\s*Expires=([^;]+)')
+            Require $expiry.Success
+            $clearedAt = [DateTimeOffset]::Parse($expiry.Groups[1].Value, [Globalization.CultureInfo]::InvariantCulture)
+            Require ($clearedAt -le [DateTimeOffset]::UtcNow)
+        }
+        Require ($values[1] -cmatch '^__Host-cane-csrf=[0-9a-f-]{36};')
+    } else {
+        Require ($values.Count -eq 1)
+    }
+    foreach ($line in $values) {
+        Require ($line -match ';\s*Secure(;|$)')
+        Require ($line -match ';\s*Path=/(;|$)')
+        Require ($line -match ';\s*SameSite=Lax(;|$)')
+        Require ($line -notmatch ';\s*Domain=')
+        Require (($line -match ';\s*HttpOnly(;|$)') -eq $HttpOnly)
+    }
 }
 
 function Require-Csrf($Reply) {
@@ -145,7 +158,7 @@ try {
     Require-Csrf $login
     Require ($state.csrf -cne $oldCsrf)
     Require-User $login.json $false
-    $expires = [DateTimeOffset]::Parse($login.json.sessionExpiresAt)
+    $expires = [DateTimeOffset]$login.json.sessionExpiresAt
     Require ($expires -gt [DateTimeOffset]::UtcNow -and $expires -le [DateTimeOffset]::UtcNow.AddHours(8))
     $session = $handler.CookieContainer.GetCookies($Origin)['__Host-cane-session']
     Require ($null -ne $session -and $session.Value -cmatch '^[A-Za-z0-9_-]{43}$')

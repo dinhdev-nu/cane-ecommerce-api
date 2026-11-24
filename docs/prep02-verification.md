@@ -1,7 +1,35 @@
-# Kiểm khung backend PREP-02 — 07/11/2026
+# Kiểm khung backend PREP-02 — 08/11/2026
 
-Trạng thái: **Khung đạt kiểm local và CI GitHub; local dùng ngoại lệ Docker được chủ dự án chấp thuận, CI dùng đúng bộ khóa; chưa xét Gate 3**.
+Trạng thái: **Khung đạt kiểm local/CI đúng bộ khóa; còn PowerShell 7 trên PATH terminal dev độc lập; chưa xác nhận Gate 3, chưa triển khai WP01**.
 Phạm vi: repo server và cập nhật tài liệu; frontend giữ nguyên.
+
+## Kiểm local đúng bộ khóa ngày 08/11/2026
+
+Kiểm trên commit `dc7d0c4903f7ff16a3eea47cb4e4608f68a71b5b`, không thay mã nguồn/cấu hình.
+Lệnh chuẩn `pwsh -File scripts/Test-Backend.ps1` không dùng switch ngoại lệ; Maven hoàn tất
+lúc **12:54:50 UTC+7 ngày 08/11/2026**, `BUILD SUCCESS`.
+
+| Kiểm | Kết quả |
+|---|---|
+| Công cụ | Temurin 25.0.5+8, Maven 3.10.0/Wrapper 3.3.4; Docker Desktop 4.98.0, Client/Engine 29.9.2/29.9.2, Compose 5.6.1 |
+| Compose / build / test | Dựng PostgreSQL 18.6 và Redis 8.10.3 mới theo digest khóa; format/compile/package/verify đạt. Đọc XML: 20 unit + 10 integration, 0 lỗi/thất bại/bỏ qua |
+| JAR thực thi | Cùng JAR chạy đồng thời một API và một worker; cả hai kết nối PostgreSQL/Redis với role riêng. API tại 127.0.0.1:8080 trả GET/POST 403/no-store, không JSESSIONID; worker không có TCP listener |
+| Quyền / lỗi | Bộ kiểm giữ đủ các ca profile/secret sai, DB owner/DDL, SQL/pool/timeout, Redis ACL/TTL và lỗi kết nối; chưa kiểm nghiệp vụ WP01 |
+| Dọn | Dừng đúng hai Java process thử, xóa container/network/volume riêng và ba image tải mới sau kiểm usage. Còn 0 container, 0 image, 0 volume; chỉ ba mạng mặc định. WSL được giữ nguyên |
+
+JAR SHA-256: `d4c195ea5f76f8261cd9dec54cf443f447e98e977e0396c4f7513a6d0801e30f`.
+Bằng chứng local trong `.local/docker-recheck-20261108-4a374321/`: `verification-summary.json`,
+`backend-verify.log`, `packaged-smoke.json`, `cleanup-and-final-state.json`; XML tại `target/`.
+Các đường dẫn này được Git bỏ qua.
+
+Rà ngày 08/11 xác nhận [CI run 42373671715](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42373671715)
+đã success trên đúng commit `dc7d0c4`. Đã tải và đọc artifact `13574901338`: 20 unit + 10 integration,
+không lỗi/thất bại/bỏ qua, có effective POM và dependency tree. Lượt rà không kích hoạt CI mới.
+
+**Điều kiện local còn mở:** script đã chạy bằng PowerShell 7.6.9 đi kèm Codex; PATH User/Machine
+chưa tìm thấy `pwsh`. Cần có PowerShell 7 trên PATH terminal dev thông thường và kiểm lại đường chạy đó.
+Kết luận và các điều kiện trước khi chốt ở [hồ sơ rà server](../../cane-mvp/docs/pm/gate-3-server-review.md).
+Chưa cài thêm công cụ hoặc đổi PATH trong lượt rà; chưa xác nhận Gate 3 hay ổn định production.
 
 ## Nguồn thiết kế và quyết định
 
@@ -22,7 +50,7 @@ Khung đã được rà diff, kiểm lại và push trong commit `b3428f9`; bằ
 - Kiểm quyền runtime phân biệt đúng tiền tố hệ thống `pg_`; schema thường bắt đầu bằng `pg` vẫn được kiểm quyền sở hữu/DDL, có ca hồi quy riêng.
 - README dùng link repo tài liệu đọc được trên GitHub; không thay đổi frontend.
 
-## Kết quả đã chạy
+## Kết quả kiểm ngày 07/11/2026
 
 | Kiểm | Kết quả / bằng chứng |
 |---|---|
@@ -43,7 +71,7 @@ Khung đã được rà diff, kiểm lại và push trong commit `b3428f9`; bằ
 Maven có cảnh báo timeout khi truy vấn metadata ở Apache snapshots; lệnh trên vẫn thành công.
 Dependency/plugin sử dụng release đã khóa hoặc parent/BOM; không dùng dependency snapshot.
 
-Lệnh kiểm cuối: `pwsh -File scripts/Test-Backend.ps1 -AllowCurrentLocalDocker`;
+Lệnh kiểm ngày 07/11: `pwsh -File scripts/Test-Backend.ps1 -AllowCurrentLocalDocker`;
 Maven hoàn tất lúc **12:33:08 UTC ngày 07/11/2026**, `BUILD SUCCESS`.
 Bản build local tương ứng mã nguồn khung trong commit `b3428f9`:
 
@@ -69,9 +97,9 @@ Hoàn tất ngày 07/11/2026 lúc **12:38:51 UTC**; không có bước lỗi c�
 CI này chứng minh khung backend trên bộ công cụ mục tiêu. Chưa kiểm FE, nghiệp vụ WP01,
 NFR/tải, staging/production hoặc các điều kiện còn lại của PREP-02/Gate 3.
 
-## Ngoại lệ Docker và dọn tài nguyên
+## Ngoại lệ Docker và dọn tài nguyên ngày 07/11/2026
 
-Docker thực tế: **Client/Engine 27.3.1; Compose 2.30.3-desktop.1**.
+Docker trong lượt kiểm ngày 07/11: **Client/Engine 27.3.1; Compose 2.30.3-desktop.1**.
 Sau khi xem sai khác, chủ dự án cho phép dùng bộ hiện có để hoàn thiện kiểm local;
 chủ dự án sẽ cập nhật bộ mục tiêu **29.9.2 / 5.6.1** sau.
 Switch ngoại lệ chỉ chấp nhận bộ local này, không được áp trong GitHub Actions.
@@ -88,7 +116,7 @@ Cấu hình và bằng chứng dựng lại được giữ; `.local/dev.env` kh�
 
 ## Phần tiếp nối
 
-- Sau khi chủ dự án cập nhật Docker, chạy lại lệnh chuẩn không có switch ngoại lệ để kiểm đúng bộ khóa.
+- Docker local đã kiểm lại đúng bộ khóa ngày 08/11. Hoàn tất PowerShell 7 trên PATH của terminal dev và kiểm lại khả năng chạy độc lập trước khi xác nhận đủ điều kiện môi trường server.
 - Khung server đã push; CI đã chạy đạt trên bộ khóa. Các lượt CI tiếp theo được theo dõi tại [Actions](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/workflows/ci.yml).
 - Frontend không thay đổi, chưa áp hoặc kiểm bộ công cụ FE trong lượt này.
 - Chưa triển khai WP01 hoặc nghiệm thu nghiệp vụ; PREP-02 tổng thể và Gate 3 còn các điều kiện riêng.

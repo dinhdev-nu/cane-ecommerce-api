@@ -45,10 +45,11 @@ có ba thư mục cùng cấp như thiết kế.
 
 Temurin **25.0.5+8**, Maven **3.10.0** qua Wrapper **3.3.4**, Spring Boot **4.1.2**,
 Docker Client/Engine **29.9.2**, Compose **5.6.1**, PostgreSQL **18.6**, Redis **8.10.3**.
-PowerShell **7** dùng cho các script local/CI. Dependency được quản lý theo parent/BOM;
+PowerShell **7** (`pwsh`) phải có trên PATH của terminal dev để chạy các script local; CI dùng runner có `pwsh`. Dependency được quản lý theo parent/BOM;
 khóa formatter, Bouncy Castle và image theo bộ công cụ. Wrapper kiểm SHA-256 distribution.
 
 ```powershell
+pwsh --version
 .\mvnw.cmd --version
 pwsh -File scripts/Test-Toolchain.ps1
 ```
@@ -148,10 +149,8 @@ trên Testcontainers PostgreSQL/Redis thật, không tự bỏ qua khi thiếu D
 Hai container Testcontainers dùng cùng script quyền/ACL với Compose, namespace Redis là `cane:test:*`.
 Đóng container do thư viện quản lý sau lượt kiểm; không dùng chế độ reuse.
 
-Ngoại lệ Docker local được chủ dự án chấp thuận cho lượt kiểm PREP-02 dùng
-`pwsh -File scripts/Test-Backend.ps1 -AllowCurrentLocalDocker`.
-Lệnh ghi phiên bản thực tế và sai khác; CI vẫn yêu cầu đúng bộ khóa.
-Sau khi cập nhật Docker, chạy lại lệnh chuẩn để xác minh cấu hình mục tiêu.
+Chạy lệnh chuẩn không có switch ngoại lệ để kiểm đúng bộ khóa.
+Điều kiện môi trường local còn mở được ghi tại hồ sơ kiểm PREP-02 bên dưới.
 
 Test hiện kiểm vai trò chạy, HTTP/scheduler, cấu hình thiếu/sai, quyền DDL, timeout,
 fixture khung không có migration, Redis ACL/TTL, Redis lỗi và PostgreSQL lỗi.
@@ -219,8 +218,10 @@ hướng gọi và transaction tuân theo thiết kế trong repo tài liệu.
 
 ## CI và dọn tài nguyên
 
+Commit theo Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`); giữ nhánh `main` build/test được.
+
 Workflow kiểm toolchain/Compose/format/unit/integration/build, xuất effective POM và dependency tree,
-lưu test evidence. [CI trên commit khung `b3428f9`](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42373305195)
+lưu test evidence. [CI trên commit `dc7d0c4`](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42373671715)
 đã đạt trên Linux với đúng bộ khóa: 20 unit + 10 integration, không lỗi hoặc bỏ qua.
 Kết quả chỉ áp dụng khung backend PREP-02; chưa phải nghiệm thu FE, nghiệp vụ hoặc production.
 
