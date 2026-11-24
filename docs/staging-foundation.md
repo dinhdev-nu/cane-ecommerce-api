@@ -200,6 +200,12 @@ bindings/roles, kết quả từng nhánh/requestId và cleanup; kiểm log prox
 marker nhạy cảm. Mới có CI/local hoặc script thì các dòng staging để Not run.
 Đặt/thu/hoàn/gửi email/UI/tải và PITR đủ RPO/RTO tiếp tục WP02–WP07.
 
+Lượt kiểm trình duyệt và thiết bị WP07 ngày 24/11/2026 dùng API từ revision
+`b042816`, PostgreSQL và Redis riêng với dữ liệu giả. Lượt tạo đơn trên thiết bị
+thật đối chiếu hai đơn, bốn dòng hàng và bốn giao dịch giảm tồn. Số thông báo
+đã gửi là 0. Các bản vá trình duyệt thuộc FE; hợp đồng API và schema đã kiểm
+giữ nguyên. Xem [mốc bàn giao QA trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-browser-device-closeout).
+
 ## 6. Quay lui và điều kiện dừng
 
 Lỗi schema/readiness/role/TLS/smoke: dừng phát hành, không nhận ghi; giữ bằng chứng
@@ -208,6 +214,14 @@ key ring, đổi `/opt/cane/current`, start rồi chạy lại smoke. Không s�
 rollback bằng drop/clean, xóa volume/DB staging hoặc bỏ kid còn link hợp lệ.
 WP01-15 yêu cầu key ring; quay lui xa hơn chỉ sau rà tương thích, không suy từ JAR
 vẫn khởi động. Hai service phải cùng release sau đổi pointer/restart.
+
+Ngày 22/11/2026 đã diễn tập `b042816 → 3a6717c → b042816` trên staging Singapore.
+Hai lượt từ lệnh dừng đến readiness API/worker và hoàn tất probe HTTPS mất 22,76
+và 23,03 giây. Đã kiểm Dashboard/Settings cho hai vai và đối chiếu snapshot chỉ đọc
+của 10 bảng. Giãn các lượt đăng nhập cùng IP để tuân thủ giới hạn 5 lần/phút.
+Nếu gặp `429 RATE_LIMITED` ở bước login, xác nhận readiness và trạng thái release,
+chờ theo `Retry-After` rồi chạy lại smoke vai. Xem
+[kết quả và phạm vi kiểm trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-rollback-drill).
 
 Backup/restore DB/HMAC theo phương án đã chốt và kiểm riêng trước mở bán; snapshot
 VM hay local fixture không chứng minh PITR/RPO≤5 phút/RTO≤4 giờ. Chỉ xóa project
