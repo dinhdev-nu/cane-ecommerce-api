@@ -4,6 +4,7 @@ import jakarta.annotation.PreDestroy;
 import jakarta.mail.Message;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
+import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
@@ -31,6 +32,7 @@ import tools.jackson.databind.json.JsonMapper;
 @ConditionalOnProperty(name = "cane.notifications.enabled", havingValue = "true")
 public final class ConfiguredNotificationProvider implements NotificationProvider {
     private final String host, username, password, from, fromName, telegramMode, botToken;
+    private final InternetAddress replyTo;
     private final int port;
     private final boolean live;
     private final Path capture;
@@ -50,6 +52,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
             @Value("${cane.notifications.smtp-password:}") String password,
             @Value("${cane.notifications.from:dev@cane.invalid}") String from,
             @Value("${cane.notifications.from-name:CANE dev}") String fromName,
+            @Value("${cane.notifications.reply-to:}") String replyTo,
             @Value("${cane.notifications.telegram-mode:mock}") String telegramMode,
             @Value("${cane.notifications.telegram-token:}") String botToken,
             @Value("${cane.notifications.capture-directory:}") String captureDirectory,
@@ -74,6 +77,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
         this.password = password;
         this.from = from;
         this.fromName = fromName;
+        this.replyTo = parseReplyTo(replyTo);
         this.telegramMode = telegramMode;
         this.botToken = botToken;
         this.json = json;
@@ -83,6 +87,18 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
             if (capture.startsWith(Path.of("").toAbsolutePath().normalize()))
                 throw new IllegalStateException("Mock capture must be outside the code repository");
         } else capture = null;
+    }
+
+    private static InternetAddress parseReplyTo(String mailbox) {
+        if (mailbox.isBlank()) return null;
+        try {
+            var address = new InternetAddress(mailbox.strip(), true);
+            address.validate();
+            if (!address.isGroup() && address.getPersonal() == null) return address;
+        } catch (AddressException invalid) {
+            // The configured mailbox does not belong in startup logs.
+        }
+        throw new IllegalStateException("Notification Reply-To must be a single mailbox");
     }
 
     @Override
@@ -113,6 +129,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
             var session = Session.getInstance(props);
             var message = new MimeMessage(session);
             message.setFrom(new InternetAddress(from, fromName, StandardCharsets.UTF_8.name()));
+            if (replyTo != null) message.setReplyTo(new InternetAddress[] {replyTo});
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(lease.recipient(), true));
             message.setSubject(content.subject(), StandardCharsets.UTF_8.name());
             var parts = new MimeMultipart("alternative");
