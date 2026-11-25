@@ -11,8 +11,9 @@ import java.nio.file.*;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.*;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.json.JsonMapper;
 
 class ConfiguredNotificationProviderTest {
@@ -21,8 +22,9 @@ class ConfiguredNotificationProviderTest {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
-    @Test
-    void smtpCaptureReceivesMimeAndStableMessageIdAndTelegramMockNeverCallsNetwork() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"", "support@example.invalid"})
+    void smtpCaptureReceivesMimeAndStableMessageIdAndTelegramMockNeverCallsNetwork(String replyTo) throws Exception {
         try (var server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
                 var executor = Executors.newSingleThreadExecutor()) {
             var capture = executor.submit(() -> {
@@ -66,6 +68,7 @@ class ConfiguredNotificationProviderTest {
                     "",
                     "dev@cane.invalid",
                     "Cane Shop",
+                    replyTo,
                     "mock",
                     "",
                     directory.toString(),
@@ -91,6 +94,7 @@ class ConfiguredNotificationProviderTest {
                                 capture.get(5, TimeUnit.SECONDS).getBytes(StandardCharsets.UTF_8)));
                 assertThat(mime.getSubject()).isEqualTo(message.subject());
                 assertThat(mime.getMessageID()).isEqualTo("<" + id + "@notifications.cane.invalid>");
+                assertThat(mime.getHeader("Reply-To", null)).isEqualTo(replyTo.isEmpty() ? null : replyTo);
                 var parts = (jakarta.mail.Multipart) mime.getContent();
                 assertThat(parts.getBodyPart(0).getContent().toString().replace("\r\n", "\n"))
                         .isEqualTo(message.text());
