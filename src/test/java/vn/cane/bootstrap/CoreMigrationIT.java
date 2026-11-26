@@ -30,6 +30,7 @@ import vn.cane.fixture.TestInfrastructure;
 class CoreMigrationIT {
     private static final String CORE = "classpath:db/migration/core";
     private static final Path MIGRATION = Path.of("src/main/resources/db/migration/core/V001__cane_core.sql");
+    private static final Path RETENTION_MIGRATION = MIGRATION.resolveSibling("V002__recipient_retention.sql");
 
     @Container
     static final PostgreSQLContainer POSTGRES = TestInfrastructure.postgres();
@@ -65,11 +66,11 @@ class CoreMigrationIT {
                 .isTrue();
         assertThat(jdbc.queryForObject("SELECT to_regnamespace('cane') IS NULL", Boolean.class))
                 .isTrue();
-        assertThat(coreFlyway().migrate().migrationsExecuted).isEqualTo(1);
+        assertThat(coreFlyway().migrate().migrationsExecuted).isEqualTo(2);
         assertThat(coreFlyway().validateWithResult().validationSuccessful).isTrue();
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM cane.flyway_schema_history WHERE type='SQL' AND success", Integer.class))
-                .isEqualTo(1);
+                .isEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT to_regclass('cane.payment_webhooks') IS NULL", Boolean.class))
                 .isTrue();
     }
@@ -112,7 +113,14 @@ class CoreMigrationIT {
         assertThat(jdbc.queryForList("""
                 SELECT proname FROM pg_proc WHERE pronamespace='cane'::regnamespace
                 """, String.class))
-                .containsExactlyInAnyOrder("touch_updated_at", "reject_audit_mutation", "protect_payment_receipt");
+                .containsExactlyInAnyOrder(
+                        "touch_updated_at",
+                        "reject_audit_mutation",
+                        "protect_payment_receipt",
+                        "without_restock_notes",
+                        "protect_business_event",
+                        "protect_stock_movement",
+                        "process_recipient_retention");
         assertThat(jdbc.queryForObject("""
                 SELECT count(*) FROM pg_trigger g JOIN pg_class t ON t.oid=g.tgrelid
                 WHERE t.relnamespace='cane'::regnamespace AND NOT g.tgisinternal AND g.tgenabled='O'
@@ -121,6 +129,18 @@ class CoreMigrationIT {
                 SELECT bool_and(NOT prosecdef AND proconfig=ARRAY['search_path=pg_catalog'])
                 FROM pg_proc WHERE pronamespace='cane'::regnamespace
                 """, Boolean.class)).isTrue();
+    }
+
+    @Test
+    void redactsEligibleRecipientsAndCanReplayAfterRestore() throws Exception {
+        coreFlyway().migrate();
+        try (var connection =
+                        DriverManager.getConnection(jdbcUrl, "cane_migrator", TestInfrastructure.MIGRATION_PASSWORD);
+                var statement = connection.createStatement()) {
+            statement.execute(resource("recipient-retention.sql"));
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM cane.orders", Integer.class))
+                .isZero();
     }
 
     @Test
@@ -187,14 +207,15 @@ class CoreMigrationIT {
                 .isEqualTo("false");
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM cane.flyway_schema_history WHERE type='SQL'", Integer.class))
-                .isEqualTo(1);
+                .isEqualTo(2);
     }
 
     @Test
     void checksumMismatchStopsValidationAndMigrationWithoutRepair() throws Exception {
         coreFlyway().migrate();
-        int checksum =
-                jdbc.queryForObject("SELECT checksum FROM cane.flyway_schema_history WHERE type='SQL'", Integer.class);
+        String originalChecksum = "SELECT checksum FROM cane.flyway_schema_history WHERE script='V001__cane_core.sql'";
+        int checksum = jdbc.queryForObject(originalChecksum, Integer.class);
+        Files.copy(RETENTION_MIGRATION, migrationCopies.resolve(RETENTION_MIGRATION.getFileName()));
         Files.writeString(
                 migrationCopies.resolve(MIGRATION.getFileName()),
                 Files.readString(MIGRATION).replace("('stale_alert_hours', '24')", "('stale_alert_hours', '25')"));
@@ -204,9 +225,7 @@ class CoreMigrationIT {
                 .anySatisfy(error ->
                         assertThat(error.errorDetails.errorCode.toString()).isEqualTo("CHECKSUM_MISMATCH"));
         assertThatThrownBy(changed::migrate).isInstanceOf(FlywayException.class);
-        assertThat(jdbc.queryForObject(
-                        "SELECT checksum FROM cane.flyway_schema_history WHERE type='SQL'", Integer.class))
-                .isEqualTo(checksum);
+        assertThat(jdbc.queryForObject(originalChecksum, Integer.class)).isEqualTo(checksum);
         assertThat(jdbc.queryForObject(
                         "SELECT value::text FROM cane.settings WHERE key='stale_alert_hours'", String.class))
                 .isEqualTo("24");
@@ -225,7 +244,8 @@ class CoreMigrationIT {
     @Test
     void strictValidationRejectsAFutureVersionMissingFromThisRelease() throws Exception {
         Files.copy(MIGRATION, migrationCopies.resolve(MIGRATION.getFileName()));
-        Files.writeString(migrationCopies.resolve("V002__future_fixture.sql"), "SELECT 1;");
+        Files.copy(RETENTION_MIGRATION, migrationCopies.resolve(RETENTION_MIGRATION.getFileName()));
+        Files.writeString(migrationCopies.resolve("V003__future_fixture.sql"), "SELECT 1;");
         configure(copiesLocation()).load().migrate();
         assertThat(coreFlyway().validateWithResult().validationSuccessful).isFalse();
         assertThat(configure(CORE)
@@ -255,7 +275,7 @@ class CoreMigrationIT {
                 .isEqualTo("false");
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM cane.flyway_schema_history WHERE type='SQL'", Integer.class))
-                .isEqualTo(1);
+                .isEqualTo(2);
         coreFlyway().validate();
     }
 
@@ -309,13 +329,14 @@ class CoreMigrationIT {
     void upgradeFailureRollsBackDdlDataAndStopsLaterMigrations() throws Exception {
         coreFlyway().migrate();
         Files.copy(MIGRATION, migrationCopies.resolve(MIGRATION.getFileName()));
-        Files.writeString(migrationCopies.resolve("V002__failure_fixture.sql"), """
+        Files.copy(RETENTION_MIGRATION, migrationCopies.resolve(RETENTION_MIGRATION.getFileName()));
+        Files.writeString(migrationCopies.resolve("V003__failure_fixture.sql"), """
                 CREATE TABLE cane.upgrade_probe (id integer PRIMARY KEY);
                 INSERT INTO cane.settings(key,value) VALUES ('upgrade_probe','true');
                 SELECT 1 / 0;
                 """);
         Files.writeString(
-                migrationCopies.resolve("V003__must_not_run.sql"), "CREATE TABLE cane.must_not_run(id integer);");
+                migrationCopies.resolve("V004__must_not_run.sql"), "CREATE TABLE cane.must_not_run(id integer);");
         var upgrade = configure(copiesLocation()).load();
         assertThatThrownBy(upgrade::migrate).isInstanceOf(FlywayException.class);
         assertThat(jdbc.queryForObject("SELECT to_regclass('cane.upgrade_probe') IS NULL", Boolean.class))
@@ -326,7 +347,7 @@ class CoreMigrationIT {
                 .isEqualTo(16);
         assertThat(jdbc.queryForObject(
                         "SELECT count(*) FROM cane.flyway_schema_history WHERE type='SQL'", Integer.class))
-                .isEqualTo(1);
+                .isEqualTo(2);
         coreFlyway().validate();
     }
 

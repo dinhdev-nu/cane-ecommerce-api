@@ -32,7 +32,7 @@ public class JdbcOrderLinkRepository implements OrderLinkRepository {
     private Optional<OrderLinkState> read(UUID id, boolean locked) {
         return jdbc
                 .query(
-                        "SELECT id,link_version,link_expires_at FROM cane.orders WHERE id=:id"
+                        "SELECT id,link_version,link_expires_at FROM cane.orders WHERE id=:id AND recipient_redacted_at IS NULL"
                                 + (locked ? " FOR UPDATE" : ""),
                         Map.of("id", id),
                         (row, n) -> new OrderLinkState(

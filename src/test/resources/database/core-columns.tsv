@@ -33,9 +33,10 @@ orders	status	text	NO	NEVER
 orders	payment_status	text	NO	NEVER
 orders	fulfillment_method	text	NO	NEVER
 orders	payment_method	text	NO	NEVER
-orders	recipient_name	text	NO	NEVER
-orders	recipient_phone	text	NO	NEVER
-orders	recipient_email	text	NO	NEVER
+orders	recipient_name	text	YES	NEVER
+orders	recipient_phone	text	YES	NEVER
+orders	recipient_email	text	YES	NEVER
+orders	recipient_redacted_at	timestamp with time zone	YES	NEVER
 orders	address	jsonb	YES	NEVER
 orders	store_snapshot	jsonb	YES	NEVER
 orders	note	text	YES	NEVER

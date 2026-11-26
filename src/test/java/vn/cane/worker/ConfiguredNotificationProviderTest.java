@@ -22,9 +22,14 @@ class ConfiguredNotificationProviderTest {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
+    private record CapturedMessage(String mailFrom, String data) {}
+
     @ParameterizedTest
-    @ValueSource(strings = {"", "support@example.invalid"})
-    void smtpCaptureReceivesMimeAndStableMessageIdAndTelegramMockNeverCallsNetwork(String replyTo) throws Exception {
+    @ValueSource(booleans = {false, true})
+    void smtpCaptureReceivesMimeAndStableMessageIdAndTelegramMockNeverCallsNetwork(boolean configured)
+            throws Exception {
+        String replyTo = configured ? "support@example.invalid" : "";
+        String feedbackTo = configured ? "feedback@example.invalid" : "";
         try (var server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
                 var executor = Executors.newSingleThreadExecutor()) {
             var capture = executor.submit(() -> {
@@ -37,8 +42,10 @@ class ConfiguredNotificationProviderTest {
                     writer.print("220 mock.local ESMTP\r\n");
                     writer.flush();
                     var data = new StringBuilder();
+                    String mailFrom = null;
                     String line;
                     while ((line = reader.readLine()) != null) {
+                        if (line.startsWith("MAIL FROM:")) mailFrom = line;
                         if (line.equals("DATA")) {
                             writer.print("354 End with dot\r\n");
                             writer.flush();
@@ -56,7 +63,7 @@ class ConfiguredNotificationProviderTest {
                             writer.flush();
                         }
                     }
-                    return data.toString();
+                    return new CapturedMessage(mailFrom, data.toString());
                 }
             });
             var provider = new ConfiguredNotificationProvider(
@@ -69,6 +76,7 @@ class ConfiguredNotificationProviderTest {
                     "dev@cane.invalid",
                     "Cane Shop",
                     replyTo,
+                    feedbackTo,
                     "mock",
                     "",
                     directory.toString(),
@@ -88,13 +96,17 @@ class ConfiguredNotificationProviderTest {
                     "Cane Shop đã nhận đơn", "Xin chào bạn.\nHỗ trợ: MOCK", "<p>Xin chào bạn.</p>", null, 0);
             try {
                 provider.send(lease, message);
+                var captured = capture.get(5, TimeUnit.SECONDS);
+                assertThat(captured.mailFrom())
+                        .isEqualTo("MAIL FROM:<" + (configured ? feedbackTo : "dev@cane.invalid") + ">");
                 var mime = new MimeMessage(
                         Session.getInstance(new java.util.Properties()),
-                        new ByteArrayInputStream(
-                                capture.get(5, TimeUnit.SECONDS).getBytes(StandardCharsets.UTF_8)));
+                        new ByteArrayInputStream(captured.data().getBytes(StandardCharsets.UTF_8)));
                 assertThat(mime.getSubject()).isEqualTo(message.subject());
                 assertThat(mime.getMessageID()).isEqualTo("<" + id + "@notifications.cane.invalid>");
                 assertThat(mime.getHeader("Reply-To", null)).isEqualTo(replyTo.isEmpty() ? null : replyTo);
+                assertThat(mime.getHeader("Return-Path", null))
+                        .isEqualTo(feedbackTo.isEmpty() ? null : "<" + feedbackTo + ">");
                 var parts = (jakarta.mail.Multipart) mime.getContent();
                 assertThat(parts.getBodyPart(0).getContent().toString().replace("\r\n", "\n"))
                         .isEqualTo(message.text());

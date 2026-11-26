@@ -85,7 +85,7 @@ public final class AdminOrderReadService {
                             && order.paymentStatus().equals("refund_pending")
                             && receipt != null
                             && receipt.status().equals("succeeded"),
-                    owner);
+                    owner && order.recipient().email() != null);
             return new AdminOrderView.Detail(
                     order,
                     orders.items(id),

@@ -13,6 +13,8 @@ V001 tạo 10 bảng/122 cột lõi, PK/FK/UNIQUE/CHECK/index, 3 function, 11 tr
 Không tạo SKU, staff hoặc nhập tồn; không cấp quyền bảng runtime trong task này.
 WP01-02 kiểm sâu trigger và cấp/kiểm quyền trước khi áp vào môi trường dùng lâu dài.
 
+V002 bổ sung `orders.recipient_redacted_at` và tác vụ xóa thông tin giao nhận theo WP07. API và worker cần cùng bộ migration với database. `scripts/operations/recipient-retention.py` chạy trên VM bằng quyền Owner vận hành, với các chế độ `candidates`, `preview`, `apply` và `replay`. `apply` và `replay` yêu cầu tệp quyết định cùng SHA-256 của bản đã duyệt lưu ngoài DB. API và worker không được thực thi hàm xóa. Sau PITR, áp migration tương thích và chạy `replay` khi API đang cô lập và worker tắt gửi.
+
 ## Lệnh vận hành
 
 Xác nhận đúng môi trường, database và role DDL trước chạy. Với database có dữ liệu,

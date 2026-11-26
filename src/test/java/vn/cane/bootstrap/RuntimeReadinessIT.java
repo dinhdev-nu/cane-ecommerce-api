@@ -67,7 +67,7 @@ class RuntimeReadinessIT {
                 .isZero();
         assertThat(owner.queryForObject(
                         "SELECT count(*) FROM cane.flyway_schema_history WHERE type='SQL'", Integer.class))
-                .isEqualTo(1);
+                .isEqualTo(2);
     }
 
     @ParameterizedTest
@@ -81,7 +81,7 @@ class RuntimeReadinessIT {
             case "failed" -> owner.update("UPDATE cane.flyway_schema_history SET success=false WHERE type='SQL'");
             case "future" -> owner.update("""
                     INSERT INTO cane.flyway_schema_history(installed_rank,version,description,type,script,checksum,installed_by,execution_time,success)
-                    SELECT max(installed_rank)+1,'002','future fixture','SQL','V002__future.sql',1,current_user,0,true FROM cane.flyway_schema_history
+                    SELECT max(installed_rank)+1,'003','future fixture','SQL','V003__future.sql',1,current_user,0,true FROM cane.flyway_schema_history
                     """);
             case "table" -> owner.execute("ALTER TABLE cane.products RENAME TO missing_products");
             case "setting" -> owner.update("DELETE FROM cane.settings WHERE key='store'");
