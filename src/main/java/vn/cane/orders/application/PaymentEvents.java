@@ -104,14 +104,19 @@ public final class PaymentEvents {
         var notifications = new ArrayList<Notification>();
         if (payment.orderLinkVerified()
                 && (kind.equals("payment_refunded") || payment.method().equals("bank"))) {
-            notifications.add(new Notification(
-                    UUID.randomUUID(),
-                    kind.equals("payment_refunded") ? Notification.Kind.REFUNDED : Notification.Kind.PAYMENT_RECEIVED,
-                    payment.orderId(),
-                    payment.id(),
-                    Notification.Channel.EMAIL,
-                    orders.customerEmail(payment.orderId()),
-                    Notification.Audience.CUSTOMER));
+            String customerEmail = orders.customerEmail(payment.orderId());
+            if (customerEmail != null) {
+                notifications.add(new Notification(
+                        UUID.randomUUID(),
+                        kind.equals("payment_refunded")
+                                ? Notification.Kind.REFUNDED
+                                : Notification.Kind.PAYMENT_RECEIVED,
+                        payment.orderId(),
+                        payment.id(),
+                        Notification.Channel.EMAIL,
+                        customerEmail,
+                        Notification.Audience.CUSTOMER));
+            }
         }
         if (payment.needsReview() || !payment.orderLinkVerified()) {
             var notify = settings.read().get("owner_notify");
