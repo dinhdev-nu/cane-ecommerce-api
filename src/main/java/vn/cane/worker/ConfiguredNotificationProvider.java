@@ -126,6 +126,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
         props.setProperty("mail.smtp.starttls.enable", Boolean.toString(live));
         props.setProperty("mail.smtp.starttls.required", Boolean.toString(live));
         props.setProperty("mail.smtp.ssl.checkserveridentity", "true");
+        if (feedbackTo != null) props.setProperty("mail.smtp.from", feedbackTo.getAddress());
         try (var sockets = new SmtpDeadlineSockets(deadlines, Duration.ofSeconds(30))) {
             props.put("mail.smtp.socketFactory", sockets);
             props.setProperty("mail.smtp.socketFactory.fallback", "false");
