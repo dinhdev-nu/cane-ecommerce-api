@@ -11,6 +11,7 @@ cane:
     from: ${EMAIL_FROM:dev@cane.invalid}
     from-name: ${EMAIL_FROM_NAME:CANE dev}
     reply-to: ${EMAIL_REPLY_TO:}
+    feedback-to: ${EMAIL_FEEDBACK_TO:}
     language: ${EMAIL_LANGUAGE:vi}
     telegram-mode: ${TELEGRAM_MODE:mock}
     telegram-token: ${TELEGRAM_BOT_TOKEN:}

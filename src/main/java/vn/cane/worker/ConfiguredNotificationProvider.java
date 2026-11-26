@@ -33,6 +33,7 @@ import tools.jackson.databind.json.JsonMapper;
 public final class ConfiguredNotificationProvider implements NotificationProvider {
     private final String host, username, password, from, fromName, telegramMode, botToken;
     private final InternetAddress replyTo;
+    private final InternetAddress feedbackTo;
     private final int port;
     private final boolean live;
     private final Path capture;
@@ -53,6 +54,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
             @Value("${cane.notifications.from:dev@cane.invalid}") String from,
             @Value("${cane.notifications.from-name:CANE dev}") String fromName,
             @Value("${cane.notifications.reply-to:}") String replyTo,
+            @Value("${cane.notifications.feedback-to:}") String feedbackTo,
             @Value("${cane.notifications.telegram-mode:mock}") String telegramMode,
             @Value("${cane.notifications.telegram-token:}") String botToken,
             @Value("${cane.notifications.capture-directory:}") String captureDirectory,
@@ -77,7 +79,8 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
         this.password = password;
         this.from = from;
         this.fromName = fromName;
-        this.replyTo = parseReplyTo(replyTo);
+        this.replyTo = parseMailbox(replyTo, "Reply-To");
+        this.feedbackTo = parseMailbox(feedbackTo, "feedback Return-Path");
         this.telegramMode = telegramMode;
         this.botToken = botToken;
         this.json = json;
@@ -89,7 +92,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
         } else capture = null;
     }
 
-    private static InternetAddress parseReplyTo(String mailbox) {
+    private static InternetAddress parseMailbox(String mailbox, String field) {
         if (mailbox.isBlank()) return null;
         try {
             var address = new InternetAddress(mailbox.strip(), true);
@@ -98,7 +101,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
         } catch (AddressException invalid) {
             // The configured mailbox does not belong in startup logs.
         }
-        throw new IllegalStateException("Notification Reply-To must be a single mailbox");
+        throw new IllegalStateException("Notification " + field + " must be a single mailbox");
     }
 
     @Override
@@ -130,6 +133,7 @@ public final class ConfiguredNotificationProvider implements NotificationProvide
             var message = new MimeMessage(session);
             message.setFrom(new InternetAddress(from, fromName, StandardCharsets.UTF_8.name()));
             if (replyTo != null) message.setReplyTo(new InternetAddress[] {replyTo});
+            if (feedbackTo != null) message.setHeader("Return-Path", "<" + feedbackTo.getAddress() + ">");
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(lease.recipient(), true));
             message.setSubject(content.subject(), StandardCharsets.UTF_8.name());
             var parts = new MimeMultipart("alternative");
