@@ -95,11 +95,10 @@ source, wrong revision, duplicate/missing/extra SKU or broken assets must fail c
 Review changes first, then run the standard runner:
 
 ```powershell
-pwsh -File scripts/Test-Backend.ps1 -AllowCurrentLocalDocker -EnvFile .local/wp02-verification/test.env
+pwsh -File scripts/Test-Backend.ps1
 ```
 
-The selected env file is ignored, holds isolated test ports/secrets and is not a
-production configuration. `PublicStorefrontIT` uses disposable PostgreSQL/Redis and
+The runner reads or creates `.local/dev.env` and uses a dedicated Compose project. For custom test ports, supply an isolated local file with `-EnvFile`. `PublicStorefrontIT` uses disposable PostgreSQL/Redis and
 the real HTTP security chain. Cache unit tests use a controlled Clock; integration
 tests check real TTL, ACL, malformed cache, timeout/OOM, SQL faults, after-commit/
 rollback, concurrent late loaders and the existing CLI writers. Auth/security and

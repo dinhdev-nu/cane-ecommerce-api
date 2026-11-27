@@ -64,5 +64,5 @@ Unit kiểm entropy/định dạng/hash, biên hạn chính xác, thuộc tính/
 quyền thay đổi. Integration dùng API runtime credential thật, SQL/HTTP thật, phiên
 fixture, thay/rollback/thu hồi, không sliding/HttpSession, active/version/quyền hiện
 tại, mất DB bằng pause container riêng và tranh chấp staff lock. Probe/controller
-chỉ trong test. [Hồ sơ kiểm](wp01-09-verification.md) ghi kết quả; auth API thật,
+chỉ trong test. [Hồ sơ kiểm](../../cane-mvp/evidence/wp01/README.md#wp01-09) ghi kết quả; auth API thật,
 CSRF/origin và smoke HTTPS vẫn phải kiểm tiếp đúng task.

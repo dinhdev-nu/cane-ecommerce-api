@@ -1,2 +1,2 @@
-/** SKU prices, stock and stock ledger. Implementation starts with the applicable WP tasks. */
+/** SKU prices, stock and stock ledger. */
 package vn.cane.catalog;

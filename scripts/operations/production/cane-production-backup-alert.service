@@ -1,0 +1,7 @@
+[Unit]
+Description=Notify the CANE operator via SES on backup failure
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/cane/production/operations/backup-and-channels.py backup-alert
+TimeoutStartSec=60

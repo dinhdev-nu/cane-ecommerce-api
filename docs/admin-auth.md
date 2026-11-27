@@ -98,4 +98,4 @@ Test HTTP gửi cookie tường minh; chưa xác nhận browser lưu/gửi Secur
 trên origin triển khai. HTTPS/proxy/browser thật vẫn thuộc WP01-16. Không coi hook
 fixture là login HTTP, hoặc CI là nghiệm thu staging. `AdminLoginIT` bổ sung login
 production chain, khóa/counter, đổi credential và sai đồng thời trên DB thật.
-[Hồ sơ WP01-10](wp01-10-verification.md), [hồ sơ WP01-11](wp01-11-verification.md).
+[Hồ sơ WP01-10](../../cane-mvp/evidence/wp01/README.md#wp01-10), [hồ sơ WP01-11](../../cane-mvp/evidence/wp01/README.md#wp01-11).

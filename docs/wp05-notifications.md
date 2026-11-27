@@ -1,8 +1,6 @@
 # WP05 — xem đơn và thông báo
 
-Nguồn nghiệp vụ/API/DoD: `../cane-mvp/docs/pm/wp05-implementation-plan.md` trong
-workspace. Phạm vi gồm UC-C08/C09, UC-A09, UC-S01. Dashboard, thao tác hủy/bàn giao
-thật và job nhắc thuộc WP06. Không thêm schema hoặc đổi migration V001.
+Khách nhận email theo sự kiện của đơn. Owner nhận thông báo qua email và chat Telegram đã cấu hình. Khi mở bán ngày 26/11/2026, worker đã bật gửi thật. SES Singapore và Telegram đã xác nhận tiếp nhận tin kiểm. [Biên nhận phát hành](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126) · [Dashboard và các tác vụ nhắc](wp06-admin-worker.md)
 
 ## Chạy dev có kiểm soát
 
@@ -43,6 +41,8 @@ liệu từng đơn thử; bot username chỉ để vận hành. Không lưu hai
 | `SMTP_USERNAME`, `SMTP_PASSWORD` | Xác thực SMTP khi provider yêu cầu; secret của worker | Chuỗi riêng, không đưa vào Git/chat |
 | `EMAIL_FROM` | Địa chỉ người gửi; live phải được provider xác minh | Dev `dev@cane.invalid`; live do Owner cung cấp |
 | `EMAIL_FROM_NAME` | Tên hiển thị người gửi | `Cane Shop` |
+| `EMAIL_REPLY_TO` | Địa chỉ nhận thư trả lời | Hộp thư vận hành đã duyệt |
+| `EMAIL_FEEDBACK_TO` | Địa chỉ nhận phản hồi phát thư qua SMTP envelope | Hộp thư theo cấu hình SES của môi trường |
 | `EMAIL_LANGUAGE` | Ngôn ngữ template thông báo | `vi` hoặc `en` |
 | `TELEGRAM_MODE` | Capture giả lập hoặc Bot API thật, không chuyển tự động | `mock` / `live` |
 | `TELEGRAM_BOT_TOKEN` | Secret gửi Bot API, chỉ worker/live | Token do BotFather cấp, không lưu DB |
@@ -63,17 +63,14 @@ Tham khảo [Spring Boot mail](https://docs.spring.io/spring-boot/reference/io/e
 [Mailpit Docker](https://mailpit.axllent.org/docs/install/docker/),
 [Telegram Bot API](https://core.telegram.org/bots/api#sendmessage).
 
-## Trước staging/go-live — còn mở
+## Kiểm lại khi dựng môi trường hoặc đổi nhà cung cấp
 
-- [ ] Nhắc Owner chốt domain/HTTPS origin, provider và sender đã xác minh, credential
-  riêng; hoàn tất SPF/DKIM/DMARC theo provider đã chọn.
-- [ ] Bật cấu hình live có chủ đích, đích nhận thử có kiểm soát; kiểm bot/chat/quyền.
-  Không tính SMTP capture/Telegram mock là ACK gửi thật hoặc đóng MS-05.
-- [ ] Thay toàn bộ dữ liệu mock, đặc biệt **STK ngân hàng**, store/support/Owner,
-  vùng/phí giao/tồn; xác nhận `bank_auto_confirm=false` cho đợt thủ công.
-- [ ] Kiểm đường triển khai FE–API–DB–worker–provider, ACK≤60s trong điều kiện bình
-  thường, timeout/retry/lease/cảnh báo, rotate/privacy; Owner nghiệm thu trước mở bán.
-- [ ] HMAC/DB/Redis/SMTP/bot secret riêng staging/live, không dùng lại secret dev.
+- Xác minh HTTPS origin, địa chỉ gửi, Reply-To, DNS email và quyền SMTP. Kiểm SPF, DKIM và DMARC theo cấu hình của domain.
+- Đối chiếu đích nhận của Owner, bot và chat Telegram. Khi được phép gửi thử, dùng địa chỉ và chat đã duyệt. Kiểm thời gian từ sự kiện tới phản hồi nhà cung cấp theo mốc 60 giây, rồi kiểm timeout, retry, lease và cảnh báo.
+- Nạp dữ liệu vận hành đã duyệt cho môi trường mới, gồm tài khoản ngân hàng, liên hệ, vùng giao, phí và tồn. Với bản mở bán thủ công, xác minh `bank_auto_confirm=false`.
+- Cấp bộ khóa HMAC và thông tin DB, Redis, SMTP, bot riêng cho từng môi trường. Kiểm quy trình xoay khóa trước khi chuyển lưu lượng.
+
+## Khi worker đang gửi
 
 Worker claim tối đa 20, concurrency 4, lease 5 phút, tối đa 8 lượt. Mọi completion
 fence bằng id/status/lockedAt/attempts; retry 30s tăng gấp đôi, cap 3600s + jitter

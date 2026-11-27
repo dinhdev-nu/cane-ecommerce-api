@@ -43,5 +43,5 @@ PowerShell với tham số Maven có dấu chấm được quote:
 ```
 
 Hồ sơ kết quả, quyết định giữ xem đơn ở WP05 và các điểm staging/demo còn mở được
-quản lý trong `cane-mvp/docs/pm/wp03-execution.md`. Đạt kiểm local/CI không tự là
+quản lý trong `cane-mvp/evidence/wp03/wp03-execution.md`. Đạt kiểm local/CI không tự là
 nghiệm thu mở bán hoặc xác minh tài khoản MOCK DEV.

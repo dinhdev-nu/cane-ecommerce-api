@@ -1,25 +1,12 @@
 # WP01-16 — Kiểm local, smoke HTTPS và triển khai nền
 
-Ngày 22/11/2026: **phép đo tải NFR-001 đã đạt trên Lightsail Singapore**. Hai mẫu
-env staging ghi lại timeout Redis đã kiểm cho API và worker. Xem kết quả tại §4.
+Dùng tài liệu này để dựng môi trường staging, kiểm HTTPS, thử khôi phục dịch vụ và quay lui. Phép đo tải NFR-001 trên Lightsail Singapore đạt ngày 22/11/2026. Hai mẫu env staging lưu timeout Redis đã kiểm cho API và worker.
 
-Ngày 14/11/2026: **chỉ hoàn thiện/kiểm phần độc lập ở local** theo yêu cầu mới nhất
-của chủ dự án. Chưa có tài khoản cloud, máy chủ hoặc domain thật. Đã chọn hướng
-AWS Lightsail Linux 4 GB; chưa tạo tài nguyên hay phát sinh phí. Không coi file
-cấu hình, profile staging hoặc TLS fixture local là nghiệm thu staging.
-
-Ngân sách đã cho: staging 10–25 USD/tháng, production tối đa 100 USD/tháng. Gói
-Lightsail 4 GB/2 vCPU/80 GB/IPv4 niêm yết 24 USD/tháng tại thời điểm tra cứu;
-thuế/domain/backup/transfer vượt gói chưa nằm trong con số này. Kiểm lại tổng giá
-theo vùng trước tạo máy. [Nguồn AWS](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html).
-Chưa chọn hạ tầng production hoặc xác nhận RPO/RTO từ phương án staging này.
+Production mở bán ngày 26/11/2026 trên VM Lightsail được chuyển từ staging. Trước khi chạy lệnh triển khai hoặc quay lui, xác minh đúng môi trường và nguồn cấu hình. [Biên bản chuyển VM và mở bán](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126) · [Vận hành, sao lưu và phục hồi production](../../cane-mvp/docs/03-operations-design.md)
 
 ## 1. Phạm vi và file thực thi
 
-Một API và một worker dùng **cùng JAR**, profile loại trừ nhau; PostgreSQL/Redis
-chỉ loopback trên VM dự kiến. Nginx trên cùng host nhận HTTPS, chuyển `/api/` sang
-API loopback và dành `/` cho FE. FE/UI và các route nghiệp vụ chưa được nghiệm thu
-ở WP01; khi FE chưa triển khai, không dùng trang `/` làm tiêu chí smoke nền.
+API và worker chạy cùng JAR với profile và quyền riêng. Trên staging, PostgreSQL và Redis chỉ lắng nghe qua loopback. Nginx chuyển `/api/` tới API và `/` tới FE. Kiểm API, giao diện và worker theo đúng dịch vụ đã triển khai trên máy đích.
 
 | File | Vai trò |
 |---|---|
@@ -54,7 +41,7 @@ trước, đặt `CANE_POSTGRES_PORT` thành cổng loopback còn trống trư�
 image/toolchain hoặc bỏ IT để làm xanh. Báo cáo `target/foundation-verification.json`
 phân biệt revision và worktree dirty; CI lưu cùng XML/effective POM/dependency tree
 và chỉ result.json đã che dữ liệu của lượt kiểm cấu hình, không env/log bí mật.
-Các nhánh/phạm vi nền tại [hồ sơ WP01-16](wp01-16-verification.md).
+Các nhánh/phạm vi nền tại [hồ sơ WP01-16](../../cane-mvp/evidence/wp01/README.md#wp01-16).
 
 Lệnh cấu hình tạo project `cane-wp01-16-check-*`, secret fixture mới trong `.local`,
 không dùng biến `CANE_STAGING_*` có sẵn của người vận hành. Nó kiểm migration rồi
@@ -167,7 +154,7 @@ cả ba kịch bản cache hit, cache miss và Redis ngắt. Hai mẫu Environme
 đặt `SPRING_DATA_REDIS_CONNECT_TIMEOUT=250ms` cho kết nối và
 `SPRING_DATA_REDIS_TIMEOUT=250ms` cho lệnh Redis. Cả hai giá trị đã được xác minh
 trên tiến trình API và worker chính của staging sau phép đo. Xem
-[báo cáo đo NFR-001 trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-nfr-001-staging).
+[báo cáo đo NFR-001 trong workspace CANE](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-nfr-001-staging).
 
 ## 5. Smoke/demo và ghi nhận sau deploy
 
@@ -204,7 +191,7 @@ Lượt kiểm trình duyệt và thiết bị WP07 ngày 24/11/2026 dùng API t
 `b042816`, PostgreSQL và Redis riêng với dữ liệu giả. Lượt tạo đơn trên thiết bị
 thật đối chiếu hai đơn, bốn dòng hàng và bốn giao dịch giảm tồn. Số thông báo
 đã gửi là 0. Các bản vá trình duyệt thuộc FE; hợp đồng API và schema đã kiểm
-giữ nguyên. Xem [mốc bàn giao QA trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-browser-device-closeout).
+giữ nguyên. Xem [mốc bàn giao QA trong workspace CANE](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-browser-device-closeout).
 
 ## 6. Quay lui và điều kiện dừng
 
@@ -221,13 +208,11 @@ và 23,03 giây. Đã kiểm Dashboard/Settings cho hai vai và đối chiếu s
 của 10 bảng. Giãn các lượt đăng nhập cùng IP để tuân thủ giới hạn 5 lần/phút.
 Nếu gặp `429 RATE_LIMITED` ở bước login, xác nhận readiness và trạng thái release,
 chờ theo `Retry-After` rồi chạy lại smoke vai. Xem
-[kết quả và phạm vi kiểm trong workspace CANE](../../cane-mvp/docs/pm/wp07-execution.md#wp07-rollback-drill).
+[kết quả và phạm vi kiểm trong workspace CANE](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-rollback-drill).
 
 Backup/restore DB/HMAC theo phương án đã chốt và kiểm riêng trước mở bán; snapshot
 VM hay local fixture không chứng minh PITR/RPO≤5 phút/RTO≤4 giờ. Chỉ xóa project
 `cane-wp01-16-check-*` do lệnh local vừa tạo; không chạy `down --volumes` hoặc prune
 trên deployment staging/production để chữa lỗi.
 
-**WP01-16/WP01 chưa hoàn thành** đến khi có staging HTTPS thật, demo/chấp nhận và
-bằng chứng còn thiếu. Theo chỉ dẫn mới nhất, sau bàn giao phần local thì dừng chờ
-đầu vào §3; không giả lập cloud/domain để đóng task.
+Bằng chứng local của WP01-16 được bổ sung bằng các lượt staging ở WP07. Chủ dự án chấp nhận MS-01 ngày 25/11/2026. [Đối chiếu nghiệm thu](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-prior-work-reconciliation) · [Quyết định phát hành](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126)

@@ -1,7 +1,6 @@
 # CANE backend
 
-Chủ dự án đã cho phép bắt đầu WP01 ngày 10/11/2026 theo kế hoạch tuần tự. Cây và
-tên lớp trong skill/tham chiếu là ví dụ; tổ chức code theo thiết kế và chỉ dẫn hiện hành.
+Bản mở bán đã hoàn thành WP07. Khi bảo trì, đối chiếu hành vi với hợp đồng hiện hành và [biên bản phát hành](../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126). Cây và tên lớp trong skill là ví dụ tổ chức code.
 
 Trước khi thêm, sửa, refactor hoặc review backend, đọc skill
 [`cane-backend-structure`](.agents/skills/cane-backend-structure/SKILL.md) và
@@ -35,9 +34,7 @@ tìm repo tài liệu tại workspace gốc thay vì chép một bộ đặc t�
   SQL bind và mapping.
 - Spring JDBC/SQL, Flyway và PostgreSQL là lựa chọn hiện hành. Không tự thay stack,
   schema, API, thuật ngữ hoặc ranh giới nghiệp vụ để làm test dễ hơn.
-- WP01 làm từng task, kiểm đúng phạm vi rồi mới chuyển task tiếp theo. Kế hoạch đang
-  được chấp thuận tại [kế hoạch WP01](docs/wp01-implementation-plan.md). Quyết định
-  còn thiếu của task phụ thuộc vẫn phải hỏi trước khi áp dụng.
+- Kiểm từng thay đổi theo phạm vi đã duyệt trước khi chuyển sang việc tiếp theo. Khi điều tra thay đổi thuộc WP01, tra [kế hoạch và quyết định tại thời điểm triển khai](docs/wp01-implementation-plan.md).
 - Khi được phép triển khai, dùng branch/commit có phạm vi rõ, PR và merge qua GitHub
   trên trình duyệt người dùng yêu cầu. Giữ các thay đổi có sẵn; stage đúng file/hunk,
   không gom mọi thay đổi bằng `git add .`, không reset/stash thay đổi của người dùng.

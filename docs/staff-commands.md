@@ -63,4 +63,4 @@ Không dùng runtime API/worker credential để vận hành staff. Service bả
 lệnh qua ứng dụng; tài khoản DDL/vận hành có quyền SQL trực tiếp phải được quản lý
 ngoài dịch vụ. Thu hồi quyền hiện hành theo request và login sẽ kiểm tại task 09–11.
 
-[Hồ sơ kiểm và giới hạn](wp01-07-verification.md).
+[Hồ sơ kiểm và giới hạn](../../cane-mvp/evidence/wp01/README.md#wp01-07).

@@ -1,76 +1,18 @@
 # CANE — Kế hoạch thực hiện WP01
 
-Ngày lập: **10/11/2026** · Phiên bản: **1.0**.
-Trạng thái: **Chủ dự án cho phép bắt đầu ngày 10/11/2026; triển khai/kiểm tuần tự**.
-Đây là kế hoạch thực thi trong repo backend, dẫn tới yêu cầu/thiết kế chính thức;
-không thay backlog, DoD hoặc kết quả nghiệm thu trong repo tài liệu.
-
-Theo yêu cầu chủ dự án: **không bịa; hỏi khi yêu cầu nghiệp vụ, hệ thống hoặc kiến
-trúc còn thiếu, chưa rõ hay mâu thuẫn**. Chủ động chọn giải pháp kỹ thuật phù hợp.
-Kế hoạch phân biệt hiện trạng có bằng chứng, yêu cầu có
-nguồn và đề xuất chờ chốt; không dùng đề xuất để tự mở rộng phạm vi.
-
-Đã ghi nhận chỉ dẫn ngày 10/11/2026: cây mẫu là tham khảo; giữ cấu trúc phù hợp,
-chỉ thay khi có lý do. Ưu tiên code chuẩn, đúng và dễ bảo trì; cân nhắc design pattern
-theo vấn đề thực tế, chấp nhận độ phức tạp cần thiết để bảo đảm chất lượng. Không ép
-code theo skill hoặc giản lược các ràng buộc đã đặc tả. Ngày 10/11/2026, chủ dự án đã yêu cầu bắt đầu WP01, đọc lại tài liệu/skill trước
-khi code và tiếp tục hỏi khi có yêu cầu còn thiếu hoặc chưa rõ.
-
-Người dùng cho phép chủ động tổ chức code theo thiết kế phân lớp/interface hiện
-hành; không cần duyệt từng tên lớp/hàm/biến/package con. Quyết định nghiệp vụ,
-schema, API, quyền hoặc kiến trúc chưa có trong tài liệu vẫn phải hỏi trước.
-
-Skill là hướng dẫn hỗ trợ, có thể còn thiếu sót và được cải thiện trong quá trình
-làm. Chỉ dẫn mới nhất ngày 10/11/2026 cho phép chủ động chọn cách giải quyết kỹ
-thuật và báo khi có điểm đáng lưu ý; không cần xin duyệt vì skill chưa đề cập.
-Cập nhật skill theo thực tế, không tự thay yêu cầu/đặc tả bằng một quy tắc mới.
-
-Chỉ dẫn bổ sung ngày 14/11: báo “Bắt đầu làm Task WP01-xx” khi sang task mới;
-log theo “Task WP01-xx : …”; tiếp tục tuần tự đến hết WP01, chỉ dừng khi cần quyết
-định/truy cập người dùng mà không tự giải quyết được. Tài liệu Cane-MVP chỉ commit
-local, không push. Staging dự kiến AWS hoặc Google Cloud, ngân sách 10–25 USD/tháng;
-production tối đa 100 USD/tháng. Chưa chọn nền tảng/chưa triển khai hoặc phát sinh
-chi phí; domain chủ dự án mua khi đến WP01-16. Tiếp tục backend độc lập trước đó.
-
-## 1. Kết quả khảo sát và phạm vi lượt này
-
-Đây là snapshot tại lượt khảo sát ban đầu; Git/GitHub, toolchain và kết nối hạ tầng
-phải kiểm lại ngay trước triển khai, không coi các quan sát này là trạng thái live.
-
-- Backend local ở `main`, HEAD `dc7d0c4`, remote
-  [dinhdev-nu/cane-ecommerce-api](https://github.com/dinhdev-nu/cane-ecommerce-api).
-  Đã đọc POM, toàn bộ lớp Java/test khung, YAML/profile, CI, Compose, script local,
-  init role/ACL và hướng dẫn migration. Chưa có controller/service/repository nghiệp vụ.
-- Maven một module, Java 25/Spring Boot 4.1.2, JDBC/TransactionTemplate; đã có
-  Security, Redis, Validation, Flyway PostgreSQL và Bouncy Castle. Không cần dựng
-  lại dự án hoặc thêm ORM/framework khác. Phiên bản theo bộ khóa, không nâng tự phát.
-- Có `CaneApplication`, `RuntimeModeInitializer`, `InfrastructureStartupCheck`,
-  `SecurityConfiguration`, `WorkerConfiguration`, `ClockConfiguration`; các mô-đun
-  nghiệp vụ chỉ có package-info. Không có V001 SQL, seed, staff CLI hoặc auth API.
-- `RuntimeModeInitializer` chỉ hỗ trợ local/test; API deny-all, worker có scheduler
-  nhưng chưa có job. Kiểm kết nối/quyền DDL chưa phải readiness schema hoặc fallback rate.
-- CI và test PREP-02 đã có runner, báo cáo lịch sử 20 unit + 10 integration. Lượt
-  chuẩn bị này chưa chạy lại Maven/CI/integration và không sử dụng số cũ làm kết quả mới.
-- `README.md`, `docs/prep02-verification.md` có diff từ trước. Giữ nguyên; phân loại
-  riêng trước commit, không tự stage hoặc viết đè. Một số câu trong hồ sơ PREP-02 là
-  trạng thái lịch sử; quyết định Gate 3 hiện hành đọc ở repo tài liệu.
-- Đã kiểm repo bằng tab GitHub đang mở trong Chrome: main ở `dc7d0c4`, có phiên chủ
-  repo, 0 PR mở/0 PR đóng tại lúc quan sát. Chưa tạo branch/commit/push/PR/merge.
-- Kiểm nhẹ Docker: Client 29.9.2, chưa kết nối được pipe Docker Desktop Linux Engine.
-  Chưa khởi động Docker hay dựng container trong lượt chuẩn bị; kiểm lại khi triển khai.
-- Đầu ra lượt này chỉ gồm AGENTS, skill cấu trúc/tham chiếu/metadata và kế hoạch này.
+Kế hoạch WP01 lập ngày 10/11/2026. Phần dưới giữ các nguồn, ranh giới migration, phạm vi từng task và bộ kiểm để người bảo trì xác định vùng ảnh hưởng. Kết quả 16 task và hai sửa đổi P2 được ghi trong [hồ sơ WP01](../../cane-mvp/evidence/wp01/README.md). [Đối chiếu nghiệm thu tại WP07](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-prior-work-reconciliation)
 
 ## 2. Nguồn phải đọc theo phần việc
 
 | Nội dung | Nguồn chính |
 |---|---|
-| Thẩm quyền nghiệp vụ, phạm vi | [Hợp đồng nghiệp vụ](../../cane-mvp/01-HOP-DONG-NGHIEP-VU.md), [SRS](../../cane-mvp/docs/01-srs.md), [Use Case](../../cane-mvp/docs/01-use-case.md) |
+| Thẩm quyền nghiệp vụ, phạm vi | [Hợp đồng nghiệp vụ](../../cane-mvp/tai-lieu-goc/01-HOP-DONG-NGHIEP-VU.md), [SRS](../../cane-mvp/docs/01-srs.md), [Use Case](../../cane-mvp/docs/01-use-case.md) |
 | Kiến trúc, mô-đun, hướng gọi | [Thiết kế kỹ thuật](../../cane-mvp/docs/03-technical-design.md), [ADR-001](../../cane-mvp/docs/adr/0001-kien-truc-va-java-spring-boot.md), [ADR-002](../../cane-mvp/docs/adr/0002-spring-jdbc-va-transaction-sql.md) |
-| Bảng/cột/check/index/trigger/migration/seed | [Dữ liệu và hạ tầng gốc](../../cane-mvp/04-DU-LIEU-VA-HA-TANG.md), [nghiệm thu/triển khai gốc](../../cane-mvp/05-NGHIEM-THU-VA-TRIEN-KHAI.md), [thiết kế database](../../cane-mvp/docs/03-database-design.md), [SQL tham chiếu](../../cane-mvp/cane-mvp.sql), [kiểm schema tham chiếu](../../cane-mvp/tests/cane-schema-check.sql) |
+| Bảng/cột/check/index/trigger/migration/seed | [Dữ liệu và hạ tầng gốc](../../cane-mvp/tai-lieu-goc/04-DU-LIEU-VA-HA-TANG.md), [nghiệm thu/triển khai gốc](../../cane-mvp/tai-lieu-goc/05-NGHIEM-THU-VA-TRIEN-KHAI.md), [thiết kế database](../../cane-mvp/docs/03-database-design.md), [SQL tham chiếu](../../cane-mvp/tai-lieu-goc/cane-mvp.sql), [kiểm schema tham chiếu](../../cane-mvp/tai-lieu-goc/tests/cane-schema-check.sql) |
 | Transaction/replay/nguồn event và outbox | [Luồng xử lý](../../cane-mvp/docs/03-processing-design.md), [API chung](../../cane-mvp/docs/03-api-design.md#common) |
 | Auth/CSRF/HMAC/rate/secret | [Bảo mật](../../cane-mvp/docs/03-security-design.md), [API auth](../../cane-mvp/docs/03-api-design.md#auth), [ADR-003](../../cane-mvp/docs/adr/0003-redis-cache-prices-va-gioi-han-tan-suat.md) |
 | Task và điều kiện đạt | [Backlog WP01](../../cane-mvp/docs/pm/backlog.md#wp01-tasks), [16 nhóm kiểm](../../cane-mvp/docs/05-test-cases.md), [Test Plan](../../cane-mvp/docs/04-test-plan.md), [DoD](../../cane-mvp/docs/pm/milestone-plan.md#dod-task) |
-| Runtime/staging/toolchain | [Vận hành](../../cane-mvp/docs/03-operations-design.md), [bộ khóa](../../cane-mvp/docs/pm/toolchain-lock.md), [Gate 3](../../cane-mvp/docs/pm/gate-3-review.md), [README backend](../README.md) |
+| Runtime/staging/toolchain | [Vận hành](../../cane-mvp/docs/03-operations-design.md), [bộ khóa](../../cane-mvp/docs/pm/toolchain-lock.md), [Gate 3](../../cane-mvp/evidence/gates/gate-3-review.md), [README backend](../README.md) |
 | Truy vết và thay đổi | [RTM](../../cane-mvp/docs/06-rtm.md), [quy ước](../../cane-mvp/docs/00-conventions.md), [sổ CR](../../cane-mvp/docs/pm/change-requests.md) |
 
 Đọc đúng mục liên quan ngay trước từng task và ghi tiêu chí/fixture cụ thể. Nếu có
@@ -78,48 +20,9 @@ khác biệt ảnh hưởng contract, xử lý trước khi code phần phụ th
 kế hoạch Draft là thông tin chưa đồng bộ với Gate 3 ngày 08/11; giữ trạng thái nghiệp
 vụ chưa Implemented/Verified, đồng bộ câu mô tả khi cập nhật tài liệu chính thức.
 
-## 3. Quy trình tuần tự và Git
+## 3. Quy trình của đợt triển khai
 
-Thực hiện theo yêu cầu bắt đầu của chủ dự án ngày 10/11/2026:
-
-1. Kiểm Git/diff hiện tại, toolchain, Docker Engine và bộ khung hiện hành. Giữ các
-   diff cũ riêng; dùng worktree sạch nếu cần tránh trộn, không stash/reset file người dùng.
-2. Tạo branch riêng cho tài liệu/skill chuẩn bị, commit/PR phạm vi này trước. Đề xuất
-   `chore/wp01-foundation-guidance`, commit `docs: add backend structure skill and WP01 plan`.
-   PR backend được thao tác trên GitHub qua trình duyệt đang mở.
-3. Cho mỗi task, lấy main mới nhất sau PR trước đã merge; tạo branch
-   `feat/wp01-01-core-migration`, `feat/wp01-02-data-protection`, ... tương ứng task.
-4. Đọc contract + task + nhóm test; xác định file, điều kiện đạt, fixture và rủi ro
-   dữ liệu. Yêu cầu nghiệp vụ/schema/API/quyền/kiến trúc chưa rõ phải hỏi trước và
-   giữ phần phụ thuộc chờ quyết định; tổ chức code trong thiết kế đã có được chủ
-   động lựa chọn. Ghi bắt đầu thực tế, không gán thời gian ước đoán thành kết quả.
-5. Thực hiện đúng một task, viết/chạy test cần thiết cùng code. Test đỏ hoặc đầu vào
-   bắt buộc thiếu thì sửa/gỡ chặn, không bắt đầu task kế tiếp để bỏ qua.
-6. Kiểm local phù hợp: format/unit, integration PostgreSQL/Redis thật và build qua
-   runner chuẩn. Rà XML failures/errors/skipped và dữ liệu tác dụng phụ; dọn tài
-   nguyên thử thuộc lượt này. Thay tài liệu đơn thuần dùng kiểm tài liệu tương ứng.
-7. Tự review diff, structure/import/contract/migration/quyền/secret; cập nhật hướng
-   dẫn và bằng chứng. Stage file/hunk rõ ràng. Mỗi commit là một thay đổi chạy/kiểm
-   được; có thể nhiều commit trong một task khi chúng có ý nghĩa, không gom task sau.
-8. Push branch bằng Git; dùng Browser Use trên Chrome để tạo PR về main, xem Files
-   changed và theo dõi Actions/checks đúng HEAD. PR ghi vấn đề/hành vi, kiểm đã chạy,
-   tác động schema/quyền, giới hạn và việc triển khai nếu có.
-9. Chỉ merge khi kiểm bắt buộc đạt, diff đã rà và không còn lỗi chặn. Đề xuất squash
-   merge nếu repo cho phép để mỗi task có một mốc main rõ; nếu repo yêu cầu cách khác,
-   dùng cách được phép, không thay protection hoặc bypass check.
-10. Qua browser xác nhận PR Merged và SHA trên main; kiểm CI sau merge đúng SHA.
-    Lấy lại main local, đối chiếu HEAD/diff. Cập nhật backlog/RTM bằng kết quả thực,
-    rồi mới task kế tiếp. Nếu merge/build lỗi, sửa task hiện tại trước.
-
-Một task tương ứng một branch/PR là mặc định đề xuất. Bước này không yêu cầu xin lại
-phép sau mỗi task khi chủ dự án đã chốt cả quy trình; những lựa chọn mới về phạm vi,
-chi phí hoặc truy cập ngoài phạm vi vẫn cần quyết định tương ứng. PR/merge chỉ bắt
-đầu sau lần chốt mà người dùng yêu cầu, không diễn ra trong lượt lập kế hoạch.
-
-Repo tài liệu và backend là hai Git repo riêng. Cập nhật trạng thái/truy vết ở
-`cane-mvp/` có commit/PR riêng khi cần, liên kết PR/SHA backend; không tự gộp code
-vào repo tài liệu hoặc coi sửa file local là đã cập nhật trên GitHub. Thay nguồn
-quyết định về nghiệp vụ/schema/API phải đồng bộ tài liệu và được chốt trước phần code.
+WP01 đi theo thứ tự phụ thuộc của 16 task ở §5. Quy ước làm việc hiện hành nằm trong [AGENTS](../AGENTS.md). Bản gốc của kế hoạch, gồm khảo sát đầu kỳ, trình tự Git và nhật ký chuyển task, nằm trong ZIP v3 hoặc tại `git show 16a17d6:docs/wp01-implementation-plan.md` trong clone BE.
 
 ## 4. Phân chia migration WP01-01/02
 
@@ -397,48 +300,4 @@ bằng chứng kiểm và PR đã merge, không suy từ quyết định bắt �
 
 ## 10. Nhật ký thực hiện
 
-**Snapshot 14/11/2026:** WP01-01–15 đã hoàn thành local/CI, review và merge backend;
-bằng chứng từng task tại `wp01-01-verification.md` đến `wp01-15-verification.md` và
-RTM Cane-MVP §7. Các dòng lịch sử bên dưới giữ mốc bắt đầu/chấp thuận, không phải
-trạng thái task hiện tại. WP01-16 kiểm và bàn giao phần local theo chỉ dẫn mới nhất;
-chưa có account/máy/domain cloud, chưa được ghi hoàn thành WP01. Chủ dự án yêu cầu
-xong phần không cần cloud thì dừng, báo phần còn chặn và đầu vào theo thứ tự tại
-[runbook](staging-foundation.md); [hồ sơ kiểm](wp01-16-verification.md).
-
-- 10/11/2026: chủ dự án yêu cầu bắt đầu WP01. PR hướng dẫn/skill
-  [#1](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/1) đã squash merge vào
-  `1a97233`; CI PR và CI main đều đạt. Hai diff có sẵn ở checkout ban đầu giữ riêng.
-- WP01-01 hoàn thành: [PR #2](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/2)
-  merge tại `6a0e5b6`, CI PR/main đạt; [bằng chứng](wp01-01-verification.md).
-  Truy vết Cane-MVP đã commit local. Theo chỉ dẫn mới của chủ dự án, repo tài liệu
-  chỉ commit, không push; backend giữ quy trình PR/merge qua browser.
-- WP01-02 hoàn thành tại [PR #3](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/3),
-  main `3c09f08`, CI PR/main đạt; [bằng chứng](wp01-02-verification.md).
-  Giữ nguyên V001,
-  kiểm sâu trigger và cấp quyền runtime riêng theo môi trường. Worker bản thủ công
-  chưa có quyền ghi tiền/tồn hoặc nhánh auto; rà/bổ sung khi triển khai nhánh đó.
-- WP01-03 hoàn thành tại [PR #4](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/4),
-  main `2d9e340`, CI PR/main đạt: validator/settings, JSON
-  nghiêm ngặt, lỗi chung Security/MVC và log/requestId. Trạng thái/bằng chứng tại
-  [hồ sơ WP01-03](wp01-03-verification.md); không mở endpoint nghiệp vụ sớm.
-- WP01-04 hoàn thành tại [PR #5](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/5),
-  main `49b7102`, CI PR/main đạt: kiểm DB/schema trước HTTP/job,
-  profile staging/production, Redis degraded; [hướng dẫn](runtime-readiness.md).
-  Ngày 10/11/2026 chủ dự án xác nhận chưa có staging/domain; proxy/HTTPS và smoke
-  thật còn phụ thuộc lựa chọn hạ tầng, không suy từ profile/fixture local.
-- WP01-05 hoàn thành tại [PR #6](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/6),
-  main `d29cf87`, CI PR/main đạt: JDBC/transaction/khóa/rollback và
-  retry deadlock; [hướng dẫn](transactions.md), [hồ sơ kiểm](wp01-05-verification.md).
-- WP01-06 hoàn thành tại [PR #7](https://github.com/dinhdev-nu/cane-ecommerce-api/pull/7),
-  main `5e8809e`, CI PR/main đạt; ngày 10/11 chủ dự án chốt chín
-  ID frontend làm SKU ổn định. Template không điền giả giá/quy cách; seed thật
-  còn cần manifest được xác nhận. [Hướng dẫn](catalog-seed.md), [kiểm](wp01-06-verification.md).
-- WP01-07 bắt đầu ngày 14/11 trên branch `feat/wp01-07-staff-commands`;
-  [hướng dẫn](staff-commands.md), [hồ sơ kiểm](wp01-07-verification.md).
-- Chủ dự án đồng ý kiểm trước migrate chỉ bỏ qua `versioned:pending`, giữ chặn
-  checksum/migration thiếu; sau migrate kiểm đầy đủ. Xem hướng dẫn migration và
-  hồ sơ kiểm thực tế, không dùng kết quả cũ để ghi task đạt.
-- Test thực trên Flyway 12.4.0 phát hiện ngoại lệ này vẫn báo schema chưa tồn tại
-  khi dựng DB mới. Chủ dự án đã đồng ý chặn repeatable trong core và dùng
-  `*:pending` ở bước trước; sau migrate vẫn kiểm đầy đủ. Runner cuối đạt 20 unit
-  và 23 integration, không lỗi/bỏ qua; bằng chứng/PR của task 01 liên kết ở trên.
+Tra [bảng biên nhận theo từng task](../../cane-mvp/evidence/wp01/README.md) để đối chiếu commit, unit/integration test và phạm vi từng lượt. Kết quả staging và phát hành được ghi theo đúng môi trường trong [hồ sơ WP07](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126).

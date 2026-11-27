@@ -52,4 +52,4 @@ tác rollback. Status pending, attempts 0 và mốc thời gian lấy default SQ
 render/gửi/claim/lease, không bảo đảm provider gửi đúng một lần. Dispatcher và
 template đầy đủ tiếp nối WP05.
 
-Kiểm chứng và giới hạn tại [hồ sơ WP01-12](wp01-12-verification.md).
+Kiểm chứng và giới hạn tại [hồ sơ WP01-12](../../cane-mvp/evidence/wp01/README.md#wp01-12).

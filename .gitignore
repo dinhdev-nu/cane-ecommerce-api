@@ -3,6 +3,7 @@
 /.local/
 .env
 .env.*
+*.env
 !.env.example
 *.log
 .idea/

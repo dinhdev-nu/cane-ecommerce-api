@@ -69,5 +69,5 @@ Chạy tập trung từ gốc backend:
 
 `RateLimitIT` chạy Redis/PostgreSQL/Tomcat thật, gồm concurrent requests, TTL, 429,
 forwarding giả, timeout bằng pause container riêng, connection refused và đầy bộ
-nhớ noeviction. Test không bỏ qua khi Docker thiếu. [Hồ sơ kiểm](wp01-08-verification.md)
+nhớ noeviction. Test không bỏ qua khi Docker thiếu. [Hồ sơ kiểm](../../cane-mvp/evidence/wp01/README.md#wp01-08)
 ghi kết quả đúng commit; toàn bộ runner tại `scripts/Test-Backend.ps1`.
