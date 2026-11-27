@@ -63,7 +63,7 @@ pause ngoài transaction. Callback chỉ làm việc DB có thể rollback; UUID
 lượt đã rollback không phải tác dụng thành công. Non-DB effects dùng afterCommit;
 lỗi sau commit không đảo kết quả. Không xóa neo hoặc sinh key mới để chữa timeout.
 
-[Hồ sơ kiểm WP01-13](wp01-13-verification.md) phân biệt harness thành phần và
+[Hồ sơ kiểm WP01-13](../../cane-mvp/evidence/wp01/README.md#wp01-13) phân biệt harness thành phần và
 kiểm qua các POST nghiệp vụ thật ở WP03–WP06.
 
 WP01-14 dùng thêm `CanonicalOperation.commandLine` với framing CLI riêng cho lệnh vận hành; không đổi hash POST hoặc phạm vi route HTTP. Xem [nhập tồn đầu](initial-stock.md).

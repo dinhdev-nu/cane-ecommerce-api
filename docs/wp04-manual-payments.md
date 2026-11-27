@@ -1,8 +1,6 @@
 # WP04 — Thanh toán thủ công
 
-Phạm vi: API §6.11/7 và hợp đồng tiền trong Cane-MVP. Chưa có Dashboard (WP06),
-guest view/renderer/dispatcher (WP05), webhook hoặc auto-expiry. Outbox `queued` là
-ghi việc cần gửi, không phải đã gửi. Không gọi ngân hàng/chuyển tiền bằng các API này.
+Cửa hàng nhận COD và chuyển khoản xác nhận thủ công. Owner hoặc Operator có quyền đối chiếu giao dịch thực rồi ghi nhận trong Dashboard. Các API dưới đây ghi nhận thu, đối soát và hoàn tiền. Worker gửi thông báo sau khi giao dịch đã commit. Trạng thái outbox `queued` cho biết thông báo đang chờ gửi. [Quyết định mở bán WP07](../../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126)
 
 ## API và quyền
 
@@ -101,26 +99,17 @@ Kiểm invariant liên bảng dưới khóa: unpaid không có principal; paid/r
 principal succeeded khớp tổng/phương thức/tài khoản; refunded có principal refunded.
 Không tự sửa dữ liệu hỏng hoặc sinh receipt bù để tiếp tục.
 
-`collectAtPickup(principal, orderId)` dành cho WP06: caller phải có write A-TX và gọi
+Khi bàn giao đơn lấy tại shop, `OrderLifecycleService` gọi `collectAtPickup(principal, orderId)` trong write A-TX. Caller gọi
 trước khóa receipt/SKU khác; chỉ pickup ready_for_pickup. Đã paid dùng principal cũ;
 COD unpaid ghi/áp cash đúng total trong transaction caller. Caller chuyển completed,
 ghi **một** completed event/neo/outbox cùng transaction. Hàm không phát email cash riêng.
-Lỗi completion phải rollback luôn tiền. Không có endpoint thử hoặc endpoint bàn giao ở WP04.
+Lỗi completion phải rollback luôn tiền. [Luồng bàn giao trong Dashboard](wp06-admin-worker.md)
 
 Event giữ paymentId/orderId/amount/method/reference/chính-phụ/verified và người/mốc review,
-mốc hoàn/action tại sự kiện. WP05 phải render theo các facts này, không đọc tiền/link
-hiện tại để viết lại lịch sử. Xác minh liên kết qua close_review không diễn đạt là khách
+mốc hoàn/action tại sự kiện. Worker dựng thông báo từ dữ kiện của sự kiện để giữ đúng trạng thái tiền tại thời điểm phát sinh. Xác minh liên kết qua close_review không diễn đạt là khách
 vừa trả thêm. Khách chỉ nhận bank payment_received/hoàn khi verified; unknown/unverified
 chỉ Owner alert. Cash không có email nhận tiền riêng. No-op không xếp lại thông báo.
 
-## Kiểm và phần còn mở
+## Kiểm thử
 
-`MoneyCommandsTest`, `MoneyPolicyTest` kiểm miền/chuẩn hóa/hash/guard; `ManualPaymentsIT`
-kiểm HTTP/CSRF/quyền/SQL thật, receipt/review/refund, race/rollback và điểm nối replay đặt
-đơn. Harness pickup chỉ kiểm contract tiền+completion, không thay endpoint/UI WP06.
-Runner chuẩn `scripts/Test-Backend.ps1`; không suy queued thành sent hoặc local thành staging.
-Hồ sơ kết quả/revision/RTM: `cane-mvp/docs/pm/wp04-execution.md`.
-
-WP05 tiếp nhận DTO/timeline/nguồn outbox, gửi thử/retry/lease; WP06 tiếp nhận Dashboard,
-hủy/đóng giao/bàn giao thật, nhắc việc và race qua endpoint. Mock/live/go-live vẫn theo
-runbook dữ liệu WP02 và nghiệm thu WP07, chưa xác nhận sẵn sàng mở bán từ riêng WP04.
+`MoneyCommandsTest` và `MoneyPolicyTest` kiểm quy tắc tiền, chuẩn hóa, hash và quyền. `ManualPaymentsIT` kiểm HTTP, CSRF, quyền, SQL, đối soát, hoàn tiền, cạnh tranh và rollback. Ca kiểm pickup tại đây tập trung vào giao dịch tiền và hoàn tất đơn. Chạy `scripts/Test-Backend.ps1` từ clone BE. [Kết quả WP04](../../cane-mvp/evidence/wp04/wp04-execution.md) · [Gửi thông báo và thử lại](wp05-notifications.md) · [Kiểm luồng bàn giao](wp06-admin-worker.md)

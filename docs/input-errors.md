@@ -71,4 +71,4 @@ cố, tra requestId và trạng thái hệ thống, không bật dump đầu và
 nhạy cảm. Cảnh báo kỹ thuật không thay audit nghiệp vụ ở task 12.
 
 Kiểm nền dùng controller/rule chỉ nằm trong `src/test/`; không thêm endpoint thử
-vào JAR. Xem [hồ sơ WP01-03](wp01-03-verification.md) để biết bằng chứng/phạm vi.
+vào JAR. Xem [hồ sơ WP01-03](../../cane-mvp/evidence/wp01/README.md#wp01-03) để biết bằng chứng/phạm vi.

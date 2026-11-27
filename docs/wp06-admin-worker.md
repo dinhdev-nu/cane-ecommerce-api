@@ -1,7 +1,7 @@
 # WP06 — Admin và worker
 
 Phạm vi/DoD theo `../cane-mvp/docs/pm/wp06-implementation-plan.md` phiên bản 0.2.
-Hồ sơ kết quả tại `../cane-mvp/docs/pm/wp06-execution.md`; không dùng runbook này
+Hồ sơ kết quả tại `../cane-mvp/evidence/wp06/wp06-execution.md`; không dùng runbook này
 để coi MS-06, staging hoặc gửi provider thật đã được nghiệm thu.
 
 ## API và trách nhiệm

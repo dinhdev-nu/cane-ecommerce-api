@@ -1,0 +1,9 @@
+[Unit]
+Description=CANE production pgBackRest backup
+After=docker.service network-online.target
+OnFailure=cane-production-backup-alert.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/cane/production/operations/run-backup.sh
+TimeoutStartSec=1800

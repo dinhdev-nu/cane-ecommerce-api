@@ -1,16 +1,6 @@
 # WP02-01 — Dữ liệu thử và môi trường tích hợp riêng
 
-Ngày 14/11/2026. Phạm vi: chuẩn bị trên nền backend `ca0077f`, branch
-`wp02-catalog-storefront-cart`. Chưa triển khai/mở route shop/prices hoặc cache.
-Không sửa `README.md`, `docs/prep02-verification.md` đang có diff riêng.
-WP02-02 backend cập nhật template tên/quy cách theo xác nhận ngày 14/11/2026;
-không nạp vào DB dev hoặc điền giá/trạng thái bán/phạm vi chưa được xác nhận.
-
-Nguồn hợp đồng: [API shop/prices](../../cane-mvp/docs/03-api-design.md#api-shop),
-[settings](../../cane-mvp/docs/03-database-design.md#4-dữ-liệu-json-và-cấu-hình),
-[kế hoạch WP02-01/02](../../cane-mvp/docs/pm/wp02-implementation-plan.md),
-[seed hiện hành](catalog-seed.md). Ma trận chức năng và nội dung còn thiếu được
-quản lý tại repo `cane-mvp`; tài liệu này tập trung vào dữ liệu/lệnh backend.
+Dùng hướng dẫn này khi cần môi trường kiểm tích hợp riêng với fixture WP02. Nguồn gốc fixture và các quyết định về chín SKU được ghi trong [biên nhận WP02-01/02](../../cane-mvp/evidence/wp02/wp02-01-02-execution.md). Để chạy hệ thống local hằng ngày, bắt đầu từ [README backend](../README.md).
 
 ## Dữ liệu chỉ dành cho local/test
 
@@ -252,34 +242,4 @@ foreach ($name in @('CANE_DB_URL','CANE_DB_USER','CANE_DB_PASSWORD','CANE_REDIS_
 
 ## Bằng chứng lần chuẩn bị
 
-Toolchain đã đọc thực tế: Temurin 25.0.5+8, Maven Wrapper 3.10.0, PowerShell 7.6.9,
-Docker Client/Engine 29.9.2, Compose 5.6.1. PostgreSQL/Redis giữ image digest của repo
-(18.6-bookworm/8.10.3).
-
-| Kiểm ngày 14/11/2026 | Kết quả thực tế |
-|---|---|
-| Unit có mục tiêu: Wp02FixturesTest + CatalogManifestReaderTest | 24/24 passed; không skip |
-| Runner chuẩn với `-EnvFile .local/wp02-verification/test.env` | clean verify/build passed; **162 unit + 233 integration**, 0 failure/error/skip |
-| Wp02PreparationIT trong runner | 1/1 passed trên PostgreSQL thật: defaults, CLI seed, tên tiếng Anh/quy cách ly gồm đá, SQL baseline, không tạo dữ liệu vận hành |
-| EnvFile không tồn tại | Từ chối trước Compose up/down; hash dev.env trước/sau ca giữ nguyên |
-| File/lệnh | 15 JSON parse được (14 fixture và template release); năm block PowerShell parse được; link file nội bộ và git diff --check đạt |
-| Đóng gói | `jar tf` xác nhận không có fixture WP02 hoặc nine-skus-fixture trong JAR runtime |
-| Dọn tài nguyên | Không còn container/network/volume của project runner hoặc container prep02-it; 0 image ID mới so inventory đầu runner thành công |
-
-Lần cuối sau xác nhận tên/quy cách chạy 15:24:53–15:32:26 UTC trên
-`ca0077f00205bb1dd0e57df1357e6d1293d7b97b`
-cộng working tree WP02 trước commit; `target/foundation-verification.json` và report
-Surefire/Failsafe là evidence ngoài Git. Commit bàn giao giữ nguyên source/test đã
-kiểm; cặp revision FE/BE được ghi tại hồ sơ WP02-01/02 của `cane-mvp`. JAR SHA-256:
-`1f70ab91e0e35cfd1ba0f9a0891f3b9f0c12b8bddc3d71a0ddd13473dcd7fab3`.
-SHA-256 của hai diff có sẵn và `.local/dev.env` khớp hoàn toàn với baseline trước
-lần cập nhật tên/quy cách; các file được bảo vệ này không nằm trong commit WP02.
-
-Lần runner mặc định trước đó dừng khi Windows từ chối bind cổng 55432, trước Maven;
-project thất bại đã tự dọn. Không sửa dev.env để chữa cổng: dùng env thử ngẫu nhiên
-và tham số mới `-EnvFile`, sau đó runner đầy đủ đạt kết quả ở trên.
-
-IT chuẩn bị dùng migration/grant helper và seed CLI/SQL loader thật; bộ CoreMigrationIT
-còn kiểm script migration hiện có. Chưa chạy tuyến browser FE → API shop/prices thật,
-vì endpoint/proxy/cache chưa triển khai ở task 01/02. Không suy các kết quả trên thành
-nghiệm thu API/cache, T01–T07/T63 đầy đủ hoặc staging HTTPS/WP01-16.
+Ngày 14/11/2026, lượt cuối đạt 24 ca tập trung và 162 unit + 233 integration. Bản ghi đủ gồm checksum JAR `1f70ab91e0e35cfd1ba0f9a0891f3b9f0c12b8bddc3d71a0ddd13473dcd7fab3`, lỗi bind cổng 55432 ở lượt trước và cách cô lập môi trường thử. [Kết quả và revision FE/BE](../../cane-mvp/evidence/wp02/wp02-01-02-execution.md). Để tra transcript cũ, mở ZIP v3 hoặc chạy `git show 16a17d6:docs/wp02-01-preparation.md` trong clone BE.

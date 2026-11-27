@@ -89,7 +89,7 @@ không thể thay quyết định xác nhận manifest mở bán của chủ d�
 `CatalogManifestReaderTest` kiểm manifest; `CatalogSeedIT` dùng PostgreSQL thật,
 transaction/repository/service và script PowerShell/JAR thật. Kiểm tạo/chạy lại,
 giữ mọi cột/settings, rollback, seed dở, tranh khóa, runtime bị từ chối và schema
-sai/chưa migrate. [Hồ sơ](wp01-06-verification.md) ghi kết quả đúng build.
+sai/chưa migrate. [Hồ sơ](../../cane-mvp/evidence/wp01/README.md#wp01-06) ghi kết quả đúng build.
 
 Tên/quy cách đã được xác nhận; chưa có manifest giá/trạng thái bán/phạm vi thật đầy đủ. Chưa
 seed production hoặc mở bán. WP02 đã bổ sung exporter và CI đồng bộ catalog/asset;

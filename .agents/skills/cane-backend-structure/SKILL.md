@@ -24,8 +24,8 @@ Các đường dẫn Java trong skill được tính từ gốc `cane-api-spring
 Repo tài liệu `cane-mvp/` nằm cùng cấp với backend trong workspace thông thường.
 Trong worktree, tìm lại repo tài liệu tại workspace gốc. Đọc phần tương ứng của:
 
-- `01-HOP-DONG-NGHIEP-VU.md`: thẩm quyền nghiệp vụ cao nhất.
-- Tài liệu gốc liên quan: `04-DU-LIEU-VA-HA-TANG.md`,
+- `tai-lieu-goc/01-HOP-DONG-NGHIEP-VU.md`: thẩm quyền nghiệp vụ cao nhất.
+- Trong `tai-lieu-goc/`, đọc `04-DU-LIEU-VA-HA-TANG.md`,
   `05-NGHIEM-THU-VA-TRIEN-KHAI.md`, SQL lõi và bộ kiểm schema; đối chiếu với thiết
   kế chi tiết bên dưới. SQL ngân hàng tùy chọn chỉ đọc để giữ đúng phạm vi, không
   đưa inbox vào core khi chưa triển khai nhánh tự động.

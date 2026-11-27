@@ -1,240 +1,88 @@
-# cane-ecommerce-api
+# CANE — API và worker
 
-Backend CANE: một dự án Maven, một bản build chạy hai chế độ `api` và `worker`.
-Đang triển khai WP01 trên khung PREP-02. Có V001, lệnh migration lõi và script cấp
-quyền API/worker theo thao tác/cột; trigger giữ nguyên V001 và được kiểm riêng với quyền runtime.
-WP01-03 bổ sung [validation, lỗi HTTP và log/requestId](docs/input-errors.md),
-JSON nghiêm ngặt và giới hạn body 64 KiB.
-WP01-04 kiểm [runtime/readiness](docs/runtime-readiness.md) trước HTTP/scheduler,
-thêm profile staging/production và diagnostics nội bộ; chưa có hạ tầng staging.
-WP01-05 bổ sung [transaction/khóa dùng chung](docs/transactions.md), đọc snapshot,
-phân loại UNIQUE và hook sau commit; chưa triển khai guard nghiệp vụ thay các WP sau.
-WP01-07 có [lệnh tạo/quản lý nhân viên](docs/staff-commands.md), encoder Argon2id chung,
-prompt mật khẩu kín và bảo vệ Owner active cuối cùng.
-WP01-08 có [Redis/rate limit và process fallback](docs/rate-limits.md), năm nhóm
-đếm và filter login trước Security; proxy thật/HTTPS kiểm khi triển khai staging.
-WP01-09 có [session/cookie và kiểm quyền SQL hiện hành](docs/staff-sessions.md).
-WP01-10 có [CSRF/origin, me và logout](docs/admin-auth.md); API yêu cầu `PUBLIC_ORIGIN`
-tin cậy. WP01-11 thêm login/khóa tài khoản 5 lần/15 phút và xoay phiên/CSRF sau
-commit; các route nghiệp vụ chưa triển khai vẫn deny-all.
-WP01-12 có [writer event, biên nhận và outbox](docs/event-receipts-outbox.md)
-trên transaction caller, giữ nguồn lịch sử và ưu tiên người nhận khách khi trùng.
-WP01-13 có [khung POST admin chống lặp](docs/admin-idempotency.md): canonical hash,
-quyền trước replay, advisory actor/key và biên nhận cũ trước guard biến động.
-WP01-14 có [lệnh nhập tồn đầu](docs/initial-stock.md) qua service/CLI, Owner hiện
-hành và key cố định; tồn/event/ledger/neo cùng transaction, lượng 0 chỉ neo no-op.
-WP01-15 có [HMAC link một đơn](docs/order-links.md), kiểm version/hạn SQL và kiểm
-lại dưới khóa. API/worker cần cùng LINK_SECRETS/LINK_ACTIVE_KID; xem runbook trước chạy.
-WP01-16 có [kiểm local và chuẩn bị staging](docs/staging-foundation.md),
-[hồ sơ kiểm](docs/wp01-16-verification.md). Phạm vi tích hợp vào `main` qua PR #17
-chỉ gồm phần local và hai sửa P2 đã kiểm; HTTPS/VM/demo còn chờ cloud/domain thật.
-Merge phần local không hoàn tất task 16, WP01 hoặc nghiệm thu staging.
-WP01-06 có [lệnh seed chín SKU](docs/catalog-seed.md) chạy riêng bằng credential
-vận hành; manifest thật chưa điền sẽ bị từ chối, fixture chỉ local/test.
-API nghiệp vụ, chống lặp và job còn lại được triển khai/kiểm tuần tự theo WP01–WP07.
-
-Đặc tả và quyết định nằm trong repo local `../cane-mvp/`: đọc
-[thiết kế kỹ thuật](../cane-mvp/docs/03-technical-design.md),
-[bộ khóa công cụ](../cane-mvp/docs/pm/toolchain-lock.md)
-và [backlog](../cane-mvp/docs/pm/backlog.md).
-Theo chỉ dẫn chủ dự án, tài liệu Cane-MVP chỉ commit local, không push;
-backend vẫn tạo PR/merge GitHub. Các liên kết sang tài liệu giả định workspace
-có ba thư mục cùng cấp như thiết kế.
+Một bản build Spring Boot chạy ở hai chế độ. API phục vụ catalog, checkout, xem đơn và Dashboard. Worker xử lý thông báo và các tác vụ nền. PostgreSQL lưu dữ liệu nghiệp vụ. Redis phục vụ cache giá và giới hạn tần suất. [Kiến trúc hệ thống](../cane-mvp/docs/03-technical-design.md) · [Bản BE mở bán](../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126)
 
 ## Công cụ
 
-Temurin **25.0.5+8**, Maven **3.10.0** qua Wrapper **3.3.4**, Spring Boot **4.1.2**,
-Docker Client/Engine **29.9.2**, Compose **5.6.1**, PostgreSQL **18.6**, Redis **8.10.3**.
-PowerShell **7** (`pwsh`) phải có trên PATH của terminal dev để chạy các script local; CI dùng runner có `pwsh`. Dependency được quản lý theo parent/BOM;
-khóa formatter, Bouncy Castle và image theo bộ công cụ. Wrapper kiểm SHA-256 distribution.
-
-```powershell
-pwsh --version
-.\mvnw.cmd --version
-pwsh -File scripts/Test-Toolchain.ps1
-```
-
-Trên Linux/macOS chạy `chmod +x mvnw` khi checkout lần đầu, dùng `./mvnw`;
-các script kiểm chạy bằng `pwsh`.
+PowerShell 7, Temurin **25.0.5+8**, Maven **3.10.0** qua Wrapper, Docker và Compose. Image PostgreSQL và Redis đã ghim trong [compose.yaml](compose.yaml). Kiểm phiên bản bằng `pwsh -File scripts/Test-Toolchain.ps1`. Trên Windows dùng `.\mvnw.cmd`, trên Linux dùng `./mvnw`. [Bộ phiên bản của dự án](../cane-mvp/docs/pm/toolchain-lock.md)
 
 ## Dựng môi trường local
 
-Chạy tại gốc repo. `.env.example` chỉ chứa placeholder; không phải cấu hình để chạy.
-Lệnh sau tạo bí mật ngẫu nhiên trong `.local/dev.env`, được Git bỏ qua và không ghi đè khi đã có.
+Chạy ở gốc repo bằng PowerShell 7:
 
 ```powershell
-pwsh -File scripts/New-LocalEnvironment.ps1
-docker compose --env-file .local/dev.env config --quiet
+if (-not (Test-Path .local/dev.env)) { ./scripts/New-LocalEnvironment.ps1 }
 docker compose --env-file .local/dev.env up --detach --wait
 ```
 
-PostgreSQL và Redis chỉ publish cổng loopback `55432`/`16379`; sửa các giá trị port
-trong `.local/dev.env` nếu trùng dịch vụ khác. PostgreSQL dùng volume tại `/var/lib/postgresql`
-theo image 18. Redis không lưu bền, đặt `maxmemory 64 MiB`, `noeviction`, tắt user mặc định và chỉ
-cho user runtime truy cập namespace `cane:local:*` với các lệnh cần thiết.
-`maxmemory` không phải giới hạn tổng RAM của tiến trình Redis.
+Script tạo mật khẩu riêng cho DB và Redis trong `.local/dev.env`. Compose khởi tạo các role trên volume mới và chỉ xuất cổng trên loopback. [Mẫu cấu hình](.env.example) liệt kê các biến của tiến trình.
 
-Script init PostgreSQL chỉ tạo các role local và quyền kết nối:
+<a id="flyway-và-wp01"></a>
+## Chuẩn bị database lần đầu
 
-| Role | Mục đích |
-|---|---|
-| `cane_prep_admin` | Quản trị DB thử; không dùng chạy ứng dụng |
-| `cane_migrator` | Tạo schema/migration riêng |
-| `cane_api`, `cane_worker` | Runtime, không sở hữu DB/schema hoặc có quyền DDL |
+1. Đọc file cấu hình **local vừa tạo** và cấp credential migration cho phiên PowerShell hiện tại:
 
-Init không tạo schema nghiệp vụ hoặc dữ liệu mở bán. V001 chạy riêng bằng role DDL;
-quyền từng bảng/thao tác được cấp bằng [script runtime](docs/data-protection.md),
-không cấp blanket CRUD cho ledger/event.
-Init chỉ chạy trên volume mới; đổi mật khẩu trong env không tự đổi mật khẩu của DB đã khởi tạo.
+   ```powershell
+   $localConfig = ConvertFrom-StringData (Get-Content -Raw -LiteralPath .local/dev.env)
+   $env:CANE_MIGRATION_URL = "jdbc:postgresql://127.0.0.1:$($localConfig.CANE_POSTGRES_PORT)/cane_local"
+   $env:CANE_MIGRATION_USER = 'cane_migrator'
+   $env:CANE_MIGRATION_PASSWORD = $localConfig.CANE_MIGRATION_PASSWORD
+   ./scripts/database/Migrate-Core.ps1
+   ```
+
+2. Cấp quyền API và worker trên schema đã migrate:
+
+   ```powershell
+   Get-Content -Raw scripts/database/Grant-Runtime.sql |
+     docker compose --env-file .local/dev.env exec -T postgres psql -X --no-password -U cane_migrator -d cane_local -v cane_api_role=cane_api -v cane_worker_role=cane_worker -f /dev/stdin
+   ```
+
+3. Để thử storefront trên **DB local mới**, build JAR và nạp chín SKU, tồn và cài đặt mẫu:
+
+   ```powershell
+   $env:CANE_OPERATIONS_DB_URL = $env:CANE_MIGRATION_URL
+   $env:CANE_OPERATIONS_DB_USER = $env:CANE_MIGRATION_USER
+   $env:CANE_OPERATIONS_DB_PASSWORD = $env:CANE_MIGRATION_PASSWORD
+   $env:CANE_API_DB_USER = 'cane_api'
+   $env:CANE_WORKER_DB_USER = 'cane_worker'
+   $env:CANE_ENVIRONMENT = 'local'
+   $env:CANE_REDIS_HOST = '127.0.0.1'
+   $env:CANE_REDIS_PORT = $localConfig.CANE_REDIS_PORT
+   $env:CANE_REDIS_USER = 'cane_runtime'
+   $env:CANE_REDIS_PASSWORD = $localConfig.CANE_REDIS_PASSWORD
+   .\mvnw.cmd -B -ntp package
+   if ($LASTEXITCODE -eq 0) { ./scripts/dev/Initialize-Wp02.ps1 -Environment local }
+   ```
+
+Migration phát hành nằm trong [db/migration/core](src/main/resources/db/migration/core/). V001 tạo schema lõi, V002 bổ sung chính sách dữ liệu giao nhận. Xem [migration và phục hồi](docs/core-migration.md), [quyền runtime](docs/data-protection.md), [dữ liệu và seed](docs/operator-data.md) và [tạo Owner local khi kiểm Dashboard](docs/staff-commands.md).
 
 ## Chạy API và worker
 
-Trước lần chạy đầu, thực hiện [migration lõi](docs/core-migration.md) và
-[cấp quyền runtime](docs/data-protection.md#cấp-quyền-sau-migration) bằng credential
-vận hành riêng. Runtime từ chối schema trống/thiếu history hoặc thiếu quyền; không
-tự dựng database khi chạy. Volume đã có V001 cần validate/cấp quyền đúng phiên bản,
-không chạy lại init role hoặc sửa checksum để bỏ qua lỗi.
-
-Mở hai terminal, mỗi terminal chạy một lệnh:
+Tạo key ring local một lần theo [hướng dẫn HMAC](docs/order-links.md#cấu-hình-và-secret). Ví dụ sau dùng file và kid trong hướng dẫn đó. Mở hai terminal PowerShell ở gốc repo, nạp các biến sau trong **cả hai**:
 
 ```powershell
 $env:PUBLIC_ORIGIN = 'http://localhost:3000'
-pwsh -File scripts/Run-Local.ps1 -Mode api
-pwsh -File scripts/Run-Local.ps1 -Mode worker
+$env:LINK_SECRETS = Get-Content -Raw -LiteralPath .local/link-keys-local.json
+$env:LINK_ACTIVE_KID = 'local-20261114'
 ```
 
-API bind `127.0.0.1:8080`, có GET me và POST logout; chưa có login hoặc endpoint
-nghiệp vụ. Me chưa có phiên trả 401 JSON kèm CSRF cookie/header. Admin ghi phải qua
-origin/CSRF; route cần phiên trả 401 khi phiên không hợp lệ. Cookie vẫn Secure ở
-local; HTTP test không thay bằng chứng browser qua HTTPS. Xem [luồng auth](docs/admin-auth.md).
-Worker không có HTTP, chỉ worker bật scheduling; chưa có job nghiệp vụ.
-Worker giữ tiến trình sống và dừng bằng Ctrl+C. Cả hai cùng dùng executable JAR.
+Terminal thứ nhất chạy `./scripts/Run-Local.ps1 -Mode api`. Terminal thứ hai chạy `./scripts/Run-Local.ps1 -Mode worker`. API mặc định ở `http://127.0.0.1:8080`, worker chạy nền và không mở HTTP. Kiểm API bằng `Invoke-RestMethod http://127.0.0.1:8080/api/v1/prices` rồi chạy [frontend](../cane-ui-nextjs/README.md). Thông báo mặc định tắt. [Cấu hình gửi thử trên local](docs/wp05-notifications.md)
 
-Phải chọn đúng một môi trường `local`/`test`/`staging`/`production` và một vai trò `api`/`worker`.
-Thiếu vai trò, bật cả hai, thiếu connection/secret hoặc bật lại SQL init/Flyway sẽ bị từ chối.
-Profile staging/production đã kiểm bằng fixture local, chưa triển khai môi trường thật.
-DB/schema/history/checksum/quyền không đúng làm khởi động thất bại trước nhận việc;
-Redis lỗi có trạng thái suy giảm. Bộ đếm fallback thuộc WP01-08.
-Log không dump request/body/bind SQL; dữ liệu kết nối không được chủ động ghi ra log khởi động.
-
-Các trị số local/test đã được chủ dự án xác nhận ngày 07/11/2026:
-
-| Cấu hình | Giá trị |
-|---|---|
-| DB pool tối đa API / worker; tối thiểu | 5 / 3; 1 |
-| Chờ DB connection / validation | 3 giây / 1 giây |
-| SQL / chờ khóa | 5 giây / 2 giây |
-| JDBC connect / socket read / cancel connect | 3 giây / 6 giây / 1 giây |
-| Redis connect / command | 1 giây / 1 giây |
-| Thời gian graceful shutdown mỗi phase / scheduler chờ kết thúc | 20 giây / 20 giây |
-
-Đây là cấu hình kiểm khung, chưa phải số đo đạt tải hoặc cấu hình phát hành.
-WP01-04 bổ sung giới hạn mạng JDBC để tránh chờ vô hạn; đây là lựa chọn kỹ thuật
-khởi điểm cần đo trên hạ tầng thật. `forward-headers-strategy=none`; cấu hình proxy/IP
-tin cậy và HTTPS phải gắn với nền tảng/domain được chốt trước smoke staging.
-Không đưa bí mật HMAC/email/ngân hàng vào khung khi chưa có tính năng cần dùng.
+Để dừng, dùng Ctrl+C ở từng terminal rồi chạy `docker compose --env-file .local/dev.env stop`. Dữ liệu thử được giữ trong volume.
 
 ## Build và kiểm tra
 
-```powershell
-.\mvnw.cmd spotless:apply
-.\mvnw.cmd test
-pwsh -File scripts/Test-Backend.ps1
-```
+| Việc | Lệnh tại gốc repo |
+| --- | --- |
+| Unit test | `.\mvnw.cmd test` |
+| Đóng gói JAR gồm unit test | `.\mvnw.cmd package` |
+| Kiểm toàn bộ với Docker, PostgreSQL và Redis | `pwsh -File scripts/Test-Backend.ps1` |
 
-`test`: format check, compile và unit qua Surefire, không tạo container.
-`Test-Backend.ps1`: kiểm đúng bộ công cụ → Compose project có ID riêng → `clean verify`
-→ dọn container/network/volume của project đó kể cả khi kiểm lỗi. Failsafe chạy `*IT`
-trên Testcontainers PostgreSQL/Redis thật, không tự bỏ qua khi thiếu Docker.
-Hai container Testcontainers dùng cùng script quyền/ACL với Compose, namespace Redis là `cane:test:*`.
-Đóng container do thư viện quản lý sau lượt kiểm; không dùng chế độ reuse.
+JAR và báo cáo Surefire/Failsafe nằm trong `target/`. Runner dùng môi trường thử riêng. Xem [quy trình CI](.github/workflows/ci.yml).
 
-Chạy lệnh chuẩn không có switch ngoại lệ để kiểm đúng bộ khóa.
-Điều kiện môi trường local còn mở được ghi tại hồ sơ kiểm PREP-02 bên dưới.
+## Bảo trì và triển khai
 
-Test hiện kiểm vai trò chạy, HTTP/scheduler, cấu hình thiếu/sai, quyền DDL, timeout,
-fixture khung không có migration, Redis ACL/TTL, Redis lỗi và PostgreSQL lỗi.
-WP01-01 bổ sung kiểm V001/schema/constraint, checksum, rollback và lệnh migrate;
-xem [hồ sơ WP01-01](docs/wp01-01-verification.md). WP01-02 bổ sung kiểm trigger,
-grant chạy lại và các nhánh hợp lệ bằng role runtime; xem [hồ sơ WP01-02](docs/wp01-02-verification.md).
-WP01-03 kiểm chuẩn hóa primitive/16 settings, HTTP thật, lỗi trước/sau Security,
-giới hạn byte và log không lộ đầu vào; xem [hồ sơ WP01-03](docs/wp01-03-verification.md).
-Chưa nghiệm thu nghiệp vụ tiền/tồn,
-auth/session hoặc toàn bộ T01–T118 từ các kiểm nền này.
-Báo cáo ở `target/surefire-reports/` và `target/failsafe-reports/`.
-
-Để chỉ build executable JAR trước khi Docker sẵn sàng:
-
-```powershell
-.\mvnw.cmd package
-```
-
-Lệnh này chạy unit nhưng chưa chạy integration. Chạy JAR bằng `java -jar target/cane-ecommerce-api-0.1.0-SNAPSHOT.jar`
-với `--spring.profiles.active=local,api` hoặc `local,worker`, đồng thời cấp các biến runtime
-ghi trong `.env.example` qua môi trường tiến trình. Spring Boot không tự đọc `.env`.
-Các lệnh local có sẵn thực hiện việc cấp biến này và dùng role riêng cho từng chế độ.
-
-## Flyway và WP01
-
-`src/main/resources/db/migration/core/V001__cane_core.sql` tạo 10 bảng/122 cột lõi,
-khóa/check/index, 3 function/11 trigger và 16 settings. Runtime không migrate;
-không chạy `schema.sql`/`data.sql`. Chưa có inbox ngân hàng, SKU hoặc staff seed.
-
-Xác minh đúng DB/môi trường, cấp `CANE_MIGRATION_URL`, `CANE_MIGRATION_USER`,
-`CANE_MIGRATION_PASSWORD` cho tiến trình bằng credential DDL riêng rồi chạy:
-
-```powershell
-pwsh -NoProfile -File scripts/database/Migrate-Core.ps1
-```
-
-Lệnh từ chối migration repeatable trong core; kiểm trước migrate chỉ bỏ qua
-`*:pending`, sau migrate validate đầy đủ. Core chỉ dùng migration versioned.
-Không truyền password bằng tham số `-D`, không tự baseline/repair/clean.
-Sau migration, cấp/kiểm [quyền runtime](docs/data-protection.md) bằng chủ schema,
-không dùng role migration chạy dịch vụ. Xem [hướng dẫn migration và phục hồi](docs/core-migration.md).
-
-## Cấu trúc
-
-```text
-src/main/java/vn/cane/
-  CaneApplication.java
-  bootstrap/                 # cấu hình, ranh giới runtime, kiểm connection lúc khởi động
-  catalog/                   # SKU, giá, tồn và ledger
-  checkout/                  # quote, vùng giao, phí/tổng
-  orders/                    # đơn và điều phối transaction nghiệp vụ
-  payments/                  # quy tắc tiền, đối soát, xác nhận hoàn
-  admin/                     # staff, session, settings
-  support/                   # cơ chế dùng chung
-  worker/                    # job và adapter gửi
-src/main/resources/          # cấu hình và vị trí migration
-src/test/                    # unit và integration, fixture không đưa vào production
-scripts/                     # lệnh local/kiểm và init hạ tầng thử
-.github/workflows/ci.yml     # kiểm trên Linux với công cụ đã khóa
-```
-
-Package nghiệp vụ thêm `api/application/domain/infrastructure`
-khi có nhiệm vụ cụ thể; Admin đã có validator settings ở application. API và worker gọi cùng application service; quyền sở hữu bảng,
-hướng gọi và transaction tuân theo thiết kế trong repo tài liệu.
-
-## CI và dọn tài nguyên
-
-Commit theo Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`); giữ nhánh `main` build/test được.
-
-Workflow kiểm toolchain/Compose/format/unit/integration/build, xuất effective POM và dependency tree,
-lưu test evidence. [CI trên commit `dc7d0c4`](https://github.com/dinhdev-nu/cane-ecommerce-api/actions/runs/42373671715)
-đã đạt trên Linux với đúng bộ khóa: 20 unit + 10 integration, không lỗi hoặc bỏ qua.
-Kết quả chỉ áp dụng khung backend PREP-02; chưa phải nghiệm thu FE, nghiệp vụ hoặc production.
-
-Sau khi dừng API/worker, dọn môi trường local do bạn chủ động dựng:
-
-```powershell
-docker compose --env-file .local/dev.env down --volumes --remove-orphans
-```
-
-Lệnh xóa cả dữ liệu thử của project `cane-prep02-local`.
-Lượt `Test-Backend.ps1` tự dọn project kiểm riêng và lưu inventory trước kiểm ở
-`.local/last-docker-check.json`. Sau lượt kiểm, đối chiếu image ID trước/sau và container đang sử dụng;
-chỉ xóa image PostgreSQL/Redis/helper tải mới cho lượt CANE khi không còn được sử dụng.
-Không xóa image đã có trước hoặc prune tài nguyên toàn máy. Giữ cấu hình và bằng chứng dựng lại.
-
-Kết quả và phần còn chờ được ghi tại [hồ sơ kiểm PREP-02](docs/prep02-verification.md).
+- [Checkout](docs/wp03-checkout.md), [thanh toán thủ công](docs/wp04-manual-payments.md), [thông báo](docs/wp05-notifications.md), [Dashboard và worker](docs/wp06-admin-worker.md).
+- [Cấu hình, giám sát, backup và rollback](../cane-mvp/docs/03-operations-design.md). [Runbook staging](docs/staging-foundation.md) mô tả proxy và systemd. [Hồ sơ WP07](../cane-mvp/evidence/wp07/wp07-execution.md#wp07-go-live-20261126) xác định bản đã triển khai.
+- [Tệp vận hành backup production](scripts/operations/production/) gồm script pgBackRest, giám sát/cảnh báo và năm unit systemd. Xem [vị trí cài, cấu hình và lịch chạy](../cane-mvp/docs/pm/wp07-s3-pitr-plan.md#backup-production-files) trước khi phục hồi máy.
+- Các thông số local/test dùng để đối chiếu pool và timeout nằm trong [cấu hình ứng dụng](src/main/resources/application.yml), [profile API](src/main/resources/application-api.yml) và [profile worker](src/main/resources/application-worker.yml).

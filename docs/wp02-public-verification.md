@@ -1,28 +1,5 @@
-# WP02 public storefront verification
+# WP02 — Kiểm public storefront ngày 15/11/2026
 
-2026-11-15, branch `wp02-catalog-storefront-cart`. V001 unchanged. WP01 staging,
-HTTPS, representative load and owner acceptance remain separate.
+[Biên nhận BE của WP02](../../cane-mvp/evidence/wp02/wp02-execution.md#backend) ghi sáu lỗi hạ tầng kiểm ban đầu, cách sửa, lượt kiểm lại 12/12 public IT và tổng 245 IT từ XML. Biên nhận cũng ghi phạm vi kiểm Redis, SQL, giao dịch và seed.
 
-- Standard `scripts/Test-Backend.ps1 -AllowCurrentLocalDocker -EnvFile
-  .local/wp02-verification/test.env` executed clean verify: 175 unit and 245 IT,
-  with six errors in the new public suite. Existing 233 IT passed.
-- Corrected test infrastructure: assertions use ACL-allowed GET (not EXISTS),
-  isolated database per case respects immutable ledgers, and the Redis restart
-  test uses a free explicit host binding (Docker Desktop reassigns random ports).
-  Runtime ACL, migration, immutable triggers and business semantics were preserved.
-- `mvnw.cmd -B -ntp spotless:apply verify -Dit.test=PublicStorefrontIT` then passed:
-  175 unit, all 12 public IT, package/format/checks. Aggregated XML reports retain
-  all 245 passing IT. Raw logs are ignored under `.local/wp02-verification/`.
-
-Public tests use real Spring HTTP, runtime DB roles, PostgreSQL and Redis ACL.
-They cover exact GET/400/deny/no-store/allowlists, settings defaults/changes,
-availability/missing products, TTL/deadline/late loader races, malformed cache,
-timeout/refused connection/OOM/restart fallback, SQL failure, after-commit versus
-rollback, real seed/initial-stock writers and replay, and the dev settings loader.
-
-Local measurements in tests are diagnostic bounds, not NFR-001 staging p95 or a
-production benchmark. Future order/stock/admin/worker writers must wire and test
-invalidation in their owning WP; the harness does not mark those routes verified.
-
-Data/setup: [operator data](operator-data.md), [public runbook](public-storefront.md).
-Real FE/BE browser evidence and final package acceptance are recorded in cane-mvp.
+Để chạy lại, xem [hướng dẫn kiểm storefront](public-storefront.md#verification) và [dữ liệu vận hành](operator-data.md). Toàn văn lượt kiểm cũ nằm ở cùng đường dẫn trong ZIP v3 hoặc tại `git show 16a17d6:docs/wp02-public-verification.md` trong clone BE.

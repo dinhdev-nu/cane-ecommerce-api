@@ -1,8 +1,6 @@
 # Migration lõi — WP01-01
 
-Nguồn: `04-DU-LIEU-VA-HA-TANG.md` §1–3, §5 và điều kiện nghiệm thu tại file 05
-ở gốc `cane-mvp/`; thiết kế dữ liệu 1.3 §3–6, §8; SQL tham chiếu
-`cane-mvp.sql`. V001 giữ nguyên các đối tượng SQL được duyệt, chỉ bỏ transaction
+Nguồn gồm [dữ liệu và hạ tầng](../../cane-mvp/tai-lieu-goc/04-DU-LIEU-VA-HA-TANG.md) §1–3, §5, [điều kiện nghiệm thu](../../cane-mvp/tai-lieu-goc/05-NGHIEM-THU-VA-TRIEN-KHAI.md), [thiết kế dữ liệu](../../cane-mvp/docs/03-database-design.md) 1.3 §3–6, §8 và [SQL tham chiếu](../../cane-mvp/tai-lieu-goc/cane-mvp.sql). V001 giữ nguyên các đối tượng SQL được duyệt, chỉ bỏ transaction
 bao ngoài và `CREATE SCHEMA` vì Flyway quản lý hai phần này. Giữ `SET LOCAL
 search_path = cane, pg_catalog`. Chỉ location `core`, chưa tạo inbox ngân hàng.
 
@@ -78,5 +76,5 @@ thiết kế dữ liệu §3.1–3.10, không đọc schema migration để tự
 Fixture ràng buộc chuyển từ bộ kiểm SQL tham chiếu, dùng transaction rollback và
 không tắt trigger. Các ca kiểm migration lỗi chỉ sửa bản sao trong thư mục tạm.
 
-Kết quả và truy vết tại [hồ sơ WP01-01](wp01-01-verification.md). Kiểm nền SQL chưa
+Kết quả và truy vết tại [hồ sơ WP01-01](../../cane-mvp/evidence/wp01/README.md#wp01-01). Kiểm nền SQL chưa
 nghiệm thu nghiệp vụ đặt đơn, thu/hoàn, seed, auth hoặc staging HTTPS.

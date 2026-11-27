@@ -23,7 +23,7 @@ $runtimeEnvironment = @{
 $previous = @{}
 if ($NotificationEnvFile) {
     if ($Mode -ne 'worker') { throw 'Notification env is worker-only.' }
-    $notificationNames = @('NOTIFICATIONS_ENABLED','SMTP_MODE','SMTP_HOST','SMTP_PORT','SMTP_USERNAME','SMTP_PASSWORD','EMAIL_FROM','EMAIL_FROM_NAME','EMAIL_REPLY_TO','EMAIL_LANGUAGE','TELEGRAM_MODE','TELEGRAM_BOT_TOKEN','NOTIFICATION_CAPTURE_DIRECTORY','PUBLIC_ORIGIN')
+    $notificationNames = @('NOTIFICATIONS_ENABLED','SMTP_MODE','SMTP_HOST','SMTP_PORT','SMTP_USERNAME','SMTP_PASSWORD','EMAIL_FROM','EMAIL_FROM_NAME','EMAIL_REPLY_TO','EMAIL_FEEDBACK_TO','EMAIL_LANGUAGE','TELEGRAM_MODE','TELEGRAM_BOT_TOKEN','NOTIFICATION_CAPTURE_DIRECTORY','PUBLIC_ORIGIN')
     foreach ($line in [IO.File]::ReadAllLines([IO.Path]::GetFullPath($NotificationEnvFile))) {
         if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith('#')) { continue }
         if ($line -notmatch '^([A-Z_]+)=(.*)$' -or $notificationNames -notcontains $Matches[1]) { throw 'Invalid notification env field.' }

@@ -1,6 +1,6 @@
 # Bảo vệ dữ liệu và quyền runtime
 
-WP01-02 bám `cane-mvp/04-DU-LIEU-VA-HA-TANG.md` §2–4, thiết kế dữ liệu
+WP01-02 bám `cane-mvp/tai-lieu-goc/04-DU-LIEU-VA-HA-TANG.md` §2–4, thiết kế dữ liệu
 §5/8, bảo mật §7.4 và kịch bản WP01 §3.3. V001 đã có đủ ba function/mười một
 trigger, không sửa file/checksum đã phát hành. Quyền môi trường được cấp bằng
 script vận hành riêng; tên role không được cố định trong migration nghiệp vụ.
@@ -104,5 +104,5 @@ Mỗi thay đổi schema/năng lực sau này phải rà lại ma trận, không
 `DataProtectionIT` kiểm trigger bằng chủ schema có quyền DML, kiểm runtime bằng
 credential riêng, chạy script psql thật, kiểm chạy lại/default privilege và nhánh
 ghi hợp lệ. Không tắt trigger trong bộ kiểm. Kết quả tại
-[hồ sơ WP01-02](wp01-02-verification.md); kiểm nền không thay nghiệm thu thu/hoàn/
+[hồ sơ WP01-02](../../cane-mvp/evidence/wp01/README.md#wp01-02); kiểm nền không thay nghiệm thu thu/hoàn/
 đối soát/worker trong các WP sau.

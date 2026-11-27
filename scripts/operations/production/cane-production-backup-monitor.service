@@ -1,0 +1,8 @@
+[Unit]
+Description=Check CANE backup age and PostgreSQL WAL queue
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/cane/production/operations/backup-and-channels.py monitor
+TimeoutStartSec=90
